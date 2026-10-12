@@ -603,28 +603,9 @@
             console.warn("Firebase gagal dimuat, beralih ke penyimpanan lokal.", err);
         }
 
-        const DEFAULT_CLASSES = [
-            { id: "K1", name: "X IPA 1" },
-            { id: "K2", name: "X IPA 2" },
-            { id: "K3", name: "XI IPS 1" },
-            { id: "K4", name: "XI MIPA 2" },
-            { id: "K5", name: "XII MIPA 1" }
-        ];
+        const DEFAULT_CLASSES = [];
 
-        const DEFAULT_STUDENTS = [
-            { id: "S101", nisn: "1001", name: "Ahmad Rizky", classId: "K1" },
-            { id: "S102", nisn: "1002", name: "Anisa Rahma", classId: "K1" },
-            { id: "S103", nisn: "1003", name: "Budi Santoso", classId: "K1" },
-            { id: "S104", nisn: "1004", name: "Citra Dewi", classId: "K1" },
-            { id: "S105", nisn: "1005", name: "Deni Pratama", classId: "K1" },
-            { id: "S201", nisn: "2001", name: "Eka Saputra", classId: "K2" },
-            { id: "S202", nisn: "2002", name: "Farah Diba", classId: "K2" },
-            { id: "S203", nisn: "2003", name: "Gilang Ramadhan", classId: "K2" },
-            { id: "S301", nisn: "3001", name: "Hany Lestari", classId: "K3" },
-            { id: "S302", nisn: "3002", name: "Indra Wijaya", classId: "K3" },
-            { id: "S401", nisn: "4001", name: "Joko Susilo", classId: "K4" },
-            { id: "S501", nisn: "5001", name: "Kartika Putri", classId: "K5" }
-        ];
+        const DEFAULT_STUDENTS = [];
 
         let appState = {
             classes: DEFAULT_CLASSES,
