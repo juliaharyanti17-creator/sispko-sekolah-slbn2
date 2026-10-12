@@ -53,8 +53,6 @@
                     <i class="fa-regular fa-calendar-days text-amber-300"></i>
                     <span id="header-date-now">...</span>
                 </div>
-
-                
             </div>
         </div>
     </header>
@@ -704,20 +702,6 @@
             }
         }
 
-        function resetToDefaultData() {
-            if (confirm("Apakah Anda yakin ingin mengembalikan data ke sampel awal?")) {
-                appState.classes = DEFAULT_CLASSES;
-                appState.students = DEFAULT_STUDENTS;
-                appState.presensiRecords = {};
-                appState.journals = [];
-                appState.evaluations = [];
-                saveAppState();
-                populateClassDropdowns();
-                refreshCurrentTabUI();
-                showToast("Data berhasil di-reset!", "success");
-            }
-        }
-
         function showToast(msg, type = "success") {
             const toast = document.getElementById('toast-banner');
             const toastIcon = document.getElementById('toast-icon');
@@ -852,7 +836,6 @@
             calculatePresensiCounters(currentRecordList);
         }
 
-        // PERBAIKAN: Menggunakan kelas CSS eksplisit tanpa warna dinamis agar tombol status selalu aktif
         function renderPresensiRadioBtn(studentId, statusType, activeStatus) {
             const isChecked = activeStatus === statusType;
             let activeStyle = "text-slate-600 hover:text-slate-900";
