@@ -603,13 +603,13 @@
             console.warn("Firebase gagal dimuat, beralih ke penyimpanan lokal.", err);
         }
 
+        // DATA BAWAAN DIKOSONGKAN AGAR TIDAK MUNCUL DATA SAMPEL
         const DEFAULT_CLASSES = [];
-
         const DEFAULT_STUDENTS = [];
 
         let appState = {
-            classes: DEFAULT_CLASSES,
-            students: DEFAULT_STUDENTS,
+            classes: [],
+            students: [],
             presensiRecords: {},
             journals: [],
             evaluations: [],
@@ -638,13 +638,11 @@
                 db.ref('sispko_data').on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
-                        appState.classes = data.classes || DEFAULT_CLASSES;
-                        appState.students = data.students || DEFAULT_STUDENTS;
+                        appState.classes = data.classes || [];
+                        appState.students = data.students || [];
                         appState.presensiRecords = data.presensiRecords || {};
                         appState.journals = data.journals || [];
                         appState.evaluations = data.evaluations || [];
-                    } else {
-                        saveAppState();
                     }
                     populateClassDropdowns();
                     refreshCurrentTabUI();
@@ -732,9 +730,9 @@
                 optionsHtml += `<option value="${c.id}">${c.name}</option>`;
             });
 
-            if (presensiSelect) presensiSelect.innerHTML = optionsHtml;
-            if (jurnalSelect) jurnalSelect.innerHTML = optionsHtml;
-            if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = optionsHtml;
+            if (presensiSelect) presensiSelect.innerHTML = optionsHtml || `<option value="">Belum Ada Kelas</option>`;
+            if (jurnalSelect) jurnalSelect.innerHTML = optionsHtml || `<option value="">Belum Ada Kelas</option>`;
+            if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = optionsHtml || `<option value="">Belum Ada Kelas</option>`;
 
             if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + optionsHtml;
             if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + optionsHtml;
@@ -747,14 +745,20 @@
 
         function getPresensiKey() {
             const date = document.getElementById('presensi-tanggal').value;
-            const classId = document.getElementById('presensi-kelas-select').value;
+            const classSelect = document.getElementById('presensi-kelas-select');
+            const classId = classSelect ? classSelect.value : '';
             const mapel = document.getElementById('presensi-mapel-select').value;
             return `${date}_${classId}_${mapel}`;
         }
 
         function loadPresensiTable() {
             const classSelect = document.getElementById('presensi-kelas-select');
-            if (!classSelect || !classSelect.value) return;
+            if (!classSelect || !classSelect.value) {
+                document.getElementById('label-presensi-kelas').innerText = "-";
+                document.getElementById('presensi-table-body').innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-medium">Belum ada kelas terdaftar. Silakan buat kelas pada menu "Kelola Data Master".</td></tr>`;
+                calculatePresensiCounters([]);
+                return;
+            }
             const classId = classSelect.value;
 
             document.getElementById('label-presensi-kelas').innerText = getClassName(classId);
@@ -1004,37 +1008,42 @@
             showToast("Umpan balik evaluasi Kepsek tersampaikan!");
         }
 
+        // FUNGSI DASHBOARD KEPSEK TERBARU: HANYA MENGHITUNG SISWA AKTIF DI DATA MASTER
         function updateEvaluasiDashboard() {
             let totalRecordsChecked = 0;
             let totalHadir = 0;
             let totalAlpaSakit = 0;
             let absenceList = [];
 
+            const activeStudentIds = (appState.students || []).map(s => s.id);
+
             Object.keys(appState.presensiRecords || {}).forEach(key => {
                 const parts = key.split('_');
                 const tgl = parts[0];
                 const cId = parts[1];
 
-                appState.presensiRecords[key].forEach(r => {
-                    totalRecordsChecked++;
-                    if (r.status === 'Hadir') totalHadir++;
-                    else {
-                        if (r.status === 'Alpa' || r.status === 'Sakit') totalAlpaSakit++;
-                        const studentObj = (appState.students || []).find(s => s.id === r.studentId);
-                        if (studentObj) {
-                            absenceList.push({
-                                tanggal: tgl,
-                                name: studentObj.name,
-                                className: getClassName(cId),
-                                status: r.status,
-                                notes: r.notes
-                            });
+                (appState.presensiRecords[key] || []).forEach(r => {
+                    if (activeStudentIds.includes(r.studentId)) {
+                        totalRecordsChecked++;
+                        if (r.status === 'Hadir') totalHadir++;
+                        else {
+                            if (r.status === 'Alpa' || r.status === 'Sakit') totalAlpaSakit++;
+                            const studentObj = (appState.students || []).find(s => s.id === r.studentId);
+                            if (studentObj) {
+                                absenceList.push({
+                                    tanggal: tgl,
+                                    name: studentObj.name,
+                                    className: getClassName(cId),
+                                    status: r.status,
+                                    notes: r.notes
+                                });
+                            }
                         }
                     }
                 });
             });
 
-            const hadirPercent = totalRecordsChecked > 0 ? Math.round((totalHadir / totalRecordsChecked) * 100) : 100;
+            const hadirPercent = totalRecordsChecked > 0 ? Math.round((totalHadir / totalRecordsChecked) * 100) : 0;
 
             document.getElementById('eval-kpi-kehadiran').innerText = `${hadirPercent}%`;
             document.getElementById('eval-kpi-jurnal').innerText = `${(appState.journals || []).length} Doc`;
@@ -1115,24 +1124,27 @@
         }
 
         function getBarChartData() {
+            const activeStudentIds = (appState.students || []).map(s => s.id);
             const labels = (appState.classes || []).map(c => c.name);
             const data = (appState.classes || []).map(c => {
                 let classStudents = (appState.students || []).filter(s => s.classId === c.id);
-                if (classStudents.length === 0) return 100;
+                if (classStudents.length === 0) return 0;
 
                 let totalHadir = 0;
                 let totalRecords = 0;
 
                 Object.keys(appState.presensiRecords || {}).forEach(key => {
                     if (key.includes(`_${c.id}_`)) {
-                        appState.presensiRecords[key].forEach(r => {
-                            totalRecords++;
-                            if (r.status === 'Hadir') totalHadir++;
+                        (appState.presensiRecords[key] || []).forEach(r => {
+                            if (activeStudentIds.includes(r.studentId)) {
+                                totalRecords++;
+                                if (r.status === 'Hadir') totalHadir++;
+                            }
                         });
                     }
                 });
 
-                return totalRecords > 0 ? Math.round((totalHadir / totalRecords) * 100) : 100;
+                return totalRecords > 0 ? Math.round((totalHadir / totalRecords) * 100) : 0;
             });
 
             return {
@@ -1147,13 +1159,16 @@
         }
 
         function getPieChartData() {
+            const activeStudentIds = (appState.students || []).map(s => s.id);
             let hadir = 0, izin = 0, sakit = 0, alpa = 0;
             Object.keys(appState.presensiRecords || {}).forEach(key => {
-                appState.presensiRecords[key].forEach(r => {
-                    if (r.status === 'Hadir') hadir++;
-                    else if (r.status === 'Izin') izin++;
-                    else if (r.status === 'Sakit') sakit++;
-                    else if (r.status === 'Alpa') alpa++;
+                (appState.presensiRecords[key] || []).forEach(r => {
+                    if (activeStudentIds.includes(r.studentId)) {
+                        if (r.status === 'Hadir') hadir++;
+                        else if (r.status === 'Izin') izin++;
+                        else if (r.status === 'Sakit') sakit++;
+                        else if (r.status === 'Alpa') alpa++;
+                    }
                 });
             });
 
