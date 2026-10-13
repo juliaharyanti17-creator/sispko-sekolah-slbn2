@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISPKO - Sistem Informasi Presensi, KBM & Evaluasi Sekolah</title>
+    <title>SISPKO - Sistem Informasi Presensi, KBM & Evaluasi SLB</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -37,14 +37,14 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
                 <div class="bg-white/10 p-2.5 rounded-2xl border border-white/20 shadow-inner flex items-center justify-center">
-                    <i class="fa-solid fa-graduation-cap text-2xl text-amber-300"></i>
+                    <i class="fa-solid fa-hands-holding-child text-2xl text-amber-300"></i>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO</h1>
-                        <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v2.5 Terpadu</span>
+                        <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
+                        <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v2.6 SLB Edition</span>
                     </div>
-                    <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah</p>
+                    <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                 </div>
             </div>
 
@@ -76,7 +76,7 @@
                 <button type="button" onclick="switchTab('master')" id="tab-btn-master" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
                     <i class="fa-solid fa-sliders text-base"></i>
                     <span>4. Kelola Data Master</span>
-                    <span class="ml-1 px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-bold">Kelas & Siswa</span>
+                    <span class="ml-1 px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-bold">Kelas, Ketunaan & Siswa</span>
                 </button>
             </div>
         </div>
@@ -99,9 +99,9 @@
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-check text-indigo-600"></i> Form Input Presensi Harian
+                        <i class="fa-solid fa-calendar-check text-indigo-600"></i> Form Input Presensi Harian SLB
                     </h2>
-                    <p class="text-xs text-slate-500">Atur tanggal, pilih kelas, dan catat kehadiran siswa dengan mudah.</p>
+                    <p class="text-xs text-slate-500">Atur tanggal, pilih kelas, dan catat kehadiran siswa berkebutuhan khusus.</p>
                 </div>
 
                 <div class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
@@ -116,16 +116,20 @@
                     </div>
 
                     <div class="flex-1 min-w-[150px]">
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mata Pelajaran</label>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mata Pelajaran / Program</label>
                         <select id="presensi-mapel-select" onchange="loadPresensiTable()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-semibold">
-                            <option value="Matematika">Matematika</option>
+                            <option value="Program Khusus (Proskus)">Program Khusus (Proskus)</option>
+                            <option value="Pendidikan Agama">Pendidikan Agama</option>
+                            <option value="Pancasila / PKn">Pancasila / PKn</option>
                             <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                            <option value="Bahasa Inggris">Bahasa Inggris</option>
-                            <option value="Fisika">Fisika</option>
-                            <option value="Kimia">Kimia</option>
-                            <option value="Biologi">Biologi</option>
-                            <option value="Informatika">Informatika</option>
-                            <option value="Sejarah">Sejarah</option>
+                            <option value="Matematika">Matematika</option>
+                            <option value="IPA / IPS">IPA / IPS</option>
+                            <option value="PJOK / Olahraga">PJOK / Olahraga</option>
+                            <option value="Seni Budaya">Seni Budaya</option>
+                            <option value="Keterampilan / Vokasional">Keterampilan / Vokasional</option>
+                            <option value="Bina Diri / Bina Diri Kemandirian">Bina Diri / Kemandirian</option>
+                            <option value="Bina Persepsi Bunyi dan Irama">Bina Persepsi Bunyi & Irama (B3I)</option>
+                            <option value="Orientasi & Mobilitas">Orientasi & Mobilitas (OM)</option>
                         </select>
                     </div>
                 </div>
@@ -173,7 +177,8 @@
                             <tr>
                                 <th class="p-3.5 w-12 text-center">No</th>
                                 <th class="p-3.5">NISN / Nama Siswa</th>
-                                <th class="p-3.5 text-center w-80">Status Kehadiran</th>
+                                <th class="p-3.5 text-center">Jenis Ketunaan</th>
+                                <th class="p-3.5 text-center w-72">Status Kehadiran</th>
                                 <th class="p-3.5">Catatan Perilaku / Keterangan</th>
                             </tr>
                         </thead>
@@ -196,7 +201,7 @@
                 <div class="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <div class="border-b border-slate-100 pb-3">
                         <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Form Jurnal Mengajar Guru
+                            <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Form Jurnal Mengajar Guru SLB
                         </h2>
                         <p class="text-xs text-slate-500 mt-0.5">Isi jurnal KBM untuk bahan pertanggungjawaban & evaluasi.</p>
                     </div>
@@ -213,43 +218,47 @@
                                 <select id="jurnal-kelas-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></select>
                             </div>
                             <div>
-                                <label class="block font-bold text-slate-700 mb-1">Mata Pelajaran</label>
+                                <label class="block font-bold text-slate-700 mb-1">Mata Pelajaran / Program</label>
                                 <select id="jurnal-mapel-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
-                                    <option value="Matematika">Matematika</option>
+                                    <option value="Program Khusus (Proskus)">Program Khusus (Proskus)</option>
+                                    <option value="Pendidikan Agama">Pendidikan Agama</option>
+                                    <option value="Pancasila / PKn">Pancasila / PKn</option>
                                     <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                                    <option value="Bahasa Inggris">Bahasa Inggris</option>
-                                    <option value="Fisika">Fisika</option>
-                                    <option value="Kimia">Kimia</option>
-                                    <option value="Biologi">Biologi</option>
-                                    <option value="Informatika">Informatika</option>
-                                    <option value="Sejarah">Sejarah</option>
+                                    <option value="Matematika">Matematika</option>
+                                    <option value="IPA / IPS">IPA / IPS</option>
+                                    <option value="PJOK / Olahraga">PJOK / Olahraga</option>
+                                    <option value="Seni Budaya">Seni Budaya</option>
+                                    <option value="Keterampilan / Vokasional">Keterampilan / Vokasional</option>
+                                    <option value="Bina Diri / Kemandirian">Bina Diri / Kemandirian</option>
+                                    <option value="Bina Persepsi Bunyi & Irama (B3I)">Bina Persepsi Bunyi & Irama (B3I)</option>
+                                    <option value="Orientasi & Mobilitas (OM)">Orientasi & Mobilitas (OM)</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Nama Guru Pengajar</label>
-                            <input type="text" id="jurnal-guru" placeholder="Contoh: Drs. Budi Hermanto" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
+                            <input type="text" id="jurnal-guru" placeholder="Contoh: Siti Rahmah, S.Pd." required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
                         </div>
 
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Bab / Pokok Bahasan Materi</label>
-                            <input type="text" id="jurnal-materi" placeholder="Contoh: Trigonometri & Aturan Sinus" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
+                            <label class="block font-bold text-slate-700 mb-1">Materi / Pokok Bahasan</label>
+                            <input type="text" id="jurnal-materi" placeholder="Contoh: Latihan Kemandirian Mengancing Baju" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
                         </div>
 
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Capaian Pembelajaran (CP/TP)</label>
-                            <textarea id="jurnal-capaian" rows="2" placeholder="Siswa mampu memahami dan menghitung luas segitiga sembarang..." required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></textarea>
+                            <label class="block font-bold text-slate-700 mb-1">Capaian Pembelajaran (CP/PPI)</label>
+                            <textarea id="jurnal-capaian" rows="2" placeholder="Siswa mampu memakai dan mengancingkan baju secara mandiri..." required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></textarea>
                         </div>
 
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Ringkasan Kegiatan Pembelajaran</label>
-                            <textarea id="jurnal-kegiatan" rows="2" placeholder="Diskusi kelompok, latihan soal papan tulis, evaluasi formatif..." required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></textarea>
+                            <textarea id="jurnal-kegiatan" rows="2" placeholder="Demonstrasi guru, bimbingan fisik (prompting), dan praktik mandiri..." required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></textarea>
                         </div>
 
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Kendala & Solusi Pembelajaran</label>
-                            <textarea id="jurnal-kendala" rows="2" placeholder="Kendala: Beberapa siswa belum membawa kalkulator. Solusi: Dipasangkan berdua..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></textarea>
+                            <textarea id="jurnal-kendala" rows="2" placeholder="Kendala: Motorik halus masih lemah. Solusi: Menggunakan kancing ukuran lebih besar..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></textarea>
                         </div>
 
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
@@ -284,9 +293,9 @@
             <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-wrap justify-between items-center gap-4">
                 <div class="space-y-1">
                     <span class="bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full inline-block">
-                        <i class="fa-solid fa-user-tie mr-1"></i> Dashboard Pengawasan & Supervisi Kepsek
+                        <i class="fa-solid fa-user-tie mr-1"></i> Dashboard Pengawasan & Supervisi Kepsek SLB
                     </span>
-                    <h2 class="text-xl font-black tracking-tight">Evaluasi Kinerja KBM & Kehadiran Siswa</h2>
+                    <h2 class="text-xl font-black tracking-tight">Evaluasi Kinerja KBM & Kehadiran Siswa SLB</h2>
                     <p class="text-xs text-indigo-200">Pantau statistik kehadiran harian, keterisian jurnal guru, dan kirimkan umpan balik supervisi.</p>
                 </div>
                 <div class="flex gap-2 no-print">
@@ -379,6 +388,7 @@
                                 <tr>
                                     <th class="p-3">Tanggal</th>
                                     <th class="p-3">Nama Siswa</th>
+                                    <th class="p-3">Ketunaan</th>
                                     <th class="p-3">Kelas</th>
                                     <th class="p-3">Status</th>
                                     <th class="p-3">Keterangan</th>
@@ -400,7 +410,7 @@
                     <form id="form-evaluasi-kepsek" onsubmit="handleSaveEvaluasi(event)" class="space-y-3 text-xs">
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Ditujukan Kepada Guru / Mapel</label>
-                            <input type="text" id="eval-input-target" placeholder="Contoh: Guru Matematika Kelas X" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
+                            <input type="text" id="eval-input-target" placeholder="Contoh: Guru Kelas Tunagrahita" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
                         </div>
 
                         <div>
@@ -410,6 +420,7 @@
                                 <option value="Kedisiplinan Presensi">Kedisiplinan Presensi</option>
                                 <option value="Kelengkapan Jurnal KBM">Kelengkapan Jurnal KBM</option>
                                 <option value="Metode & Inovasi Pembelajaran">Metode & Inovasi Pembelajaran</option>
+                                <option value="Program Kebutuhan Khusus">Program Kebutuhan Khusus</option>
                             </select>
                         </div>
 
@@ -432,7 +443,7 @@
 
             <div class="print-only pt-8 border-t-2 border-slate-800 text-slate-900">
                 <div class="text-center mb-6">
-                    <h2 class="text-2xl font-black uppercase">Laporan Rekapitulasi Presensi & Jurnal KBM Sekolah</h2>
+                    <h2 class="text-2xl font-black uppercase">Laporan Rekapitulasi Presensi & Jurnal KBM SLB</h2>
                     <p class="text-xs text-slate-600">Dokumen Resmi Supervisi Kepala Sekolah</p>
                 </div>
                 <div class="flex justify-between text-xs my-8 px-8">
@@ -457,9 +468,9 @@
             <div class="bg-indigo-900 text-white p-5 rounded-2xl shadow-md flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h2 class="text-lg font-extrabold flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-amber-300"></i> Pengaturan Data Master Sekolah
+                        <i class="fa-solid fa-sliders text-amber-300"></i> Pengaturan Data Master Sekolah SLB
                     </h2>
-                    <p class="text-xs text-indigo-200">Ganti nama siswa, tambah siswa baru, ubah nama kelas, dan atur struktur kelas secara bebas.</p>
+                    <p class="text-xs text-indigo-200">Kelola daftar kelas, jenis ketunaan, dan data siswa secara bebas.</p>
                 </div>
             </div>
 
@@ -475,7 +486,7 @@
                     </div>
 
                     <form onsubmit="handleAddKelas(event)" class="flex gap-2">
-                        <input type="text" id="input-nama-kelas-baru" placeholder="Nama Kelas (misal: XI MIPA 2)" required class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="text" id="input-nama-kelas-baru" placeholder="Nama Kelas (misal: Kelas I C)" required class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium focus:ring-indigo-500 focus:border-indigo-500">
                         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1 cursor-pointer">
                             <i class="fa-solid fa-plus"></i> Tambah
                         </button>
@@ -490,7 +501,7 @@
                             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                                 <i class="fa-solid fa-user-gear text-indigo-600"></i> Kelola Data Siswa
                             </h3>
-                            <p class="text-xs text-slate-500">Tambah siswa baru, edit nama/NISN, atau pindahkan kelas siswa.</p>
+                            <p class="text-xs text-slate-500">Tambah siswa baru, atur jenis ketunaan, atau ubah kelas.</p>
                         </div>
                         <button type="button" onclick="openModalSiswa(null)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                             <i class="fa-solid fa-user-plus"></i> Tambah Siswa Baru
@@ -499,7 +510,7 @@
 
                     <div class="flex flex-wrap gap-3">
                         <div class="flex-1 min-w-[180px]">
-                            <input type="text" id="master-siswa-search" oninput="renderMasterSiswaTable()" placeholder="Cari NISN atau Nama Siswa..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800">
+                            <input type="text" id="master-siswa-search" oninput="renderMasterSiswaTable()" placeholder="Cari NISN, Nama Siswa, atau Ketunaan..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800">
                         </div>
                         <div class="w-full sm:w-48">
                             <select id="master-siswa-filter-kelas" onchange="renderMasterSiswaTable()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-semibold">
@@ -515,6 +526,7 @@
                                     <th class="p-3 w-12 text-center">No</th>
                                     <th class="p-3">NISN</th>
                                     <th class="p-3">Nama Lengkap Siswa</th>
+                                    <th class="p-3 text-center">Ketunaan</th>
                                     <th class="p-3">Kelas</th>
                                     <th class="p-3 text-center w-28">Aksi</th>
                                 </tr>
@@ -552,7 +564,7 @@
     <div id="modal-siswa" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="modal-siswa-title" class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-user-pen text-indigo-600 mr-1.5"></i> Form Data Siswa</h3>
+                <h3 id="modal-siswa-title" class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-user-pen text-indigo-600 mr-1.5"></i> Form Data Siswa SLB</h3>
                 <button type="button" onclick="closeModalSiswa()" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form onsubmit="handleSaveSiswa(event)" class="space-y-3 text-xs">
@@ -564,6 +576,20 @@
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Nama Lengkap Siswa</label>
                     <input type="text" id="siswa-form-nama" placeholder="Nama Lengkap" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Jenis Ketunaan</label>
+                    <select id="siswa-form-ketunaan" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-bold">
+                        <option value="A - Tunanetra">A - Tunanetra</option>
+                        <option value="B - Tunarungu">B - Tunarungu</option>
+                        <option value="C - Tunagrahita">C - Tunagrahita</option>
+                        <option value="C1 - Tunagrahita Sedang">C1 - Tunagrahita Sedang</option>
+                        <option value="D - Tunadaksa">D - Tunadaksa</option>
+                        <option value="E - Tunalaras">E - Tunalaras</option>
+                        <option value="Autis">Autis</option>
+                        <option value="Ganda">Hambatan Ganda</option>
+                        <option value="Lainnya">Lainnya / Inklusi</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Kelas</label>
@@ -603,7 +629,6 @@
             console.warn("Firebase gagal dimuat, beralih ke penyimpanan lokal.", err);
         }
 
-        // DATA BAWAAN DIKOSONGKAN AGAR TIDAK MUNCUL DATA SAMPEL
         const DEFAULT_CLASSES = [];
         const DEFAULT_STUDENTS = [];
 
@@ -755,7 +780,7 @@
             const classSelect = document.getElementById('presensi-kelas-select');
             if (!classSelect || !classSelect.value) {
                 document.getElementById('label-presensi-kelas').innerText = "-";
-                document.getElementById('presensi-table-body').innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-medium">Belum ada kelas terdaftar. Silakan buat kelas pada menu "Kelola Data Master".</td></tr>`;
+                document.getElementById('presensi-table-body').innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Belum ada kelas terdaftar. Silakan buat kelas pada menu "Kelola Data Master".</td></tr>`;
                 calculatePresensiCounters([]);
                 return;
             }
@@ -780,7 +805,7 @@
             tbody.innerHTML = '';
 
             if (classStudents.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-medium">Belum ada siswa terdaftar di kelas ini. Silakan atur pada menu "Kelola Data Master".</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Belum ada siswa terdaftar di kelas ini. Silakan atur pada menu "Kelola Data Master".</td></tr>`;
                 calculatePresensiCounters([]);
                 return;
             }
@@ -799,6 +824,11 @@
                     <td class="p-3.5">
                         <p class="font-extrabold text-slate-800 text-xs sm:text-sm">${student.name}</p>
                         <p class="text-[10px] text-slate-400 font-semibold">NISN: ${student.nisn}</p>
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <span class="px-2 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold text-[10px] inline-block border border-amber-200">
+                            ${student.ketunaan || 'Belum diisi'}
+                        </span>
                     </td>
                     <td class="p-3.5 text-center">
                         <div class="inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-1 gap-1">
@@ -962,7 +992,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
                         <div>
-                            <strong class="text-slate-700 block mb-0.5">Capaian Pembelajaran:</strong>
+                            <strong class="text-slate-700 block mb-0.5">Capaian Pembelajaran (CP/PPI):</strong>
                             <p class="text-slate-600">${item.capaian}</p>
                         </div>
                         <div>
@@ -1008,7 +1038,6 @@
             showToast("Umpan balik evaluasi Kepsek tersampaikan!");
         }
 
-        // FUNGSI DASHBOARD KEPSEK TERBARU: HANYA MENGHITUNG SISWA AKTIF DI DATA MASTER
         function updateEvaluasiDashboard() {
             let totalRecordsChecked = 0;
             let totalHadir = 0;
@@ -1033,6 +1062,7 @@
                                 absenceList.push({
                                     tanggal: tgl,
                                     name: studentObj.name,
+                                    ketunaan: studentObj.ketunaan || '-',
                                     className: getClassName(cId),
                                     status: r.status,
                                     notes: r.notes
@@ -1053,7 +1083,7 @@
             const tbody = document.getElementById('eval-table-absensi-body');
             tbody.innerHTML = '';
             if (absenceList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada catatan ketidakhadiran siswa. Kehadiran 100%.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada catatan ketidakhadiran siswa. Kehadiran 100%.</td></tr>`;
             } else {
                 absenceList.forEach(item => {
                     const badgeColor = item.status === 'Alpa' ? 'bg-rose-100 text-rose-700' : (item.status === 'Sakit' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700');
@@ -1062,6 +1092,7 @@
                     tr.innerHTML = `
                         <td class="p-3 font-medium text-slate-500">${item.tanggal}</td>
                         <td class="p-3 font-bold text-slate-800">${item.name}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-amber-50 text-amber-900 font-bold text-[10px] border border-amber-200">${item.ketunaan}</span></td>
                         <td class="p-3 text-slate-600">${item.className}</td>
                         <td class="p-3"><span class="px-2 py-0.5 rounded-md font-bold text-[10px] ${badgeColor}">${item.status}</span></td>
                         <td class="p-3 text-slate-500">${item.notes || '-'}</td>
@@ -1290,13 +1321,13 @@
 
             let filtered = (appState.students || []).filter(s => {
                 const matchKelas = filterKelas === 'ALL' || s.classId === filterKelas;
-                const matchSearch = s.name.toLowerCase().includes(searchText) || s.nisn.includes(searchText);
+                const matchSearch = s.name.toLowerCase().includes(searchText) || s.nisn.includes(searchText) || (s.ketunaan && s.ketunaan.toLowerCase().includes(searchText));
                 return matchKelas && matchSearch;
             });
 
             tbody.innerHTML = '';
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Tidak ada data siswa ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-medium">Tidak ada data siswa ditemukan.</td></tr>`;
                 return;
             }
 
@@ -1307,6 +1338,11 @@
                     <td class="p-3 text-center text-slate-400 font-bold">${idx + 1}</td>
                     <td class="p-3 font-semibold text-slate-600">${s.nisn}</td>
                     <td class="p-3 font-extrabold text-slate-800">${s.name}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold text-[10px] border border-amber-200">
+                            ${s.ketunaan || 'Belum diisi'}
+                        </span>
+                    </td>
                     <td class="p-3">
                         <span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-bold text-[10px]">
                             ${getClassName(s.classId)}
@@ -1335,17 +1371,19 @@
             if (id) {
                 const student = (appState.students || []).find(s => s.id === id);
                 if (student) {
-                    title.innerHTML = `<i class="fa-solid fa-user-pen text-indigo-600 mr-1.5"></i> Edit Data Siswa`;
+                    title.innerHTML = `<i class="fa-solid fa-user-pen text-indigo-600 mr-1.5"></i> Edit Data Siswa SLB`;
                     document.getElementById('siswa-form-id').value = student.id;
                     document.getElementById('siswa-form-nisn').value = student.nisn;
                     document.getElementById('siswa-form-nama').value = student.name;
+                    document.getElementById('siswa-form-ketunaan').value = student.ketunaan || 'A - Tunanetra';
                     document.getElementById('siswa-form-kelas').value = student.classId;
                 }
             } else {
-                title.innerHTML = `<i class="fa-solid fa-user-plus text-emerald-600 mr-1.5"></i> Tambah Siswa Baru`;
+                title.innerHTML = `<i class="fa-solid fa-user-plus text-emerald-600 mr-1.5"></i> Tambah Siswa Baru SLB`;
                 document.getElementById('siswa-form-id').value = '';
                 document.getElementById('siswa-form-nisn').value = '';
                 document.getElementById('siswa-form-nama').value = '';
+                document.getElementById('siswa-form-ketunaan').value = 'A - Tunanetra';
                 if (appState.classes && appState.classes.length > 0) {
                     document.getElementById('siswa-form-kelas').value = appState.classes[0].id;
                 }
@@ -1363,6 +1401,7 @@
             const id = document.getElementById('siswa-form-id').value;
             const nisn = document.getElementById('siswa-form-nisn').value.trim();
             const name = document.getElementById('siswa-form-nama').value.trim();
+            const ketunaan = document.getElementById('siswa-form-ketunaan').value;
             const classId = document.getElementById('siswa-form-kelas').value;
 
             if (id) {
@@ -1370,11 +1409,12 @@
                 if (student) {
                     student.nisn = nisn;
                     student.name = name;
+                    student.ketunaan = ketunaan;
                     student.classId = classId;
                     showToast(`Data siswa "${name}" diperbarui!`);
                 }
             } else {
-                const newStudent = { id: "S" + Date.now(), nisn: nisn, name: name, classId: classId };
+                const newStudent = { id: "S" + Date.now(), nisn: nisn, name: name, ketunaan: ketunaan, classId: classId };
                 if (!appState.students) appState.students = [];
                 appState.students.push(newStudent);
                 showToast(`Siswa baru "${name}" berhasil ditambahkan!`);
