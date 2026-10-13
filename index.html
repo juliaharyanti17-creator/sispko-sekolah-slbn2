@@ -219,15 +219,15 @@
                                 <label class="block font-bold text-slate-700 mb-1">Mata Pelajaran / Program</label>
                                 <select id="jurnal-mapel-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
                                     <option value="Pendidikan Agama Islam">Pendidikan Agama Islam</option>
-                            <option value="PPKN">PPKN</option>
-                            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                            <option value="Matematika">Matematika</option>
-                            <option value="IPAS">IPAS</option>
-                            <option value="PJOK">PJOK</option>
-                            <option value="Seni Budaya">Seni Budaya</option>
-                            <option value="Muatan Lokal">Muatan Lokal</option>
-                            <option value="Bina Diri">Bina Diri</option>
-                            <option value="Bahasa Inggris">Bahasa Inggris</option>
+                                    <option value="PPKN">PPKN</option>
+                                    <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                                    <option value="Matematika">Matematika</option>
+                                    <option value="IPAS">IPAS</option>
+                                    <option value="PJOK">PJOK</option>
+                                    <option value="Seni Budaya">Seni Budaya</option>
+                                    <option value="Muatan Lokal">Muatan Lokal</option>
+                                    <option value="Bina Diri">Bina Diri</option>
+                                    <option value="Bahasa Inggris">Bahasa Inggris</option>
                                 </select>
                             </div>
                         </div>
@@ -557,8 +557,9 @@
         </div>
     </div>
 
+    <!-- MODAL FORM SISWA DENGAN CHECKBOX KETUNAAN (PILIHAN GANDA DISESUAIKAN) -->
     <div id="modal-siswa" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 id="modal-siswa-title" class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-user-pen text-indigo-600 mr-1.5"></i> Form Data Siswa SLB</h3>
                 <button type="button" onclick="closeModalSiswa()" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -574,18 +575,19 @@
                     <input type="text" id="siswa-form-nama" placeholder="Nama Lengkap" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Jenis Ketunaan</label>
-                    <select id="siswa-form-ketunaan" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-bold">
-                        <option value="A - Tunanetra">A - Tunanetra</option>
-                        <option value="B - Tunarungu">B - Tunarungu</option>
-                        <option value="C - Tunagrahita">C - Tunagrahita</option>
-                        <option value="C1 - Tunagrahita Sedang">C1 - Tunagrahita Sedang</option>
-                        <option value="D - Tunadaksa">D - Tunadaksa</option>
-                        <option value="E - Tunalaras">E - Tunalaras</option>
-                        <option value="Autis">Autis</option>
-                        <option value="Ganda">Hambatan Ganda</option>
-                        <option value="Lainnya">Lainnya / Inklusi</option>
-                    </select>
+                    <label class="block font-bold text-slate-700 mb-1">Jenis Ketunaan (Bisa Pilih Lebih Dari 1)</label>
+                    <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs" id="group-ketunaan-checkbox">
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Tuna Netra (A)" class="rounded text-indigo-600"> Tuna Netra (A)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Tuna Rungu (B)" class="rounded text-indigo-600"> Tuna Rungu (B)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Tuna Grahita Ringan (C)" class="rounded text-indigo-600"> Tuna Grahita Ringan (C)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Tuna Grahita Sedang (C1)" class="rounded text-indigo-600"> Tuna Grahita Sedang (C1)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Tuna Daksa (D)" class="rounded text-indigo-600"> Tuna Daksa (D)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Tuna Daksa Ringan (D1)" class="rounded text-indigo-600"> Tuna Daksa Ringan (D1)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Down Syndrome (P)" class="rounded text-indigo-600"> Down Syndrome (P)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Autis (Q)" class="rounded text-indigo-600"> Autis (Q)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Kesulitan Belajar (K)" class="rounded text-indigo-600"> Kesulitan Belajar (K)</label>
+                        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer"><input type="checkbox" name="ketunaan_opt" value="Hiperaktif (H)" class="rounded text-indigo-600"> Hiperaktif (H)</label>
+                    </div>
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Kelas</label>
@@ -822,7 +824,7 @@
                         <p class="text-[10px] text-slate-400 font-semibold">NISN: ${student.nisn}</p>
                     </td>
                     <td class="p-3.5 text-center">
-                        <span class="px-2 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold text-[10px] inline-block border border-amber-200">
+                        <span class="px-2 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold text-[10px] inline-block border border-amber-200 max-w-[180px] truncate" title="${student.ketunaan || 'Belum diisi'}">
                             ${student.ketunaan || 'Belum diisi'}
                         </span>
                     </td>
@@ -1335,7 +1337,7 @@
                     <td class="p-3 font-semibold text-slate-600">${s.nisn}</td>
                     <td class="p-3 font-extrabold text-slate-800">${s.name}</td>
                     <td class="p-3 text-center">
-                        <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold text-[10px] border border-amber-200">
+                        <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold text-[10px] border border-amber-200 inline-block max-w-[180px] truncate" title="${s.ketunaan || 'Belum diisi'}">
                             ${s.ketunaan || 'Belum diisi'}
                         </span>
                     </td>
@@ -1364,6 +1366,10 @@
             const formKelasSelect = document.getElementById('siswa-form-kelas');
             formKelasSelect.innerHTML = (appState.classes || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
+            // Reset semua centang checkbox ketunaan
+            const checkboxes = document.querySelectorAll('input[name="ketunaan_opt"]');
+            checkboxes.forEach(cb => cb.checked = false);
+
             if (id) {
                 const student = (appState.students || []).find(s => s.id === id);
                 if (student) {
@@ -1371,15 +1377,23 @@
                     document.getElementById('siswa-form-id').value = student.id;
                     document.getElementById('siswa-form-nisn').value = student.nisn;
                     document.getElementById('siswa-form-nama').value = student.name;
-                    document.getElementById('siswa-form-ketunaan').value = student.ketunaan || 'A - Tunanetra';
                     document.getElementById('siswa-form-kelas').value = student.classId;
+
+                    // Centang checkbox sesuai data ketunaan yang tersimpan
+                    if (student.ketunaan) {
+                        const savedKetunaanList = student.ketunaan.split(', ').map(item => item.trim());
+                        checkboxes.forEach(cb => {
+                            if (savedKetunaanList.includes(cb.value)) {
+                                cb.checked = true;
+                            }
+                        });
+                    }
                 }
             } else {
                 title.innerHTML = `<i class="fa-solid fa-user-plus text-emerald-600 mr-1.5"></i> Tambah Siswa Baru SLB`;
                 document.getElementById('siswa-form-id').value = '';
                 document.getElementById('siswa-form-nisn').value = '';
                 document.getElementById('siswa-form-nama').value = '';
-                document.getElementById('siswa-form-ketunaan').value = 'A - Tunanetra';
                 if (appState.classes && appState.classes.length > 0) {
                     document.getElementById('siswa-form-kelas').value = appState.classes[0].id;
                 }
@@ -1397,20 +1411,24 @@
             const id = document.getElementById('siswa-form-id').value;
             const nisn = document.getElementById('siswa-form-nisn').value.trim();
             const name = document.getElementById('siswa-form-nama').value.trim();
-            const ketunaan = document.getElementById('siswa-form-ketunaan').value;
             const classId = document.getElementById('siswa-form-kelas').value;
+
+            // Mengambil seluruh checkbox ketunaan yang dicentang
+            const selectedKetunaan = Array.from(document.querySelectorAll('input[name="ketunaan_opt"]:checked'))
+                .map(cb => cb.value)
+                .join(', ') || 'Belum diisi';
 
             if (id) {
                 const student = (appState.students || []).find(s => s.id === id);
                 if (student) {
                     student.nisn = nisn;
                     student.name = name;
-                    student.ketunaan = ketunaan;
+                    student.ketunaan = selectedKetunaan;
                     student.classId = classId;
                     showToast(`Data siswa "${name}" diperbarui!`);
                 }
             } else {
-                const newStudent = { id: "S" + Date.now(), nisn: nisn, name: name, ketunaan: ketunaan, classId: classId };
+                const newStudent = { id: "S" + Date.now(), nisn: nisn, name: name, ketunaan: selectedKetunaan, classId: classId };
                 if (!appState.students) appState.students = [];
                 appState.students.push(newStudent);
                 showToast(`Siswa baru "${name}" berhasil ditambahkan!`);
