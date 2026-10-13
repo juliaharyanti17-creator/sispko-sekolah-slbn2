@@ -42,7 +42,7 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                        <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v2.6 SLB Edition</span>
+                        <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v2.7 Dynamic SLB</span>
                     </div>
                     <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                 </div>
@@ -76,7 +76,7 @@
                 <button type="button" onclick="switchTab('master')" id="tab-btn-master" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
                     <i class="fa-solid fa-sliders text-base"></i>
                     <span>4. Kelola Data Master</span>
-                    <span class="ml-1 px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-bold">Kelas, Ketunaan & Siswa</span>
+                    <span class="ml-1 px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-bold">Kelas, Mapel & Siswa</span>
                 </button>
             </div>
         </div>
@@ -117,18 +117,7 @@
 
                     <div class="flex-1 min-w-[150px]">
                         <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mata Pelajaran / Program</label>
-                        <select id="presensi-mapel-select" onchange="loadPresensiTable()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-semibold">
-                            <option value="Pendidikan Agama Islam">Pendidikan Agama Islam</option>
-                            <option value="PPKN">PPKN</option>
-                            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                            <option value="Matematika">Matematika</option>
-                            <option value="IPAS">IPAS</option>
-                            <option value="PJOK">PJOK</option>
-                            <option value="Seni Budaya">Seni Budaya</option>
-                            <option value="Muatan Lokal">Muatan Lokal</option>
-                            <option value="Bina Diri">Bina Diri</option>
-                            <option value="Bahasa Inggris">Bahasa Inggris</option>
-                        </select>
+                        <select id="presensi-mapel-select" onchange="loadPresensiTable()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-semibold"></select>
                     </div>
                 </div>
             </div>
@@ -217,18 +206,7 @@
                             </div>
                             <div>
                                 <label class="block font-bold text-slate-700 mb-1">Mata Pelajaran / Program</label>
-                                <select id="jurnal-mapel-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
-                                    <option value="Pendidikan Agama Islam">Pendidikan Agama Islam</option>
-                                    <option value="PPKN">PPKN</option>
-                                    <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                                    <option value="Matematika">Matematika</option>
-                                    <option value="IPAS">IPAS</option>
-                                    <option value="PJOK">PJOK</option>
-                                    <option value="Seni Budaya">Seni Budaya</option>
-                                    <option value="Muatan Lokal">Muatan Lokal</option>
-                                    <option value="Bina Diri">Bina Diri</option>
-                                    <option value="Bahasa Inggris">Bahasa Inggris</option>
-                                </select>
+                                <select id="jurnal-mapel-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></select>
                             </div>
                         </div>
 
@@ -466,31 +444,53 @@
                     <h2 class="text-lg font-extrabold flex items-center gap-2">
                         <i class="fa-solid fa-sliders text-amber-300"></i> Pengaturan Data Master Sekolah SLB
                     </h2>
-                    <p class="text-xs text-indigo-200">Kelola daftar kelas, jenis ketunaan, dan data siswa secara bebas.</p>
+                    <p class="text-xs text-indigo-200">Kelola daftar kelas, mata pelajaran, jenis ketunaan, dan data siswa secara bebas.</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
-                        <div>
+                <!-- PANEL KELOLA KELAS DAN MAPEL -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- KELOLA KELAS -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
                             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                                 <i class="fa-solid fa-door-open text-indigo-600"></i> Kelola Daftar Kelas
                             </h3>
                             <p class="text-xs text-slate-500">Tambah, ubah nama, atau hapus kelas.</p>
                         </div>
+
+                        <form onsubmit="handleAddKelas(event)" class="flex gap-2">
+                            <input type="text" id="input-nama-kelas-baru" placeholder="Nama Kelas (misal: Kelas I C)" required class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1 cursor-pointer">
+                                <i class="fa-solid fa-plus"></i> Tambah
+                            </button>
+                        </form>
+
+                        <div id="master-kelas-list-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar"></div>
                     </div>
 
-                    <form onsubmit="handleAddKelas(event)" class="flex gap-2">
-                        <input type="text" id="input-nama-kelas-baru" placeholder="Nama Kelas (misal: Kelas I C)" required class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium focus:ring-indigo-500 focus:border-indigo-500">
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1 cursor-pointer">
-                            <i class="fa-solid fa-plus"></i> Tambah
-                        </button>
-                    </form>
+                    <!-- KELOLA MATA PELAJARAN (FITUR BARU) -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-book-open text-indigo-600"></i> Kelola Mata Pelajaran
+                            </h3>
+                            <p class="text-xs text-slate-500">Tambah/hapus opsi mata pelajaran harian.</p>
+                        </div>
 
-                    <div id="master-kelas-list-container" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar"></div>
+                        <form onsubmit="handleAddMapel(event)" class="flex gap-2">
+                            <input type="text" id="input-nama-mapel-baru" placeholder="Nama Mapel Baru..." required class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1 cursor-pointer">
+                                <i class="fa-solid fa-plus"></i> Tambah
+                            </button>
+                        </form>
+
+                        <div id="master-mapel-list-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar"></div>
+                    </div>
                 </div>
 
+                <!-- PANEL KELOLA DATA SISWA -->
                 <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <div class="border-b border-slate-100 pb-3 flex flex-wrap justify-between items-center gap-3">
                         <div>
@@ -557,7 +557,7 @@
         </div>
     </div>
 
-    <!-- MODAL FORM SISWA DENGAN CHECKBOX KETUNAAN (PILIHAN GANDA DISESUAIKAN) -->
+    <!-- MODAL FORM SISWA DENGAN CHECKBOX KETUNAAN -->
     <div id="modal-siswa" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b pb-3">
@@ -629,10 +629,15 @@
 
         const DEFAULT_CLASSES = [];
         const DEFAULT_STUDENTS = [];
+        const DEFAULT_MAPELS = [
+            "Pendidikan Agama Islam", "PPKN", "Bahasa Indonesia", "Matematika", 
+            "IPAS", "PJOK", "Seni Budaya", "Muatan Lokal", "Bina Diri", "Bahasa Inggris"
+        ];
 
         let appState = {
             classes: [],
             students: [],
+            mapels: [...DEFAULT_MAPELS],
             presensiRecords: {},
             journals: [],
             evaluations: [],
@@ -663,19 +668,21 @@
                     if (data) {
                         appState.classes = data.classes || [];
                         appState.students = data.students || [];
+                        appState.mapels = data.mapels || [...DEFAULT_MAPELS];
                         appState.presensiRecords = data.presensiRecords || {};
                         appState.journals = data.journals || [];
                         appState.evaluations = data.evaluations || [];
                     }
-                    populateClassDropdowns();
+                    populateDropdowns();
                     refreshCurrentTabUI();
                 });
             } else {
                 const localData = localStorage.getItem('sispko_local_backup');
                 if (localData) {
                     appState = JSON.parse(localData);
+                    if (!appState.mapels) appState.mapels = [...DEFAULT_MAPELS];
                 }
-                populateClassDropdowns();
+                populateDropdowns();
                 refreshCurrentTabUI();
             }
         };
@@ -685,6 +692,7 @@
                 db.ref('sispko_data').set({
                     classes: appState.classes,
                     students: appState.students,
+                    mapels: appState.mapels,
                     presensiRecords: appState.presensiRecords,
                     journals: appState.journals,
                     evaluations: appState.evaluations
@@ -700,6 +708,7 @@
             if (appState.currentTab === 'evaluasi') updateEvaluasiDashboard();
             if (appState.currentTab === 'master') {
                 renderMasterKelasList();
+                renderMasterMapelList();
                 renderMasterSiswaTable();
             }
         }
@@ -741,24 +750,36 @@
             refreshCurrentTabUI();
         }
 
-        function populateClassDropdowns() {
-            const presensiSelect = document.getElementById('presensi-kelas-select');
-            const jurnalSelect = document.getElementById('jurnal-kelas-select');
+        function populateDropdowns() {
+            // Populate Kelas
+            const presensiClassSelect = document.getElementById('presensi-kelas-select');
+            const jurnalClassSelect = document.getElementById('jurnal-kelas-select');
             const filterJurnalSelect = document.getElementById('filter-jurnal-kelas');
             const filterMasterSiswaSelect = document.getElementById('master-siswa-filter-kelas');
             const formSiswaKelasSelect = document.getElementById('siswa-form-kelas');
 
-            let optionsHtml = '';
+            let classOptions = '';
             (appState.classes || []).forEach(c => {
-                optionsHtml += `<option value="${c.id}">${c.name}</option>`;
+                classOptions += `<option value="${c.id}">${c.name}</option>`;
             });
 
-            if (presensiSelect) presensiSelect.innerHTML = optionsHtml || `<option value="">Belum Ada Kelas</option>`;
-            if (jurnalSelect) jurnalSelect.innerHTML = optionsHtml || `<option value="">Belum Ada Kelas</option>`;
-            if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = optionsHtml || `<option value="">Belum Ada Kelas</option>`;
+            if (presensiClassSelect) presensiClassSelect.innerHTML = classOptions || `<option value="">Belum Ada Kelas</option>`;
+            if (jurnalClassSelect) jurnalClassSelect.innerHTML = classOptions || `<option value="">Belum Ada Kelas</option>`;
+            if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = classOptions || `<option value="">Belum Ada Kelas</option>`;
+            if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
+            if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
 
-            if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + optionsHtml;
-            if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + optionsHtml;
+            // Populate Mapel Dinamis
+            const presensiMapelSelect = document.getElementById('presensi-mapel-select');
+            const jurnalMapelSelect = document.getElementById('jurnal-mapel-select');
+
+            let mapelOptions = '';
+            (appState.mapels || []).forEach(m => {
+                mapelOptions += `<option value="${m}">${m}</option>`;
+            });
+
+            if (presensiMapelSelect) presensiMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
+            if (jurnalMapelSelect) jurnalMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
         }
 
         function getClassName(classId) {
@@ -770,7 +791,8 @@
             const date = document.getElementById('presensi-tanggal').value;
             const classSelect = document.getElementById('presensi-kelas-select');
             const classId = classSelect ? classSelect.value : '';
-            const mapel = document.getElementById('presensi-mapel-select').value;
+            const mapelSelect = document.getElementById('presensi-mapel-select');
+            const mapel = mapelSelect ? mapelSelect.value : '';
             return `${date}_${classId}_${mapel}`;
         }
 
@@ -1226,6 +1248,7 @@
             window.print();
         }
 
+        // KELOLA KELAS LOGIC
         function handleAddKelas(e) {
             e.preventDefault();
             const input = document.getElementById('input-nama-kelas-baru');
@@ -1236,7 +1259,7 @@
                 if (!appState.classes) appState.classes = [];
                 appState.classes.push(newClass);
                 saveAppState();
-                populateClassDropdowns();
+                populateDropdowns();
                 renderMasterKelasList();
                 input.value = '';
                 showToast(`Kelas "${nameVal}" berhasil ditambahkan!`);
@@ -1288,7 +1311,7 @@
             if (targetClass && newName) {
                 targetClass.name = newName;
                 saveAppState();
-                populateClassDropdowns();
+                populateDropdowns();
                 renderMasterKelasList();
                 renderMasterSiswaTable();
                 closeModalKelas();
@@ -1306,12 +1329,66 @@
             if (confirm(`Apakah Anda yakin ingin menghapus kelas "${className}"?`)) {
                 appState.classes = (appState.classes || []).filter(c => c.id !== id);
                 saveAppState();
-                populateClassDropdowns();
+                populateDropdowns();
                 renderMasterKelasList();
                 showToast(`Kelas "${className}" berhasil dihapus.`);
             }
         }
 
+        // KELOLA MAPEL LOGIC (FITUR BARU)
+        function handleAddMapel(e) {
+            e.preventDefault();
+            const input = document.getElementById('input-nama-mapel-baru');
+            const nameVal = input.value.trim();
+
+            if (nameVal) {
+                if (!appState.mapels) appState.mapels = [];
+                if (appState.mapels.includes(nameVal)) {
+                    alert(`Mata pelajaran "${nameVal}" sudah ada.`);
+                    return;
+                }
+                appState.mapels.push(nameVal);
+                saveAppState();
+                populateDropdowns();
+                renderMasterMapelList();
+                input.value = '';
+                showToast(`Mata pelajaran "${nameVal}" berhasil ditambahkan!`);
+            }
+        }
+
+        function renderMasterMapelList() {
+            const container = document.getElementById('master-mapel-list-container');
+            container.innerHTML = '';
+
+            if (!appState.mapels || appState.mapels.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic">Belum ada mata pelajaran.</p>`;
+                return;
+            }
+
+            appState.mapels.forEach((m, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs";
+                div.innerHTML = `
+                    <span class="text-slate-800 font-bold">${m}</span>
+                    <button type="button" onclick="deleteMapel('${m}')" class="p-1 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Hapus Mapel">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteMapel(mapelName) {
+            if (confirm(`Apakah Anda yakin ingin menghapus mata pelajaran "${mapelName}"?`)) {
+                appState.mapels = (appState.mapels || []).filter(m => m !== mapelName);
+                saveAppState();
+                populateDropdowns();
+                renderMasterMapelList();
+                showToast(`Mata pelajaran "${mapelName}" berhasil dihapus.`);
+            }
+        }
+
+        // KELOLA SISWA LOGIC
         function renderMasterSiswaTable() {
             const filterKelas = document.getElementById('master-siswa-filter-kelas').value;
             const searchText = document.getElementById('master-siswa-search').value.toLowerCase();
@@ -1366,7 +1443,6 @@
             const formKelasSelect = document.getElementById('siswa-form-kelas');
             formKelasSelect.innerHTML = (appState.classes || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
-            // Reset semua centang checkbox ketunaan
             const checkboxes = document.querySelectorAll('input[name="ketunaan_opt"]');
             checkboxes.forEach(cb => cb.checked = false);
 
@@ -1379,7 +1455,6 @@
                     document.getElementById('siswa-form-nama').value = student.name;
                     document.getElementById('siswa-form-kelas').value = student.classId;
 
-                    // Centang checkbox sesuai data ketunaan yang tersimpan
                     if (student.ketunaan) {
                         const savedKetunaanList = student.ketunaan.split(', ').map(item => item.trim());
                         checkboxes.forEach(cb => {
@@ -1413,7 +1488,6 @@
             const name = document.getElementById('siswa-form-nama').value.trim();
             const classId = document.getElementById('siswa-form-kelas').value;
 
-            // Mengambil seluruh checkbox ketunaan yang dicentang
             const selectedKetunaan = Array.from(document.querySelectorAll('input[name="ketunaan_opt"]:checked'))
                 .map(cb => cb.value)
                 .join(', ') || 'Belum diisi';
