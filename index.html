@@ -750,13 +750,22 @@
         }
 
         function populateDropdowns() {
-            // Populate Kelas
+            // 1. Simpan nilai pilihan dropdown saat ini agar tidak ter-reset
             const presensiClassSelect = document.getElementById('presensi-kelas-select');
+            const presensiMapelSelect = document.getElementById('presensi-mapel-select');
             const jurnalClassSelect = document.getElementById('jurnal-kelas-select');
+            const jurnalMapelSelect = document.getElementById('jurnal-mapel-select');
+
+            const selectedPresensiClass = presensiClassSelect ? presensiClassSelect.value : '';
+            const selectedPresensiMapel = presensiMapelSelect ? presensiMapelSelect.value : '';
+            const selectedJurnalClass = jurnalClassSelect ? jurnalClassSelect.value : '';
+            const selectedJurnalMapel = jurnalMapelSelect ? jurnalMapelSelect.value : '';
+
             const filterJurnalSelect = document.getElementById('filter-jurnal-kelas');
             const filterMasterSiswaSelect = document.getElementById('master-siswa-filter-kelas');
             const formSiswaKelasSelect = document.getElementById('siswa-form-kelas');
 
+            // 2. Buat opsi kelas
             let classOptions = '';
             (appState.classes || []).forEach(c => {
                 classOptions += `<option value="${c.id}">${c.name}</option>`;
@@ -768,10 +777,7 @@
             if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
             if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
 
-            // Populate Mapel Dinamis
-            const presensiMapelSelect = document.getElementById('presensi-mapel-select');
-            const jurnalMapelSelect = document.getElementById('jurnal-mapel-select');
-
+            // 3. Buat opsi mapel
             let mapelOptions = '';
             (appState.mapels || []).forEach(m => {
                 mapelOptions += `<option value="${m}">${m}</option>`;
@@ -779,6 +785,20 @@
 
             if (presensiMapelSelect) presensiMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
             if (jurnalMapelSelect) jurnalMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
+
+            // 4. Kembalikan nilai yang tadi sedang dipilih jika opsi tersebut masih ada
+            if (selectedPresensiClass && presensiClassSelect.querySelector(`option[value="${selectedPresensiClass}"]`)) {
+                presensiClassSelect.value = selectedPresensiClass;
+            }
+            if (selectedPresensiMapel && presensiMapelSelect.querySelector(`option[value="${selectedPresensiMapel}"]`)) {
+                presensiMapelSelect.value = selectedPresensiMapel;
+            }
+            if (selectedJurnalClass && jurnalClassSelect.querySelector(`option[value="${selectedJurnalClass}"]`)) {
+                jurnalClassSelect.value = selectedJurnalClass;
+            }
+            if (selectedJurnalMapel && jurnalMapelSelect.querySelector(`option[value="${selectedJurnalMapel}"]`)) {
+                jurnalMapelSelect.value = selectedJurnalMapel;
+            }
         }
 
         function getClassName(classId) {
