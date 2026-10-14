@@ -347,10 +347,25 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-5 space-y-3">
-                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-user-minus text-rose-600"></i> Monitoring Ketidakhadiran Siswa (Alpa / Sakit / Izin)
-                    </h3>
+                <!-- KETIDAKHADIRAN TABEL DENGAN FILTER TANGGAL & KELAS -->
+                <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-5 space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-user-minus text-rose-600"></i> Monitoring Ketidakhadiran Siswa
+                        </h3>
+
+                        <!-- FILTER BARIS KETIDAKHADIRAN -->
+                        <div class="flex flex-wrap items-center gap-2 text-xs">
+                            <input type="date" id="filter-eval-tanggal" onchange="updateEvaluasiDashboard()" class="bg-slate-50 border border-slate-300 rounded-xl p-1.5 text-slate-800 font-medium">
+                            <select id="filter-eval-kelas" onchange="updateEvaluasiDashboard()" class="bg-slate-50 border border-slate-300 rounded-xl p-1.5 text-slate-800 font-semibold">
+                                <option value="ALL">Semua Kelas</option>
+                            </select>
+                            <button type="button" onclick="resetFilterEvaluasi()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1 cursor-pointer" title="Reset Filter">
+                                <i class="fa-solid fa-rotate"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 text-slate-600 font-bold uppercase border-b border-slate-200">
@@ -749,10 +764,12 @@
             const presensiClassSelect = document.getElementById('presensi-kelas-select');
             const jurnalClassSelect = document.getElementById('jurnal-kelas-select');
             const jurnalMapelSelect = document.getElementById('jurnal-mapel-select');
+            const filterEvalKelasSelect = document.getElementById('filter-eval-kelas');
 
             const selectedPresensiClass = presensiClassSelect ? presensiClassSelect.value : '';
             const selectedJurnalClass = jurnalClassSelect ? jurnalClassSelect.value : '';
             const selectedJurnalMapel = jurnalMapelSelect ? jurnalMapelSelect.value : '';
+            const selectedEvalClass = filterEvalKelasSelect ? filterEvalKelasSelect.value : 'ALL';
 
             const filterJurnalSelect = document.getElementById('filter-jurnal-kelas');
             const filterMasterSiswaSelect = document.getElementById('master-siswa-filter-kelas');
@@ -769,8 +786,9 @@
             if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = classOptions || `<option value="">Belum Ada Kelas</option>`;
             if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
             if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
+            if (filterEvalKelasSelect) filterEvalKelasSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
 
-            // Populate Mapel (Tetap ada untuk Jurnal KBM)
+            // Populate Mapel
             let mapelOptions = '';
             (appState.mapels || []).forEach(m => {
                 mapelOptions += `<option value="${m}">${m}</option>`;
@@ -788,6 +806,9 @@
             if (selectedJurnalMapel && jurnalMapelSelect.querySelector(`option[value="${selectedJurnalMapel}"]`)) {
                 jurnalMapelSelect.value = selectedJurnalMapel;
             }
+            if (filterEvalKelasSelect && filterEvalKelasSelect.querySelector(`option[value="${selectedEvalClass}"]`)) {
+                filterEvalKelasSelect.value = selectedEvalClass;
+            }
         }
 
         function getClassName(classId) {
@@ -795,7 +816,6 @@
             return found ? found.name : classId;
         }
 
-        // Kunci presensi sekarang hanya berdasarkan tanggal dan kelas (1x sehari)
         function getPresensiKey() {
             const date = document.getElementById('presensi-tanggal').value;
             const classSelect = document.getElementById('presensi-kelas-select');
@@ -1069,6 +1089,12 @@
             showToast("Umpan balik evaluasi Kepsek tersampaikan!");
         }
 
+        function resetFilterEvaluasi() {
+            document.getElementById('filter-eval-tanggal').value = '';
+            document.getElementById('filter-eval-kelas').value = 'ALL';
+            updateEvaluasiDashboard();
+        }
+
         function updateEvaluasiDashboard() {
             let totalRecordsChecked = 0;
             let totalHadir = 0;
@@ -1076,6 +1102,10 @@
             let absenceList = [];
 
             const activeStudentIds = (appState.students || []).map(s => s.id);
+
+            // Filter parameter
+            const filterTanggal = document.getElementById('filter-eval-tanggal') ? document.getElementById('filter-eval-tanggal').value : '';
+            const filterKelas = document.getElementById('filter-eval-kelas') ? document.getElementById('filter-eval-kelas').value : 'ALL';
 
             Object.keys(appState.presensiRecords || {}).forEach(key => {
                 const parts = key.split('_');
@@ -1088,16 +1118,23 @@
                         if (r.status === 'Hadir') totalHadir++;
                         else {
                             if (r.status === 'Alpa' || r.status === 'Sakit') totalAlpaSakit++;
-                            const studentObj = (appState.students || []).find(s => s.id === r.studentId);
-                            if (studentObj) {
-                                absenceList.push({
-                                    tanggal: tgl,
-                                    name: studentObj.name,
-                                    ketunaan: studentObj.ketunaan || '-',
-                                    className: getClassName(cId),
-                                    status: r.status,
-                                    notes: r.notes
-                                });
+                            
+                            // Terapkan Filter Tanggal dan Kelas pada Tabel Ketidakhadiran
+                            const matchTanggal = !filterTanggal || tgl === filterTanggal;
+                            const matchKelas = filterKelas === 'ALL' || cId === filterKelas;
+
+                            if (matchTanggal && matchKelas) {
+                                const studentObj = (appState.students || []).find(s => s.id === r.studentId);
+                                if (studentObj) {
+                                    absenceList.push({
+                                        tanggal: tgl,
+                                        name: studentObj.name,
+                                        ketunaan: studentObj.ketunaan || '-',
+                                        className: getClassName(cId),
+                                        status: r.status,
+                                        notes: r.notes
+                                    });
+                                }
                             }
                         }
                     }
@@ -1114,12 +1151,12 @@
             const tbody = document.getElementById('eval-table-absensi-body');
             tbody.innerHTML = '';
             if (absenceList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada catatan ketidakhadiran siswa. Kehadiran 100%.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada catatan ketidakhadiran siswa sesuai filter yang dipilih.</td></tr>`;
             } else {
                 absenceList.forEach(item => {
                     const badgeColor = item.status === 'Alpa' ? 'bg-rose-100 text-rose-700' : (item.status === 'Sakit' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700');
                     const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-50";
+                    tr.className = "border-b border-slate-50 hover:bg-slate-50/50 transition";
                     tr.innerHTML = `
                         <td class="p-3 font-medium text-slate-500">${item.tanggal}</td>
                         <td class="p-3 font-bold text-slate-800">${item.name}</td>
