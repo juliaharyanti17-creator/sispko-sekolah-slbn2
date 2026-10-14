@@ -63,7 +63,7 @@
             <div class="flex space-x-2 sm:space-x-4 overflow-x-auto py-2 custom-scrollbar" id="nav-tabs">
                 <button type="button" onclick="switchTab(event, 'presensi')" id="tab-btn-presensi" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
                     <i class="fa-solid fa-clipboard-user text-base"></i>
-                    <span>1. Presensi Siswa</span>
+                    <span>1. Presensi Harian Siswa</span>
                 </button>
                 <button type="button" onclick="switchTab(event, 'jurnal')" id="tab-btn-jurnal" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
                     <i class="fa-solid fa-book-open text-base"></i>
@@ -94,30 +94,25 @@
             </div>
         </div>
 
-        <!-- TAB 1: PRESENSI SISWA -->
+        <!-- TAB 1: PRESENSI SISWA HARIAN -->
         <section id="modul-presensi" class="space-y-6">
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-check text-indigo-600"></i> Form Input Presensi Harian SLB
+                        <i class="fa-solid fa-calendar-check text-indigo-600"></i> Form Input Presensi Harian SLB (1x Sehari)
                     </h2>
-                    <p class="text-xs text-slate-500">Atur tanggal, pilih kelas, dan catat kehadiran siswa berkebutuhan khusus.</p>
+                    <p class="text-xs text-slate-500">Pilih tanggal dan kelas untuk mencatat kehadiran siswa hari ini.</p>
                 </div>
 
                 <div class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
-                    <div class="flex-1 min-w-[140px]">
+                    <div class="flex-1 min-w-[160px]">
                         <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Tanggal Presensi</label>
                         <input type="date" id="presensi-tanggal" onchange="loadPresensiTable()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-semibold">
                     </div>
 
-                    <div class="flex-1 min-w-[140px]">
+                    <div class="flex-1 min-w-[180px]">
                         <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Pilih Kelas</label>
                         <select id="presensi-kelas-select" onchange="loadPresensiTable()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-semibold"></select>
-                    </div>
-
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mata Pelajaran / Program</label>
-                        <select id="presensi-mapel-select" onchange="loadPresensiTable()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-semibold"></select>
                     </div>
                 </div>
             </div>
@@ -750,14 +745,12 @@
         }
 
         function populateDropdowns() {
-            // 1. Simpan nilai pilihan dropdown saat ini agar tidak ter-reset
+            // Preservasi nilai terpopulasi
             const presensiClassSelect = document.getElementById('presensi-kelas-select');
-            const presensiMapelSelect = document.getElementById('presensi-mapel-select');
             const jurnalClassSelect = document.getElementById('jurnal-kelas-select');
             const jurnalMapelSelect = document.getElementById('jurnal-mapel-select');
 
             const selectedPresensiClass = presensiClassSelect ? presensiClassSelect.value : '';
-            const selectedPresensiMapel = presensiMapelSelect ? presensiMapelSelect.value : '';
             const selectedJurnalClass = jurnalClassSelect ? jurnalClassSelect.value : '';
             const selectedJurnalMapel = jurnalMapelSelect ? jurnalMapelSelect.value : '';
 
@@ -765,7 +758,7 @@
             const filterMasterSiswaSelect = document.getElementById('master-siswa-filter-kelas');
             const formSiswaKelasSelect = document.getElementById('siswa-form-kelas');
 
-            // 2. Buat opsi kelas
+            // Populate Kelas
             let classOptions = '';
             (appState.classes || []).forEach(c => {
                 classOptions += `<option value="${c.id}">${c.name}</option>`;
@@ -777,21 +770,17 @@
             if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
             if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
 
-            // 3. Buat opsi mapel
+            // Populate Mapel (Tetap ada untuk Jurnal KBM)
             let mapelOptions = '';
             (appState.mapels || []).forEach(m => {
                 mapelOptions += `<option value="${m}">${m}</option>`;
             });
 
-            if (presensiMapelSelect) presensiMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
             if (jurnalMapelSelect) jurnalMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
 
-            // 4. Kembalikan nilai yang tadi sedang dipilih jika opsi tersebut masih ada
+            // Kembalikan pilihan terpopulasi
             if (selectedPresensiClass && presensiClassSelect.querySelector(`option[value="${selectedPresensiClass}"]`)) {
                 presensiClassSelect.value = selectedPresensiClass;
-            }
-            if (selectedPresensiMapel && presensiMapelSelect.querySelector(`option[value="${selectedPresensiMapel}"]`)) {
-                presensiMapelSelect.value = selectedPresensiMapel;
             }
             if (selectedJurnalClass && jurnalClassSelect.querySelector(`option[value="${selectedJurnalClass}"]`)) {
                 jurnalClassSelect.value = selectedJurnalClass;
@@ -806,13 +795,12 @@
             return found ? found.name : classId;
         }
 
+        // Kunci presensi sekarang hanya berdasarkan tanggal dan kelas (1x sehari)
         function getPresensiKey() {
             const date = document.getElementById('presensi-tanggal').value;
             const classSelect = document.getElementById('presensi-kelas-select');
             const classId = classSelect ? classSelect.value : '';
-            const mapelSelect = document.getElementById('presensi-mapel-select');
-            const mapel = mapelSelect ? mapelSelect.value : '';
-            return `${date}_${classId}_${mapel}`;
+            return `${date}_${classId}`;
         }
 
         function loadPresensiTable() {
@@ -1208,7 +1196,7 @@
                 let totalRecords = 0;
 
                 Object.keys(appState.presensiRecords || {}).forEach(key => {
-                    if (key.includes(`_${c.id}_`)) {
+                    if (key.includes(`_${c.id}`)) {
                         (appState.presensiRecords[key] || []).forEach(r => {
                             if (activeStudentIds.includes(r.studentId)) {
                                 totalRecords++;
