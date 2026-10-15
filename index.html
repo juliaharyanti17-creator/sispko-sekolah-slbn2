@@ -311,7 +311,7 @@
                 </div>
             </div>
 
-            <!-- KPI STATISTIK UTAMA (DIHITUNG DARI PERIODE TANGGAL TERPILIH) -->
+            <!-- KPI STATISTIK UTAMA -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                     <div>
@@ -358,14 +358,14 @@
                 </div>
             </div>
 
-            <!-- GRAFIK PERIODE TERPILIH PER KELAS & PIE CHART STATUS -->
+            <!-- GRAFIK BAR UTAMA PERSENTASE KEHADIRAN & PIE CHART -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                             <i class="fa-solid fa-chart-column text-indigo-600"></i> Persentase Kehadiran Siswa per Kelas
                         </h3>
-                        <span class="text-xs text-indigo-600 font-bold" id="label-chart-date-bar">Periode Terpilih</span>
+                        <span class="text-xs text-indigo-600 font-bold label-chart-period">Periode Terpilih</span>
                     </div>
                     <div class="relative h-64 w-full">
                         <canvas id="chartKehadiranBar"></canvas>
@@ -377,10 +377,52 @@
                         <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                             <i class="fa-solid fa-chart-pie text-indigo-600"></i> Distribusi Status Kehadiran
                         </h3>
-                        <span class="text-xs text-indigo-600 font-bold" id="label-chart-date-pie">Periode Terpilih</span>
+                        <span class="text-xs text-indigo-600 font-bold label-chart-period">Periode Terpilih</span>
                     </div>
                     <div class="relative h-64 w-full flex justify-center">
                         <canvas id="chartKehadiranPie"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARIS BARU: 3 CHART BAR MASING-MASING KETIDAKHADIRAN (SAKIT, ALPA, IZIN) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- CHART SISWA SAKIT -->
+                <div class="bg-white p-5 rounded-2xl border border-amber-200/80 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-amber-800 text-xs sm:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-hospital-user text-amber-600"></i> Jumlah Siswa Sakit per Kelas
+                        </h3>
+                        <span class="text-[11px] text-amber-600 font-bold label-chart-period">...</span>
+                    </div>
+                    <div class="relative h-56 w-full">
+                        <canvas id="chartSakitBar"></canvas>
+                    </div>
+                </div>
+
+                <!-- CHART SISWA ALPA -->
+                <div class="bg-white p-5 rounded-2xl border border-rose-200/80 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-rose-800 text-xs sm:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-user-large-slash text-rose-600"></i> Jumlah Siswa Alpa per Kelas
+                        </h3>
+                        <span class="text-[11px] text-rose-600 font-bold label-chart-period">...</span>
+                    </div>
+                    <div class="relative h-56 w-full">
+                        <canvas id="chartAlpaBar"></canvas>
+                    </div>
+                </div>
+
+                <!-- CHART SISWA IZIN -->
+                <div class="bg-white p-5 rounded-2xl border border-blue-200/80 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-blue-800 text-xs sm:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-envelope-open-text text-blue-600"></i> Jumlah Siswa Izin per Kelas
+                        </h3>
+                        <span class="text-[11px] text-blue-600 font-bold label-chart-period">...</span>
+                    </div>
+                    <div class="relative h-56 w-full">
+                        <canvas id="chartIzinBar"></canvas>
                     </div>
                 </div>
             </div>
@@ -692,6 +734,9 @@
 
         let barChartInstance = null;
         let pieChartInstance = null;
+        let sakitChartInstance = null;
+        let alpaChartInstance = null;
+        let izinChartInstance = null;
 
         window.onload = function() {
             const todayStr = new Date().toISOString().split('T')[0];
@@ -1127,7 +1172,7 @@
             showToast("Umpan balik evaluasi Kepsek tersampaikan!");
         }
 
-        // FUNGSI PINJAS FILTER RENTANG TANGGAL (TODAY, THIS_WEEK, THIS_MONTH)
+        // FUNGSI PINJAS FILTER RENTANG TANGGAL
         function setPresetEvalRange(type) {
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
@@ -1140,7 +1185,7 @@
                 startInput.value = todayStr;
                 endInput.value = todayStr;
             } else if (type === 'this_week') {
-                const dayOfWeek = today.getDay(); // 0 = Minggu
+                const dayOfWeek = today.getDay();
                 const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
                 const monday = new Date(today);
                 monday.setDate(today.getDate() + distanceToMonday);
@@ -1168,8 +1213,9 @@
                 periodLabel = new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
             }
 
-            if (document.getElementById('label-chart-date-bar')) document.getElementById('label-chart-date-bar').innerText = periodLabel;
-            if (document.getElementById('label-chart-date-pie')) document.getElementById('label-chart-date-pie').innerText = periodLabel;
+            document.querySelectorAll('.label-chart-period').forEach(el => {
+                el.innerText = periodLabel;
+            });
 
             let totalRecordsRange = 0;
             let totalHadirRange = 0;
@@ -1279,12 +1325,16 @@
         function initCharts() {
             const elBar = document.getElementById('chartKehadiranBar');
             const elPie = document.getElementById('chartKehadiranPie');
-            if (!elBar || !elPie) return;
+            const elSakit = document.getElementById('chartSakitBar');
+            const elAlpa = document.getElementById('chartAlpaBar');
+            const elIzin = document.getElementById('chartIzinBar');
+
+            if (!elBar || !elPie || !elSakit || !elAlpa || !elIzin) return;
 
             const todayStr = new Date().toISOString().split('T')[0];
 
-            const ctx1 = elBar.getContext('2d');
-            barChartInstance = new Chart(ctx1, {
+            // 1. Chart Main Bar Kehadiran
+            barChartInstance = new Chart(elBar.getContext('2d'), {
                 type: 'bar',
                 data: getBarChartData(todayStr, todayStr),
                 options: {
@@ -1295,14 +1345,50 @@
                 }
             });
 
-            const ctx2 = elPie.getContext('2d');
-            pieChartInstance = new Chart(ctx2, {
+            // 2. Chart Main Pie
+            pieChartInstance = new Chart(elPie.getContext('2d'), {
                 type: 'doughnut',
                 data: getPieChartData(todayStr, todayStr),
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // 3. Chart Bar Sakit
+            sakitChartInstance = new Chart(elSakit.getContext('2d'), {
+                type: 'bar',
+                data: getSpecificStatusChartData(todayStr, todayStr, 'Sakit', '#f59e0b'),
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 4. Chart Bar Alpa
+            alpaChartInstance = new Chart(elAlpa.getContext('2d'), {
+                type: 'bar',
+                data: getSpecificStatusChartData(todayStr, todayStr, 'Alpa', '#f43f5e'),
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 5. Chart Bar Izin
+            izinChartInstance = new Chart(elIzin.getContext('2d'), {
+                type: 'bar',
+                data: getSpecificStatusChartData(todayStr, todayStr, 'Izin', '#3b82f6'),
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                    plugins: { legend: { display: false } }
                 }
             });
         }
@@ -1378,13 +1464,56 @@
             };
         }
 
+        // FUNGSI KHUSUS HITUNG KETIDAKHADIRAN SPESIFIK PER KELAS (SAKIT/ALPA/IZIN)
+        function getSpecificStatusChartData(startDate, endDate, targetStatus, barColor) {
+            const activeStudentIds = (appState.students || []).map(s => s.id);
+            const labels = (appState.classes || []).map(c => c.name);
+
+            const data = (appState.classes || []).map(c => {
+                let count = 0;
+                Object.keys(appState.presensiRecords || {}).forEach(key => {
+                    const parts = key.split('_');
+                    const tgl = parts[0];
+                    const classId = parts[1];
+
+                    if (classId === c.id && tgl >= startDate && tgl <= endDate) {
+                        (appState.presensiRecords[key] || []).forEach(r => {
+                            if (activeStudentIds.includes(r.studentId) && r.status === targetStatus) {
+                                count++;
+                            }
+                        });
+                    }
+                });
+                return count;
+            });
+
+            return {
+                labels: labels,
+                datasets: [{
+                    label: `Jumlah ${targetStatus}`,
+                    data: data,
+                    backgroundColor: barColor,
+                    borderRadius: 8
+                }]
+            };
+        }
+
         function updateCharts(startDate, endDate) {
-            if (barChartInstance && pieChartInstance) {
+            if (barChartInstance && pieChartInstance && sakitChartInstance && alpaChartInstance && izinChartInstance) {
                 barChartInstance.data = getBarChartData(startDate, endDate);
                 barChartInstance.update();
 
                 pieChartInstance.data = getPieChartData(startDate, endDate);
                 pieChartInstance.update();
+
+                sakitChartInstance.data = getSpecificStatusChartData(startDate, endDate, 'Sakit', '#f59e0b');
+                sakitChartInstance.update();
+
+                alpaChartInstance.data = getSpecificStatusChartData(startDate, endDate, 'Alpa', '#f43f5e');
+                alpaChartInstance.update();
+
+                izinChartInstance.data = getSpecificStatusChartData(startDate, endDate, 'Izin', '#3b82f6');
+                izinChartInstance.update();
             }
         }
 
