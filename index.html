@@ -267,19 +267,25 @@
                     <h2 class="text-xl font-black tracking-tight">Evaluasi Kinerja KBM & Kehadiran Siswa SLB</h2>
                     <p class="text-xs text-indigo-200">Pantau statistik kehadiran harian, keterisian jurnal guru, dan kirimkan umpan balik supervisi.</p>
                 </div>
-                <div class="flex gap-2 no-print">
+                <div class="flex flex-wrap items-center gap-3 no-print">
+                    <!-- FILTER TANGGAL UTAMA DASHBOARD -->
+                    <div class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-2">
+                        <span class="text-xs text-amber-300 font-bold"><i class="fa-solid fa-filter"></i> Pilih Tanggal:</span>
+                        <input type="date" id="filter-eval-tanggal" onchange="updateEvaluasiDashboard()" class="bg-slate-900 text-white text-xs rounded-lg p-1.5 border border-slate-700 focus:outline-none">
+                    </div>
                     <button type="button" onclick="triggerPrintReport(event)" class="bg-white/10 hover:bg-white/20 text-white text-xs px-4 py-2.5 rounded-xl font-bold border border-white/20 transition flex items-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-print"></i> Cetak Laporan Evaluation
+                        <i class="fa-solid fa-print"></i> Cetak Laporan
                     </button>
                 </div>
             </div>
 
+            <!-- KPI STATISTIK UTAMA (DIHITUNG PER HARI) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs text-slate-500 font-bold uppercase">Rata-rata Kehadiran Siswa</p>
+                        <p class="text-xs text-slate-500 font-bold uppercase">Kehadiran Hari Ini</p>
                         <h4 id="eval-kpi-kehadiran" class="text-2xl font-black text-slate-800 mt-1">0%</h4>
-                        <p class="text-[11px] text-emerald-600 font-semibold mt-1"><i class="fa-solid fa-circle-check"></i> Total Presensi Masuk</p>
+                        <p class="text-[11px] text-emerald-600 font-semibold mt-1"><i class="fa-solid fa-circle-check"></i> Rata-rata Tanggal Terpilih</p>
                     </div>
                     <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-xl">
                         <i class="fa-solid fa-user-check"></i>
@@ -290,7 +296,7 @@
                     <div>
                         <p class="text-xs text-slate-500 font-bold uppercase">Jurnal KBM Terisi</p>
                         <h4 id="eval-kpi-jurnal" class="text-2xl font-black text-indigo-900 mt-1">0 Doc</h4>
-                        <p class="text-[11px] text-indigo-600 font-semibold mt-1"><i class="fa-solid fa-book"></i> Rekap Pembelajaran</p>
+                        <p class="text-[11px] text-indigo-600 font-semibold mt-1"><i class="fa-solid fa-book"></i> Rekap Pembelajaran Hari Ini</p>
                     </div>
                     <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-xl">
                         <i class="fa-solid fa-book-bookmark"></i>
@@ -301,7 +307,7 @@
                     <div>
                         <p class="text-xs text-slate-500 font-bold uppercase">Siswa Alpa / Sakit</p>
                         <h4 id="eval-kpi-alpa" class="text-2xl font-black text-rose-600 mt-1">0 Siswa</h4>
-                        <p class="text-[11px] text-rose-500 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation"></i> Perlu Tindak Lanjut</p>
+                        <p class="text-[11px] text-rose-500 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation"></i> Total Hari Ini</p>
                     </div>
                     <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-xl">
                         <i class="fa-solid fa-user-xmark"></i>
@@ -320,13 +326,14 @@
                 </div>
             </div>
 
+            <!-- GRAFIK HARIAN PER KELAS & PIE CHART STATUS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-chart-column text-indigo-600"></i> Persentase Kehadiran Siswa per Kelas
+                            <i class="fa-solid fa-chart-column text-indigo-600"></i> Persentase Kehadiran Siswa per Kelas (Harian)
                         </h3>
-                        <span class="text-xs text-slate-400">Rata-rata %</span>
+                        <span class="text-xs text-indigo-600 font-bold" id="label-chart-date-bar">Hari Ini</span>
                     </div>
                     <div class="relative h-64 w-full">
                         <canvas id="chartKehadiranBar"></canvas>
@@ -336,9 +343,9 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-chart-pie text-indigo-600"></i> Distribusi Status Kehadiran Global
+                            <i class="fa-solid fa-chart-pie text-indigo-600"></i> Distribusi Status Kehadiran (Harian)
                         </h3>
-                        <span class="text-xs text-slate-400">Total Akumulasi</span>
+                        <span class="text-xs text-indigo-600 font-bold" id="label-chart-date-pie">Hari Ini</span>
                     </div>
                     <div class="relative h-64 w-full flex justify-center">
                         <canvas id="chartKehadiranPie"></canvas>
@@ -347,22 +354,21 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- KETIDAKHADIRAN TABEL DENGAN FILTER TANGGAL & KELAS -->
+                <!-- KETIDAKHADIRAN TABEL DENGAN FILTER KELAS -->
                 <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-5 space-y-4">
                     <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
-                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-user-minus text-rose-600"></i> Monitoring Ketidakhadiran Siswa
-                        </h3>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-user-minus text-rose-600"></i> Monitoring Ketidakhadiran Siswa (Harian)
+                            </h3>
+                            <p class="text-xs text-slate-400">Menampilkan siswa alpa, sakit, atau izin pada tanggal terpilih.</p>
+                        </div>
 
-                        <!-- FILTER BARIS KETIDAKHADIRAN -->
-                        <div class="flex flex-wrap items-center gap-2 text-xs">
-                            <input type="date" id="filter-eval-tanggal" onchange="updateEvaluasiDashboard()" class="bg-slate-50 border border-slate-300 rounded-xl p-1.5 text-slate-800 font-medium">
-                            <select id="filter-eval-kelas" onchange="updateEvaluasiDashboard()" class="bg-slate-50 border border-slate-300 rounded-xl p-1.5 text-slate-800 font-semibold">
+                        <!-- FILTER KELAS -->
+                        <div class="flex items-center gap-2 text-xs">
+                            <select id="filter-eval-kelas" onchange="updateEvaluasiDashboard()" class="bg-slate-50 border border-slate-300 rounded-xl p-2 text-slate-800 font-semibold">
                                 <option value="ALL">Semua Kelas</option>
                             </select>
-                            <button type="button" onclick="resetFilterEvaluasi()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1 cursor-pointer" title="Reset Filter">
-                                <i class="fa-solid fa-rotate"></i> Reset
-                            </button>
                         </div>
                     </div>
 
@@ -659,9 +665,11 @@
             const todayStr = new Date().toISOString().split('T')[0];
             const presensiDateInput = document.getElementById('presensi-tanggal');
             const jurnalDateInput = document.getElementById('jurnal-tanggal');
+            const evalDateInput = document.getElementById('filter-eval-tanggal');
 
             if (presensiDateInput) presensiDateInput.value = todayStr;
             if (jurnalDateInput) jurnalDateInput.value = todayStr;
+            if (evalDateInput) evalDateInput.value = todayStr;
 
             const headerDate = document.getElementById('header-date-now');
             const printDate = document.getElementById('print-date-stamp');
@@ -760,7 +768,6 @@
         }
 
         function populateDropdowns() {
-            // Preservasi nilai terpopulasi
             const presensiClassSelect = document.getElementById('presensi-kelas-select');
             const jurnalClassSelect = document.getElementById('jurnal-kelas-select');
             const jurnalMapelSelect = document.getElementById('jurnal-mapel-select');
@@ -796,7 +803,6 @@
 
             if (jurnalMapelSelect) jurnalMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
 
-            // Kembalikan pilihan terpopulasi
             if (selectedPresensiClass && presensiClassSelect.querySelector(`option[value="${selectedPresensiClass}"]`)) {
                 presensiClassSelect.value = selectedPresensiClass;
             }
@@ -1089,69 +1095,76 @@
             showToast("Umpan balik evaluasi Kepsek tersampaikan!");
         }
 
-        function resetFilterEvaluasi() {
-            document.getElementById('filter-eval-tanggal').value = '';
-            document.getElementById('filter-eval-kelas').value = 'ALL';
-            updateEvaluasiDashboard();
-        }
-
+        // LOGIKA UTAMA DASHBOARD KEPSEK (PER HARI)
         function updateEvaluasiDashboard() {
-            let totalRecordsChecked = 0;
-            let totalHadir = 0;
-            let totalAlpaSakit = 0;
+            const selectedDate = document.getElementById('filter-eval-tanggal').value || new Date().toISOString().split('T')[0];
+            const filterKelas = document.getElementById('filter-eval-kelas') ? document.getElementById('filter-eval-kelas').value : 'ALL';
+
+            // Label Informasi Tanggal Grafik
+            const formattedDateStr = new Date(selectedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            if (document.getElementById('label-chart-date-bar')) document.getElementById('label-chart-date-bar').innerText = formattedDateStr;
+            if (document.getElementById('label-chart-date-pie')) document.getElementById('label-chart-date-pie').innerText = formattedDateStr;
+
+            let totalRecordsToday = 0;
+            let totalHadirToday = 0;
+            let totalAlpaSakitToday = 0;
             let absenceList = [];
 
             const activeStudentIds = (appState.students || []).map(s => s.id);
 
-            // Filter parameter
-            const filterTanggal = document.getElementById('filter-eval-tanggal') ? document.getElementById('filter-eval-tanggal').value : '';
-            const filterKelas = document.getElementById('filter-eval-kelas') ? document.getElementById('filter-eval-kelas').value : 'ALL';
-
+            // Tapis presensi khusus untuk tanggal terpilih
             Object.keys(appState.presensiRecords || {}).forEach(key => {
                 const parts = key.split('_');
                 const tgl = parts[0];
                 const cId = parts[1];
 
-                (appState.presensiRecords[key] || []).forEach(r => {
-                    if (activeStudentIds.includes(r.studentId)) {
-                        totalRecordsChecked++;
-                        if (r.status === 'Hadir') totalHadir++;
-                        else {
-                            if (r.status === 'Alpa' || r.status === 'Sakit') totalAlpaSakit++;
-                            
-                            // Terapkan Filter Tanggal dan Kelas pada Tabel Ketidakhadiran
-                            const matchTanggal = !filterTanggal || tgl === filterTanggal;
-                            const matchKelas = filterKelas === 'ALL' || cId === filterKelas;
+                if (tgl === selectedDate) {
+                    (appState.presensiRecords[key] || []).forEach(r => {
+                        if (activeStudentIds.includes(r.studentId)) {
+                            totalRecordsToday++;
+                            if (r.status === 'Hadir') {
+                                totalHadirToday++;
+                            } else {
+                                if (r.status === 'Alpa' || r.status === 'Sakit') {
+                                    totalAlpaSakitToday++;
+                                }
 
-                            if (matchTanggal && matchKelas) {
-                                const studentObj = (appState.students || []).find(s => s.id === r.studentId);
-                                if (studentObj) {
-                                    absenceList.push({
-                                        tanggal: tgl,
-                                        name: studentObj.name,
-                                        ketunaan: studentObj.ketunaan || '-',
-                                        className: getClassName(cId),
-                                        status: r.status,
-                                        notes: r.notes
-                                    });
+                                const matchKelas = filterKelas === 'ALL' || cId === filterKelas;
+                                if (matchKelas) {
+                                    const studentObj = (appState.students || []).find(s => s.id === r.studentId);
+                                    if (studentObj) {
+                                        absenceList.push({
+                                            tanggal: tgl,
+                                            name: studentObj.name,
+                                            ketunaan: studentObj.ketunaan || '-',
+                                            className: getClassName(cId),
+                                            status: r.status,
+                                            notes: r.notes
+                                        });
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
             });
 
-            const hadirPercent = totalRecordsChecked > 0 ? Math.round((totalHadir / totalRecordsChecked) * 100) : 0;
+            // Rata-rata kehadiran harian
+            const hadirPercentToday = totalRecordsToday > 0 ? Math.round((totalHadirToday / totalRecordsToday) * 100) : 0;
 
-            document.getElementById('eval-kpi-kehadiran').innerText = `${hadirPercent}%`;
-            document.getElementById('eval-kpi-jurnal').innerText = `${(appState.journals || []).length} Doc`;
-            document.getElementById('eval-kpi-alpa').innerText = `${totalAlpaSakit} Siswa`;
+            // Hitung Jurnal KBM Khusus Hari Ini
+            const journalsToday = (appState.journals || []).filter(j => j.tanggal === selectedDate).length;
+
+            document.getElementById('eval-kpi-kehadiran').innerText = `${hadirPercentToday}%`;
+            document.getElementById('eval-kpi-jurnal').innerText = `${journalsToday} Doc`;
+            document.getElementById('eval-kpi-alpa').innerText = `${totalAlpaSakitToday} Siswa`;
             document.getElementById('eval-kpi-feedback').innerText = `${(appState.evaluations || []).length} Note`;
 
+            // Render Tabel Monitoring Ketidakhadiran Harian
             const tbody = document.getElementById('eval-table-absensi-body');
             tbody.innerHTML = '';
             if (absenceList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada catatan ketidakhadiran siswa sesuai filter yang dipilih.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Tidak ada ketidakhadiran siswa pada tanggal ${formattedDateStr}.</td></tr>`;
             } else {
                 absenceList.forEach(item => {
                     const badgeColor = item.status === 'Alpa' ? 'bg-rose-100 text-rose-700' : (item.status === 'Sakit' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700');
@@ -1169,6 +1182,7 @@
                 });
             }
 
+            // Render Riwayat Evaluasi Kepsek
             const feedContainer = document.getElementById('eval-feed-container');
             feedContainer.innerHTML = '';
             const evaluations = appState.evaluations || [];
@@ -1190,7 +1204,7 @@
                 });
             }
 
-            updateCharts();
+            updateCharts(selectedDate);
         }
 
         function initCharts() {
@@ -1201,7 +1215,7 @@
             const ctx1 = elBar.getContext('2d');
             barChartInstance = new Chart(ctx1, {
                 type: 'bar',
-                data: getBarChartData(),
+                data: getBarChartData(new Date().toISOString().split('T')[0]),
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -1213,7 +1227,7 @@
             const ctx2 = elPie.getContext('2d');
             pieChartInstance = new Chart(ctx2, {
                 type: 'doughnut',
-                data: getPieChartData(),
+                data: getPieChartData(new Date().toISOString().split('T')[0]),
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -1222,9 +1236,10 @@
             });
         }
 
-        function getBarChartData() {
+        function getBarChartData(selectedDate) {
             const activeStudentIds = (appState.students || []).map(s => s.id);
             const labels = (appState.classes || []).map(c => c.name);
+
             const data = (appState.classes || []).map(c => {
                 let classStudents = (appState.students || []).filter(s => s.classId === c.id);
                 if (classStudents.length === 0) return 0;
@@ -1232,16 +1247,15 @@
                 let totalHadir = 0;
                 let totalRecords = 0;
 
-                Object.keys(appState.presensiRecords || {}).forEach(key => {
-                    if (key.includes(`_${c.id}`)) {
-                        (appState.presensiRecords[key] || []).forEach(r => {
-                            if (activeStudentIds.includes(r.studentId)) {
-                                totalRecords++;
-                                if (r.status === 'Hadir') totalHadir++;
-                            }
-                        });
-                    }
-                });
+                const key = `${selectedDate}_${c.id}`;
+                if (appState.presensiRecords && appState.presensiRecords[key]) {
+                    appState.presensiRecords[key].forEach(r => {
+                        if (activeStudentIds.includes(r.studentId)) {
+                            totalRecords++;
+                            if (r.status === 'Hadir') totalHadir++;
+                        }
+                    });
+                }
 
                 return totalRecords > 0 ? Math.round((totalHadir / totalRecords) * 100) : 0;
             });
@@ -1249,7 +1263,7 @@
             return {
                 labels: labels,
                 datasets: [{
-                    label: '% Kehadiran',
+                    label: '% Kehadiran Harian',
                     data: data,
                     backgroundColor: '#4f46e5',
                     borderRadius: 8
@@ -1257,18 +1271,21 @@
             };
         }
 
-        function getPieChartData() {
+        function getPieChartData(selectedDate) {
             const activeStudentIds = (appState.students || []).map(s => s.id);
             let hadir = 0, izin = 0, sakit = 0, alpa = 0;
+
             Object.keys(appState.presensiRecords || {}).forEach(key => {
-                (appState.presensiRecords[key] || []).forEach(r => {
-                    if (activeStudentIds.includes(r.studentId)) {
-                        if (r.status === 'Hadir') hadir++;
-                        else if (r.status === 'Izin') izin++;
-                        else if (r.status === 'Sakit') sakit++;
-                        else if (r.status === 'Alpa') alpa++;
-                    }
-                });
+                if (key.startsWith(`${selectedDate}_`)) {
+                    (appState.presensiRecords[key] || []).forEach(r => {
+                        if (activeStudentIds.includes(r.studentId)) {
+                            if (r.status === 'Hadir') hadir++;
+                            else if (r.status === 'Izin') izin++;
+                            else if (r.status === 'Sakit') sakit++;
+                            else if (r.status === 'Alpa') alpa++;
+                        }
+                    });
+                }
             });
 
             if (hadir === 0 && izin === 0 && sakit === 0 && alpa === 0) hadir = 1;
@@ -1282,12 +1299,12 @@
             };
         }
 
-        function updateCharts() {
+        function updateCharts(selectedDate) {
             if (barChartInstance && pieChartInstance) {
-                barChartInstance.data = getBarChartData();
+                barChartInstance.data = getBarChartData(selectedDate);
                 barChartInstance.update();
 
-                pieChartInstance.data = getPieChartData();
+                pieChartInstance.data = getPieChartData(selectedDate);
                 pieChartInstance.update();
             }
         }
