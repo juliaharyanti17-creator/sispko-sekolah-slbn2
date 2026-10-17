@@ -90,7 +90,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.1 Widget Sakit</span>
+                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.2 Full Widgets</span>
                         </div>
                         <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                     </div>
@@ -429,9 +429,9 @@
                     </div>
                 </div>
 
-                <!-- BARIS BARU: 1 WIDGET AKUMULASI SAKIT + 2 CHART BAR (ALPA & IZIN) -->
+                <!-- BARIS BARU: 3 WIDGET AKUMULASI KETIDAKHADIRAN (SAKIT, ALPA, IZIN) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- WIDGET AKUMULASI SISWA SAKIT SEMUA KELAS -->
+                    <!-- WIDGET 1: AKUMULASI SAKIT -->
                     <div class="bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white p-6 rounded-2xl shadow-md space-y-4 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
                             <i class="fa-solid fa-hospital-user"></i>
@@ -457,34 +457,70 @@
                         </div>
 
                         <div class="z-10 pt-3 border-t border-white/20 text-xs text-amber-100 flex items-center justify-between">
-                            <span class="font-medium">Periode: <strong id="widget-sakit-period" class="text-white">Hari Ini</strong></span>
-                            <span class="bg-white/10 px-2 py-0.5 rounded text-[10px]" id="widget-sakit-highest-class">Semua Kelas Nihil</span>
+                            <span class="font-medium">Periode: <strong class="text-white label-chart-period">Hari Ini</strong></span>
+                            <span class="bg-white/10 px-2 py-0.5 rounded text-[10px]" id="widget-sakit-highest-class">Nihil</span>
                         </div>
                     </div>
 
-                    <!-- CHART SISWA ALPA PER KELAS -->
-                    <div class="bg-white p-5 rounded-2xl border border-rose-200/80 shadow-sm space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-rose-800 text-xs sm:text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-user-large-slash text-rose-600"></i> Jumlah Siswa Alpa per Kelas
-                            </h3>
-                            <span class="text-[11px] text-rose-600 font-bold label-chart-period">...</span>
+                    <!-- WIDGET 2: AKUMULASI ALPA -->
+                    <div class="bg-gradient-to-br from-rose-500 via-rose-600 to-rose-700 text-white p-6 rounded-2xl shadow-md space-y-4 flex flex-col justify-between relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
+                            <i class="fa-solid fa-user-large-slash"></i>
                         </div>
-                        <div class="relative h-56 w-full">
-                            <canvas id="chartAlpaBar"></canvas>
+                        <div class="flex justify-between items-start z-10">
+                            <div>
+                                <span class="bg-white/20 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full inline-block">
+                                    <i class="fa-solid fa-users mr-1"></i> Total Semua Kelas
+                                </span>
+                                <h3 class="font-extrabold text-white text-base mt-2">Siswa Alpa</h3>
+                                <p class="text-xs text-rose-100">Akumulasi tanpa keterangan seluruh kelas.</p>
+                            </div>
+                            <div class="w-10 h-10 bg-white/20 text-white rounded-xl flex items-center justify-center text-lg shadow-inner">
+                                <i class="fa-solid fa-user-xmark"></i>
+                            </div>
+                        </div>
+
+                        <div class="z-10 my-2">
+                            <div class="flex items-baseline gap-2">
+                                <span id="widget-alpa-count" class="text-5xl font-black text-white tracking-tight">0</span>
+                                <span class="text-sm font-bold text-rose-100">Siswa</span>
+                            </div>
+                        </div>
+
+                        <div class="z-10 pt-3 border-t border-white/20 text-xs text-rose-100 flex items-center justify-between">
+                            <span class="font-medium">Periode: <strong class="text-white label-chart-period">Hari Ini</strong></span>
+                            <span class="bg-white/10 px-2 py-0.5 rounded text-[10px]" id="widget-alpa-highest-class">Nihil</span>
                         </div>
                     </div>
 
-                    <!-- CHART SISWA IZIN PER KELAS -->
-                    <div class="bg-white p-5 rounded-2xl border border-blue-200/80 shadow-sm space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-blue-800 text-xs sm:text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-envelope-open-text text-blue-600"></i> Jumlah Siswa Izin per Kelas
-                            </h3>
-                            <span class="text-[11px] text-blue-600 font-bold label-chart-period">...</span>
+                    <!-- WIDGET 3: AKUMULASI IZIN -->
+                    <div class="bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-6 rounded-2xl shadow-md space-y-4 flex flex-col justify-between relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
+                            <i class="fa-solid fa-envelope-open-text"></i>
                         </div>
-                        <div class="relative h-56 w-full">
-                            <canvas id="chartIzinBar"></canvas>
+                        <div class="flex justify-between items-start z-10">
+                            <div>
+                                <span class="bg-white/20 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full inline-block">
+                                    <i class="fa-solid fa-users mr-1"></i> Total Semua Kelas
+                                </span>
+                                <h3 class="font-extrabold text-white text-base mt-2">Siswa Izin</h3>
+                                <p class="text-xs text-blue-100">Akumulasi izin terkonfirmasi seluruh kelas.</p>
+                            </div>
+                            <div class="w-10 h-10 bg-white/20 text-white rounded-xl flex items-center justify-center text-lg shadow-inner">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                        </div>
+
+                        <div class="z-10 my-2">
+                            <div class="flex items-baseline gap-2">
+                                <span id="widget-izin-count" class="text-5xl font-black text-white tracking-tight">0</span>
+                                <span class="text-sm font-bold text-blue-100">Siswa</span>
+                            </div>
+                        </div>
+
+                        <div class="z-10 pt-3 border-t border-white/20 text-xs text-blue-100 flex items-center justify-between">
+                            <span class="font-medium">Periode: <strong class="text-white label-chart-period">Hari Ini</strong></span>
+                            <span class="bg-white/10 px-2 py-0.5 rounded text-[10px]" id="widget-izin-highest-class">Nihil</span>
                         </div>
                     </div>
                 </div>
@@ -868,7 +904,6 @@
         };
 
         let barChartInstance = null, pieChartInstance = null;
-        let alpaChartInstance = null, izinChartInstance = null;
 
         window.onload = function() {
             const todayStr = new Date().toISOString().split('T')[0];
@@ -1507,10 +1542,8 @@
         function initCharts() {
             const elBar = document.getElementById('chartKehadiranBar');
             const elPie = document.getElementById('chartKehadiranPie');
-            const elAlpa = document.getElementById('chartAlpaBar');
-            const elIzin = document.getElementById('chartIzinBar');
 
-            if (!elBar || !elPie || !elAlpa || !elIzin) return;
+            if (!elBar || !elPie) return;
             const todayStr = new Date().toISOString().split('T')[0];
 
             barChartInstance = new Chart(elBar.getContext('2d'), {
@@ -1521,16 +1554,6 @@
             pieChartInstance = new Chart(elPie.getContext('2d'), {
                 type: 'doughnut', data: getPieChartData(todayStr, todayStr),
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-
-            alpaChartInstance = new Chart(elAlpa.getContext('2d'), {
-                type: 'bar', data: getSpecificStatusChartData(todayStr, todayStr, 'Alpa', '#f43f5e'),
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
-            });
-
-            izinChartInstance = new Chart(elIzin.getContext('2d'), {
-                type: 'bar', data: getSpecificStatusChartData(todayStr, todayStr, 'Izin', '#3b82f6'),
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
             });
         }
 
@@ -1577,31 +1600,18 @@
             return { labels: ['Hadir', 'Izin', 'Sakit', 'Alpa'], datasets: [{ data: [hadir, izin, sakit, alpa], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f43f5e'] }] };
         }
 
-        function getSpecificStatusChartData(startDate, endDate, targetStatus, barColor) {
-            const activeStudentIds = (appState.students || []).map(s => s.id);
-            const labels = (appState.classes || []).map(c => c.name);
-            const data = (appState.classes || []).map(c => {
-                let count = 0;
-                Object.keys(appState.presensiRecords || {}).forEach(key => {
-                    const parts = key.split('_');
-                    if (parts[1] === c.id && parts[0] >= startDate && parts[0] <= endDate) {
-                        (appState.presensiRecords[key] || []).forEach(r => {
-                            if (activeStudentIds.includes(r.studentId) && r.status === targetStatus) count++;
-                        });
-                    }
-                });
-                return count;
-            });
-            return { labels: labels, datasets: [{ label: `Jumlah ${targetStatus}`, data: data, backgroundColor: barColor, borderRadius: 8 }] };
-        }
-
-        // LOGIKA BARU KONSOLIDASI & WIDGET SAKIT DARI SELURUH KELAS
+        // LOGIKA WIDGET AKUMULASI (SAKIT, ALPA, IZIN) DARI SELURUH KELAS
         function updateChartsAndWidgets(startDate, endDate) {
             const activeStudentIds = (appState.students || []).map(s => s.id);
-            let totalSakitAllClasses = 0;
-            let sakitPerClassMap = {};
+            
+            let totalSakit = 0, totalAlpa = 0, totalIzin = 0;
+            let sakitPerClass = {}, alpaPerClass = {}, izinPerClass = {};
 
-            (appState.classes || []).forEach(c => { sakitPerClassMap[c.id] = 0; });
+            (appState.classes || []).forEach(c => {
+                sakitPerClass[c.id] = 0;
+                alpaPerClass[c.id] = 0;
+                izinPerClass[c.id] = 0;
+            });
 
             Object.keys(appState.presensiRecords || {}).forEach(key => {
                 const parts = key.split('_');
@@ -1610,58 +1620,50 @@
 
                 if (tgl >= startDate && tgl <= endDate) {
                     (appState.presensiRecords[key] || []).forEach(r => {
-                        if (activeStudentIds.includes(r.studentId) && r.status === 'Sakit') {
-                            totalSakitAllClasses++;
-                            if (sakitPerClassMap[classId] !== undefined) {
-                                sakitPerClassMap[classId]++;
+                        if (activeStudentIds.includes(r.studentId)) {
+                            if (r.status === 'Sakit') {
+                                totalSakit++;
+                                if (sakitPerClass[classId] !== undefined) sakitPerClass[classId]++;
+                            } else if (r.status === 'Alpa') {
+                                totalAlpa++;
+                                if (alpaPerClass[classId] !== undefined) alpaPerClass[classId]++;
+                            } else if (r.status === 'Izin') {
+                                totalIzin++;
+                                if (izinPerClass[classId] !== undefined) izinPerClass[classId]++;
                             }
                         }
                     });
                 }
             });
 
-            // Update Angka Widget Sakit
-            const widgetCountEl = document.getElementById('widget-sakit-count');
-            if (widgetCountEl) widgetCountEl.innerText = totalSakitAllClasses;
+            // Update Angka Widget
+            document.getElementById('widget-sakit-count').innerText = totalSakit;
+            document.getElementById('widget-alpa-count').innerText = totalAlpa;
+            document.getElementById('widget-izin-count').innerText = totalIzin;
 
-            const widgetPeriodEl = document.getElementById('widget-sakit-period');
-            if (widgetPeriodEl) {
-                if (startDate === endDate) {
-                    widgetPeriodEl.innerText = new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                } else {
-                    widgetPeriodEl.innerText = `${new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${new Date(endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`;
-                }
+            // Cari Kelas Terbanyak Masing-Masing Status
+            function getHighestClassText(mapObj) {
+                let maxCount = 0;
+                let maxClassId = null;
+                Object.keys(mapObj).forEach(cId => {
+                    if (mapObj[cId] > maxCount) {
+                        maxCount = mapObj[cId];
+                        maxClassId = cId;
+                    }
+                });
+                return (maxCount > 0 && maxClassId) ? `Terbanyak: ${getClassName(maxClassId)} (${maxCount})` : "Semua Kelas Nihil";
             }
 
-            // Cari Kelas Dengan Kasus Sakit Terbanyak
-            let maxSakitCount = 0;
-            let maxSakitClassId = null;
-            Object.keys(sakitPerClassMap).forEach(cId => {
-                if (sakitPerClassMap[cId] > maxSakitCount) {
-                    maxSakitCount = sakitPerClassMap[cId];
-                    maxSakitClassId = cId;
-                }
-            });
+            document.getElementById('widget-sakit-highest-class').innerText = getHighestClassText(sakitPerClass);
+            document.getElementById('widget-alpa-highest-class').innerText = getHighestClassText(alpaPerClass);
+            document.getElementById('widget-izin-highest-class').innerText = getHighestClassText(izinPerClass);
 
-            const widgetHighestEl = document.getElementById('widget-sakit-highest-class');
-            if (widgetHighestEl) {
-                if (maxSakitCount > 0 && maxSakitClassId) {
-                    widgetHighestEl.innerText = `Terbanyak: ${getClassName(maxSakitClassId)} (${maxSakitCount})`;
-                } else {
-                    widgetHighestEl.innerText = "Semua Kelas Nihil Sakit";
-                }
-            }
-
-            // Update Chart Kehadiran, Alpa & Izin
-            if (barChartInstance && pieChartInstance && alpaChartInstance && izinChartInstance) {
+            // Update Chart Utama (Bar & Pie Kehadiran)
+            if (barChartInstance && pieChartInstance) {
                 barChartInstance.data = getBarChartData(startDate, endDate);
                 barChartInstance.update();
                 pieChartInstance.data = getPieChartData(startDate, endDate);
                 pieChartInstance.update();
-                alpaChartInstance.data = getSpecificStatusChartData(startDate, endDate, 'Alpa', '#f43f5e');
-                alpaChartInstance.update();
-                izinChartInstance.data = getSpecificStatusChartData(startDate, endDate, 'Izin', '#3b82f6');
-                izinChartInstance.update();
             }
         }
 
