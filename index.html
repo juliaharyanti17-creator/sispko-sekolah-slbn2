@@ -90,7 +90,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.8 Stable Login</span>
+                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.9 Layout Updated</span>
                         </div>
                         <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                     </div>
@@ -528,26 +528,7 @@
                     </div>
                 </div>
 
-                <!-- BAGIAN HISTORI JURNAL MENGAJAR GURU UNTUK DASHBOARD KEPSEK -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-book-open-reader text-indigo-600"></i> Histori Jurnal Mengajar Guru (Periode Terpilih)
-                            </h3>
-                            <p class="text-xs text-slate-500">Tinjau jurnal KBM harian yang telah dimasukkan oleh para guru.</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                            <input type="text" id="eval-jurnal-search" oninput="renderKepsekJurnalList()" placeholder="Cari guru, materi, CP..." class="bg-slate-50 border border-slate-300 text-xs text-slate-700 rounded-xl p-2.5 w-full sm:w-48">
-                            <select id="eval-jurnal-filter-kelas" onchange="renderKepsekJurnalList()" class="bg-slate-50 border border-slate-300 text-xs text-slate-700 rounded-xl p-2.5 font-semibold">
-                                <option value="ALL">Semua Kelas</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                </div>
-
+                <!-- SEKTOR MONITORING KETIDAKHADIRAN & FORM UMPAN BALIK KEPSEK -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-5 space-y-4">
                         <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
@@ -632,6 +613,26 @@
                             <div id="eval-feed-container" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar"></div>
                         </div>
                     </div>
+                </div>
+
+                <!-- BAGIAN HISTORI JURNAL MENGAJAR GURU (SEKARANG BERADA DI BAWAH MONITORING KETIDAKHADIRAN SISWA) -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-book-open-reader text-indigo-600"></i> Histori Jurnal Mengajar Guru (Periode Terpilih)
+                            </h3>
+                            <p class="text-xs text-slate-500">Tinjau jurnal KBM harian yang telah dimasukkan oleh para guru.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                            <input type="text" id="eval-jurnal-search" oninput="renderKepsekJurnalList()" placeholder="Cari guru, materi, CP..." class="bg-slate-50 border border-slate-300 text-xs text-slate-700 rounded-xl p-2.5 w-full sm:w-48">
+                            <select id="eval-jurnal-filter-kelas" onchange="renderKepsekJurnalList()" class="bg-slate-50 border border-slate-300 text-xs text-slate-700 rounded-xl p-2.5 font-semibold">
+                                <option value="ALL">Semua Kelas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
 
                 <div class="print-only pt-8 border-t-2 border-slate-800 text-slate-900">
@@ -998,7 +999,6 @@
 
             const userList = (appState.users && appState.users.length > 0) ? appState.users : DEFAULT_USERS;
 
-            // Pencarian akun mendukung UsernameSingkat DAN NamaLengkap
             const user = userList.find(u => {
                 const matchName = u.nama ? u.nama.toLowerCase() === namaInput : false;
                 const matchUsername = u.username ? u.username.toLowerCase() === namaInput : false;
@@ -1073,7 +1073,6 @@
                 }
                 switchTab(null, 'presensi');
             } else if (role === 'kepsek') {
-                // SEMBUNYIKAN TAB PRESENSI, JURNAL, DAN MASTER UNTUK KEPSEK
                 tabPresensi.style.display = 'none';
                 tabJurnal.style.display = 'none';
                 tabMaster.style.display = 'none';
