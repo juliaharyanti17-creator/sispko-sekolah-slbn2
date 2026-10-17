@@ -90,7 +90,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.6 Kepsek Jurnal Histori</span>
+                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.7 Kepsek Dedicated</span>
                         </div>
                         <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                     </div>
@@ -124,11 +124,11 @@
                     </button>
                     <button type="button" onclick="switchTab(event, 'evaluasi')" id="tab-btn-evaluasi" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
                         <i class="fa-solid fa-chart-pie text-base"></i>
-                        <span>3. Dashboard Kepsek</span>
+                        <span>Dashboard Kepsek</span>
                     </button>
                     <button type="button" onclick="switchTab(event, 'master')" id="tab-btn-master" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
                         <i class="fa-solid fa-sliders text-base"></i>
-                        <span>4. Kelola Data Master & Akun</span>
+                        <span>Kelola Data Master & Akun</span>
                         <span class="ml-1 px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-bold">Admin</span>
                     </button>
                 </div>
@@ -1053,6 +1053,9 @@
                 document.getElementById('jurnal-guru').value = user.nama;
                 switchTab(null, 'presensi');
             } else if (role === 'kepsek') {
+                // SEMBUNYIKAN TAB PRESENSI, JURNAL, DAN MASTER UNTUK KEPSEK
+                tabPresensi.style.display = 'none';
+                tabJurnal.style.display = 'none';
                 tabMaster.style.display = 'none';
                 switchTab(null, 'evaluasi');
             } else if (role === 'admin') {
