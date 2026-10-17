@@ -54,8 +54,8 @@
 
             <form onsubmit="handleLogin(event)" class="space-y-4 text-xs">
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Email Pengguna</label>
-                    <input type="email" id="login-email" placeholder="nama@sekolah.sch.id" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <label class="block font-bold text-slate-700 mb-1">Nama Pengguna (Sesuai Akun)</label>
+                    <input type="text" id="login-nama" placeholder="Masukkan nama lengkap Anda..." required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                 </div>
 
                 <div>
@@ -69,10 +69,10 @@
             </form>
 
             <div class="bg-indigo-50/80 p-3.5 rounded-2xl border border-indigo-100 text-[11px] text-slate-600 space-y-1">
-                <p class="font-bold text-indigo-900"><i class="fa-solid fa-circle-info mr-1"></i> Akun Bawaan Testing:</p>
-                <p>• <strong>Admin</strong>: admin@sekolah.id / admin123</p>
-                <p>• <strong>Kepsek</strong>: kepsek@sekolah.id / kepsek123</p>
-                <p>• <strong>Wali Kelas</strong>: guru@sekolah.id / guru123</p>
+                <p class="font-bold text-indigo-900"><i class="fa-solid fa-circle-info mr-1"></i> Akun Bawaan Testing (Login via Nama):</p>
+                <p>• <strong>Admin</strong>: Administrator Sistem / admin123</p>
+                <p>• <strong>Kepsek</strong>: Drs. H. M. Supian, M.Pd. / kepsek123</p>
+                <p>• <strong>Wali Kelas</strong>: Siti Rahmah, S.Pd. / guru123</p>
             </div>
         </div>
     </div>
@@ -90,7 +90,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.4 Personalized Feedback</span>
+                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.5 Name Login</span>
                         </div>
                         <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                     </div>
@@ -223,7 +223,6 @@
 
             <!-- TAB 2: JURNAL KBM GURU -->
             <section id="modul-jurnal" class="space-y-6 hidden">
-                <!-- BOX BARU: HISTORI UMPAN BALIK KEPSEK KHUSUS GURU LOGGED IN -->
                 <div class="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white p-5 rounded-2xl shadow-md space-y-3">
                     <div class="flex items-center justify-between border-b border-white/20 pb-2">
                         <h3 class="font-bold text-sm flex items-center gap-2">
@@ -563,7 +562,6 @@
                         </div>
                     </div>
 
-                    <!-- FORM KEPSEK & HISTORI PER GURU -->
                     <div class="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                         <div class="border-b border-slate-100 pb-2">
                             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -666,8 +664,7 @@
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-100 text-slate-600 font-bold uppercase border-b border-slate-200">
                                 <tr>
-                                    <th class="p-3">Nama Lengkap</th>
-                                    <th class="p-3">Email Pengguna</th>
+                                    <th class="p-3">Nama Lengkap Pengguna</th>
                                     <th class="p-3 text-center">Peran (Role)</th>
                                     <th class="p-3">Ampuan Kelas (Wali Kelas)</th>
                                     <th class="p-3 text-center w-24">Aksi</th>
@@ -795,12 +792,8 @@
             </div>
             <form onsubmit="handleSaveUser(event)" class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Nama Lengkap</label>
+                    <label class="block font-bold text-slate-700 mb-1">Nama Lengkap Pengguna</label>
                     <input type="text" id="user-form-nama" placeholder="Contoh: Siti Rahmah, S.Pd." required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Email Pengguna</label>
-                    <input type="email" id="user-form-email" placeholder="guru@sekolah.sch.id" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Password</label>
@@ -901,9 +894,9 @@
         ];
 
         const DEFAULT_USERS = [
-            { id: "u1", nama: "Administrator Sistem", email: "admin@sekolah.id", password: "admin123", role: "admin", classIds: [] },
-            { id: "u2", nama: "Drs. H. M. Supian, M.Pd.", email: "kepsek@sekolah.id", password: "kepsek123", role: "kepsek", classIds: [] },
-            { id: "u3", nama: "Siti Rahmah, S.Pd.", email: "guru@sekolah.id", password: "guru123", role: "walikelas", classIds: ["K1", "K2"] }
+            { id: "u1", nama: "Administrator Sistem", password: "admin123", role: "admin", classIds: [] },
+            { id: "u2", nama: "Drs. H. M. Supian, M.Pd.", password: "kepsek123", role: "kepsek", classIds: [] },
+            { id: "u3", nama: "Siti Rahmah, S.Pd.", password: "guru123", role: "walikelas", classIds: ["K1", "K2"] }
         ];
 
         let appState = {
@@ -978,10 +971,10 @@
 
         function handleLogin(e) {
             if (e) e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const pass = document.getElementById('login-password').value.trim();
+            const namaInput = document.getElementById('login-nama').value.trim();
+            const passInput = document.getElementById('login-password').value.trim();
 
-            const user = (appState.users || []).find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === pass);
+            const user = (appState.users || []).find(u => u.nama.toLowerCase() === namaInput.toLowerCase() && u.password === passInput);
 
             if (user) {
                 appState.currentUser = user;
@@ -989,7 +982,7 @@
                 showToast(`Selamat datang, ${user.nama}!`);
                 checkSession();
             } else {
-                alert("Email atau password salah! Silakan coba lagi.");
+                alert("Nama pengguna atau password salah! Silakan periksa kembali.");
             }
         }
 
@@ -1116,7 +1109,6 @@
                 allClassOptions += `<option value="${c.id}">${c.name}</option>`;
             });
 
-            // Opsi Kelas Khusus Wali Kelas
             let teacherClassOptions = '';
             let teacherClassIds = [];
             if (appState.currentUser && appState.currentUser.role === 'walikelas') {
@@ -1133,7 +1125,6 @@
             if (jurnalClassSelect) jurnalClassSelect.innerHTML = teacherClassOptions || `<option value="">Tidak ada kelas diampu</option>`;
             if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = allClassOptions || `<option value="">Belum Ada Kelas</option>`;
             
-            // Filter Jurnal KBM
             if (filterJurnalSelect) {
                 if (appState.currentUser && appState.currentUser.role === 'walikelas') {
                     filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas Tanggungan</option>` + teacherClassOptions;
@@ -1152,7 +1143,6 @@
             if (jurnalMapelSelect) jurnalMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
             if (evalTargetMapelSelect) evalTargetMapelSelect.innerHTML = `<option value="Semua Mapel">Semua Mapel / General</option>` + mapelOptions;
 
-            // Populate Dropdown Guru (Wali Kelas)
             const guruList = (appState.users || []).filter(u => u.role === 'walikelas');
             let guruOptions = '';
             guruList.forEach(g => {
@@ -1184,7 +1174,6 @@
         function openModalUser(e) {
             if (e) e.preventDefault();
             document.getElementById('user-form-nama').value = '';
-            document.getElementById('user-form-email').value = '';
             document.getElementById('user-form-password').value = '';
             document.getElementById('user-form-role').value = 'walikelas';
             const checkboxes = document.querySelectorAll('input[name="user_class_opt"]');
@@ -1208,7 +1197,6 @@
         function handleSaveUser(e) {
             if (e) e.preventDefault();
             const nama = document.getElementById('user-form-nama').value.trim();
-            const email = document.getElementById('user-form-email').value.trim();
             const password = document.getElementById('user-form-password').value.trim();
             const role = document.getElementById('user-form-role').value;
 
@@ -1216,7 +1204,7 @@
                 ? Array.from(document.querySelectorAll('input[name="user_class_opt"]:checked')).map(cb => cb.value)
                 : [];
 
-            const newUser = { id: "u" + Date.now(), nama, email, password, role, classIds: selectedClassIds };
+            const newUser = { id: "u" + Date.now(), nama, password, role, classIds: selectedClassIds };
             if (!appState.users) appState.users = [];
             appState.users.push(newUser);
             saveAppState();
@@ -1242,7 +1230,6 @@
 
                 tr.innerHTML = `
                     <td class="p-3 font-bold text-slate-800">${u.nama}</td>
-                    <td class="p-3 text-slate-600">${u.email}</td>
                     <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${roleBadge}">${u.role}</span></td>
                     <td class="p-3 text-slate-600">${assignedClasses}</td>
                     <td class="p-3 text-center">
@@ -1438,7 +1425,6 @@
             const container = document.getElementById('jurnal-list-container');
             const journals = appState.journals || [];
 
-            // Jika Guru, batasi hanya kelas tanggungannya
             let allowedClassIds = (appState.classes || []).map(c => c.id);
             if (appState.currentUser && appState.currentUser.role === 'walikelas') {
                 allowedClassIds = appState.currentUser.classIds || (appState.currentUser.classId ? [appState.currentUser.classId] : []);
@@ -1481,7 +1467,6 @@
             });
         }
 
-        // TAMPILKAN HISTORI UMPAN BALIK DI TAB JURNAL KHUSUS GURU TERSEBUT
         function renderGuruFeedbackSection() {
             const container = document.getElementById('guru-feedback-container');
             if (!container) return;
@@ -1656,7 +1641,6 @@
             updateChartsAndWidgets(startDate, endDate);
         }
 
-        // RENDER FEEDBACK KEPSEK DI DASHBOARD EVALUASI (DENGAN FILTER GURU)
         function renderEvaluasiFeed() {
             const feedContainer = document.getElementById('eval-feed-container');
             const filterGuru = document.getElementById('filter-feed-guru') ? document.getElementById('filter-feed-guru').value : 'ALL';
