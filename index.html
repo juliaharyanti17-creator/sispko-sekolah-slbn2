@@ -90,7 +90,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.5 Name Login</span>
+                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.6 Kepsek Jurnal Histori</span>
                         </div>
                         <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                     </div>
@@ -526,6 +526,26 @@
                             <span class="bg-white/10 px-2 py-0.5 rounded text-[10px]" id="widget-izin-highest-class">Nihil</span>
                         </div>
                     </div>
+                </div>
+
+                <!-- BAGIAN HISTORI JURNAL MENGAJAR GURU UNTUK DASHBOARD KEPSEK -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-book-open-reader text-indigo-600"></i> Histori Jurnal Mengajar Guru (Periode Terpilih)
+                            </h3>
+                            <p class="text-xs text-slate-500">Tinjau jurnal KBM harian yang telah dimasukkan oleh para guru.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                            <input type="text" id="eval-jurnal-search" oninput="renderKepsekJurnalList()" placeholder="Cari guru, materi, CP..." class="bg-slate-50 border border-slate-300 text-xs text-slate-700 rounded-xl p-2.5 w-full sm:w-48">
+                            <select id="eval-jurnal-filter-kelas" onchange="renderKepsekJurnalList()" class="bg-slate-50 border border-slate-300 text-xs text-slate-700 rounded-xl p-2.5 font-semibold">
+                                <option value="ALL">Semua Kelas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1097,6 +1117,7 @@
             const jurnalMapelSelect = document.getElementById('jurnal-mapel-select');
             const filterEvalKelasSelect = document.getElementById('filter-eval-kelas');
             const filterJurnalSelect = document.getElementById('filter-jurnal-kelas');
+            const evalJurnalFilterKelas = document.getElementById('eval-jurnal-filter-kelas');
             const filterMasterSiswaSelect = document.getElementById('master-siswa-filter-kelas');
             const formSiswaKelasSelect = document.getElementById('siswa-form-kelas');
             
@@ -1133,6 +1154,7 @@
                 }
             }
 
+            if (evalJurnalFilterKelas) evalJurnalFilterKelas.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
             if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
             if (filterEvalKelasSelect) filterEvalKelasSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
 
@@ -1467,6 +1489,74 @@
             });
         }
 
+        function renderKepsekJurnalList() {
+            const startDate = document.getElementById('filter-eval-start-date').value || new Date().toISOString().split('T')[0];
+            const endDate = document.getElementById('filter-eval-end-date').value || startDate;
+            const filterKelas = document.getElementById('eval-jurnal-filter-kelas') ? document.getElementById('eval-jurnal-filter-kelas').value : 'ALL';
+            const searchText = document.getElementById('eval-jurnal-search') ? document.getElementById('eval-jurnal-search').value.toLowerCase() : '';
+            const container = document.getElementById('eval-jurnal-list-container');
+            if (!container) return;
+
+            const journals = appState.journals || [];
+
+            let filtered = journals.filter(j => {
+                const inRange = j.tanggal >= startDate && j.tanggal <= endDate;
+                const matchKelas = filterKelas === 'ALL' || j.classId === filterKelas;
+                const matchSearch = j.materi.toLowerCase().includes(searchText) || 
+                                    j.guru.toLowerCase().includes(searchText) || 
+                                    j.capaian.toLowerCase().includes(searchText);
+                return inRange && matchKelas && matchSearch;
+            });
+
+            container.innerHTML = '';
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-slate-50 p-8 rounded-2xl border border-dashed border-slate-200 text-center text-slate-400">
+                        <i class="fa-solid fa-book-bookmark text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-semibold">Tidak ada data jurnal KBM mengajar pada periode terpilih.</p>
+                    </div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-50/80 p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3 hover:bg-white hover:border-indigo-200 transition";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start gap-2 border-b border-slate-200/60 pb-2">
+                        <div>
+                            <span class="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2 py-0.5 rounded-lg mb-1">
+                                ${getClassName(item.classId)} • ${item.mapel}
+                            </span>
+                            <h4 class="font-bold text-slate-900 text-xs sm:text-sm">${item.materi}</h4>
+                            <p class="text-[11px] text-slate-600 font-semibold"><i class="fa-solid fa-user-tie mr-1 text-indigo-500"></i>${item.guru}</p>
+                        </div>
+                        <span class="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-1 rounded-lg shrink-0">
+                            <i class="fa-regular fa-calendar mr-1"></i>${item.tanggal}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Capaian Pembelajaran (CP/PPI)</span>
+                            <p class="text-slate-700 font-medium">${item.capaian}</p>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Ringkasan Kegiatan</span>
+                            <p class="text-slate-600">${item.kegiatan}</p>
+                        </div>
+                        ${item.kendala ? `
+                            <div class="bg-amber-50 p-2 rounded-xl border border-amber-200/60">
+                                <span class="text-[10px] uppercase font-bold text-amber-800 block"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Kendala & Solusi</span>
+                                <p class="text-amber-900 text-[11px] font-medium">${item.kendala}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
         function renderGuruFeedbackSection() {
             const container = document.getElementById('guru-feedback-container');
             if (!container) return;
@@ -1637,6 +1727,7 @@
                 });
             }
 
+            renderKepsekJurnalList();
             renderEvaluasiFeed();
             updateChartsAndWidgets(startDate, endDate);
         }
