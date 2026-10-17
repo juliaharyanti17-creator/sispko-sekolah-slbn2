@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <!-- HALAMAN LOGIN (DITAMPILKAN SECARA DEFAULT JIKA BELUM LOGIN) -->
+    <!-- HALAMAN LOGIN -->
     <div id="screen-login" class="min-h-screen bg-slate-900 flex items-center justify-center p-4">
         <div class="max-w-md w-full bg-white rounded-3xl p-8 shadow-2xl space-y-6 border border-slate-100">
             <div class="text-center space-y-2">
@@ -77,7 +77,7 @@
         </div>
     </div>
 
-    <!-- HALAMAN UTAMA APLIKASI (DILINDUNGI LOGIN) -->
+    <!-- HALAMAN UTAMA APLIKASI -->
     <div id="screen-app" class="hidden flex-col h-full">
 
         <!-- MAIN HEADER -->
@@ -90,7 +90,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.0 Role Security</span>
+                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.1 Widget Sakit</span>
                         </div>
                         <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                     </div>
@@ -429,20 +429,40 @@
                     </div>
                 </div>
 
-                <!-- 3 CHART BAR MASING-MASING KETIDAKHADIRAN (SAKIT, ALPA, IZIN) -->
+                <!-- BARIS BARU: 1 WIDGET AKUMULASI SAKIT + 2 CHART BAR (ALPA & IZIN) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-5 rounded-2xl border border-amber-200/80 shadow-sm space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-amber-800 text-xs sm:text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-hospital-user text-amber-600"></i> Jumlah Siswa Sakit per Kelas
-                            </h3>
-                            <span class="text-[11px] text-amber-600 font-bold label-chart-period">...</span>
+                    <!-- WIDGET AKUMULASI SISWA SAKIT SEMUA KELAS -->
+                    <div class="bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white p-6 rounded-2xl shadow-md space-y-4 flex flex-col justify-between relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
+                            <i class="fa-solid fa-hospital-user"></i>
                         </div>
-                        <div class="relative h-56 w-full">
-                            <canvas id="chartSakitBar"></canvas>
+                        <div class="flex justify-between items-start z-10">
+                            <div>
+                                <span class="bg-white/20 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full inline-block">
+                                    <i class="fa-solid fa-users mr-1"></i> Total Semua Kelas
+                                </span>
+                                <h3 class="font-extrabold text-white text-base mt-2">Siswa Sakit</h3>
+                                <p class="text-xs text-amber-100">Akumulasi seluruh kelas pada periode terpilih.</p>
+                            </div>
+                            <div class="w-10 h-10 bg-white/20 text-white rounded-xl flex items-center justify-center text-lg shadow-inner">
+                                <i class="fa-solid fa-notes-medical"></i>
+                            </div>
+                        </div>
+
+                        <div class="z-10 my-2">
+                            <div class="flex items-baseline gap-2">
+                                <span id="widget-sakit-count" class="text-5xl font-black text-white tracking-tight">0</span>
+                                <span class="text-sm font-bold text-amber-100">Siswa</span>
+                            </div>
+                        </div>
+
+                        <div class="z-10 pt-3 border-t border-white/20 text-xs text-amber-100 flex items-center justify-between">
+                            <span class="font-medium">Periode: <strong id="widget-sakit-period" class="text-white">Hari Ini</strong></span>
+                            <span class="bg-white/10 px-2 py-0.5 rounded text-[10px]" id="widget-sakit-highest-class">Semua Kelas Nihil</span>
                         </div>
                     </div>
 
+                    <!-- CHART SISWA ALPA PER KELAS -->
                     <div class="bg-white p-5 rounded-2xl border border-rose-200/80 shadow-sm space-y-3">
                         <div class="flex justify-between items-center">
                             <h3 class="font-bold text-rose-800 text-xs sm:text-sm flex items-center gap-2">
@@ -455,6 +475,7 @@
                         </div>
                     </div>
 
+                    <!-- CHART SISWA IZIN PER KELAS -->
                     <div class="bg-white p-5 rounded-2xl border border-blue-200/80 shadow-sm space-y-3">
                         <div class="flex justify-between items-center">
                             <h3 class="font-bold text-blue-800 text-xs sm:text-sm flex items-center gap-2">
@@ -577,7 +598,6 @@
                     </div>
                 </div>
 
-                <!-- SUB-PANEL KELOLA AKUN PENGGUNA -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
                         <div>
@@ -696,7 +716,6 @@
     </div>
 
     <!-- MODAL FORMS -->
-    <!-- MODAL EDIT KELAS -->
     <div id="modal-edit-kelas" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
             <div class="flex justify-between items-center border-b pb-3">
@@ -717,7 +736,6 @@
         </div>
     </div>
 
-    <!-- MODAL FORM AKUN USER (ADMIN KHUSUS) -->
     <div id="modal-user" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
             <div class="flex justify-between items-center border-b pb-3">
@@ -757,7 +775,6 @@
         </div>
     </div>
 
-    <!-- MODAL FORM SISWA -->
     <div id="modal-siswa" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b pb-3">
@@ -851,7 +868,7 @@
         };
 
         let barChartInstance = null, pieChartInstance = null;
-        let sakitChartInstance = null, alpaChartInstance = null, izinChartInstance = null;
+        let alpaChartInstance = null, izinChartInstance = null;
 
         window.onload = function() {
             const todayStr = new Date().toISOString().split('T')[0];
@@ -959,7 +976,6 @@
             const tabEvaluasi = document.getElementById('tab-btn-evaluasi');
             const tabMaster = document.getElementById('tab-btn-master');
 
-            // Reset visibilitas tab
             tabPresensi.style.display = 'flex';
             tabJurnal.style.display = 'flex';
             tabEvaluasi.style.display = 'flex';
@@ -969,7 +985,6 @@
                 tabEvaluasi.style.display = 'none';
                 tabMaster.style.display = 'none';
                 
-                // Kunci pilihan kelas sesuai wali kelas
                 const presensiSelect = document.getElementById('presensi-kelas-select');
                 if (presensiSelect && appState.currentUser.classId) {
                     presensiSelect.value = appState.currentUser.classId;
@@ -1486,17 +1501,16 @@
                 feedContainer.appendChild(div);
             });
 
-            updateCharts(startDate, endDate);
+            updateChartsAndWidgets(startDate, endDate);
         }
 
         function initCharts() {
             const elBar = document.getElementById('chartKehadiranBar');
             const elPie = document.getElementById('chartKehadiranPie');
-            const elSakit = document.getElementById('chartSakitBar');
             const elAlpa = document.getElementById('chartAlpaBar');
             const elIzin = document.getElementById('chartIzinBar');
 
-            if (!elBar || !elPie || !elSakit || !elAlpa || !elIzin) return;
+            if (!elBar || !elPie || !elAlpa || !elIzin) return;
             const todayStr = new Date().toISOString().split('T')[0];
 
             barChartInstance = new Chart(elBar.getContext('2d'), {
@@ -1507,11 +1521,6 @@
             pieChartInstance = new Chart(elPie.getContext('2d'), {
                 type: 'doughnut', data: getPieChartData(todayStr, todayStr),
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-
-            sakitChartInstance = new Chart(elSakit.getContext('2d'), {
-                type: 'bar', data: getSpecificStatusChartData(todayStr, todayStr, 'Sakit', '#f59e0b'),
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
             });
 
             alpaChartInstance = new Chart(elAlpa.getContext('2d'), {
@@ -1586,14 +1595,69 @@
             return { labels: labels, datasets: [{ label: `Jumlah ${targetStatus}`, data: data, backgroundColor: barColor, borderRadius: 8 }] };
         }
 
-        function updateCharts(startDate, endDate) {
-            if (barChartInstance && pieChartInstance && sakitChartInstance && alpaChartInstance && izinChartInstance) {
+        // LOGIKA BARU KONSOLIDASI & WIDGET SAKIT DARI SELURUH KELAS
+        function updateChartsAndWidgets(startDate, endDate) {
+            const activeStudentIds = (appState.students || []).map(s => s.id);
+            let totalSakitAllClasses = 0;
+            let sakitPerClassMap = {};
+
+            (appState.classes || []).forEach(c => { sakitPerClassMap[c.id] = 0; });
+
+            Object.keys(appState.presensiRecords || {}).forEach(key => {
+                const parts = key.split('_');
+                const tgl = parts[0];
+                const classId = parts[1];
+
+                if (tgl >= startDate && tgl <= endDate) {
+                    (appState.presensiRecords[key] || []).forEach(r => {
+                        if (activeStudentIds.includes(r.studentId) && r.status === 'Sakit') {
+                            totalSakitAllClasses++;
+                            if (sakitPerClassMap[classId] !== undefined) {
+                                sakitPerClassMap[classId]++;
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Update Angka Widget Sakit
+            const widgetCountEl = document.getElementById('widget-sakit-count');
+            if (widgetCountEl) widgetCountEl.innerText = totalSakitAllClasses;
+
+            const widgetPeriodEl = document.getElementById('widget-sakit-period');
+            if (widgetPeriodEl) {
+                if (startDate === endDate) {
+                    widgetPeriodEl.innerText = new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                } else {
+                    widgetPeriodEl.innerText = `${new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${new Date(endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`;
+                }
+            }
+
+            // Cari Kelas Dengan Kasus Sakit Terbanyak
+            let maxSakitCount = 0;
+            let maxSakitClassId = null;
+            Object.keys(sakitPerClassMap).forEach(cId => {
+                if (sakitPerClassMap[cId] > maxSakitCount) {
+                    maxSakitCount = sakitPerClassMap[cId];
+                    maxSakitClassId = cId;
+                }
+            });
+
+            const widgetHighestEl = document.getElementById('widget-sakit-highest-class');
+            if (widgetHighestEl) {
+                if (maxSakitCount > 0 && maxSakitClassId) {
+                    widgetHighestEl.innerText = `Terbanyak: ${getClassName(maxSakitClassId)} (${maxSakitCount})`;
+                } else {
+                    widgetHighestEl.innerText = "Semua Kelas Nihil Sakit";
+                }
+            }
+
+            // Update Chart Kehadiran, Alpa & Izin
+            if (barChartInstance && pieChartInstance && alpaChartInstance && izinChartInstance) {
                 barChartInstance.data = getBarChartData(startDate, endDate);
                 barChartInstance.update();
                 pieChartInstance.data = getPieChartData(startDate, endDate);
                 pieChartInstance.update();
-                sakitChartInstance.data = getSpecificStatusChartData(startDate, endDate, 'Sakit', '#f59e0b');
-                sakitChartInstance.update();
                 alpaChartInstance.data = getSpecificStatusChartData(startDate, endDate, 'Alpa', '#f43f5e');
                 alpaChartInstance.update();
                 izinChartInstance.data = getSpecificStatusChartData(startDate, endDate, 'Izin', '#3b82f6');
