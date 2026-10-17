@@ -90,7 +90,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.2 Full Widgets</span>
+                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.3 Multi-Class Teacher</span>
                         </div>
                         <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                     </div>
@@ -318,7 +318,6 @@
                     </div>
                 </div>
 
-                <!-- FILTER RENTANG TANGGAL DENGAN KALENDER -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                         <div class="flex items-center gap-2">
@@ -355,7 +354,6 @@
                     </div>
                 </div>
 
-                <!-- KPI STATISTIK UTAMA -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                         <div>
@@ -402,7 +400,6 @@
                     </div>
                 </div>
 
-                <!-- GRAFIK BAR UTAMA PERSENTASE KEHADIRAN & PIE CHART -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
                         <div class="flex justify-between items-center">
@@ -429,9 +426,7 @@
                     </div>
                 </div>
 
-                <!-- BARIS BARU: 3 WIDGET AKUMULASI KETIDAKHADIRAN (SAKIT, ALPA, IZIN) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- WIDGET 1: AKUMULASI SAKIT -->
                     <div class="bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white p-6 rounded-2xl shadow-md space-y-4 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
                             <i class="fa-solid fa-hospital-user"></i>
@@ -462,7 +457,6 @@
                         </div>
                     </div>
 
-                    <!-- WIDGET 2: AKUMULASI ALPA -->
                     <div class="bg-gradient-to-br from-rose-500 via-rose-600 to-rose-700 text-white p-6 rounded-2xl shadow-md space-y-4 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
                             <i class="fa-solid fa-user-large-slash"></i>
@@ -493,7 +487,6 @@
                         </div>
                     </div>
 
-                    <!-- WIDGET 3: AKUMULASI IZIN -->
                     <div class="bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-6 rounded-2xl shadow-md space-y-4 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
                             <i class="fa-solid fa-envelope-open-text"></i>
@@ -772,8 +765,9 @@
         </div>
     </div>
 
+    <!-- MODAL FORM USER DENGAN CHECKBOX MULTI-KELAS -->
     <div id="modal-user" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-user-plus text-indigo-600 mr-1.5"></i> Form Tambah Akun Pengguna</h3>
                 <button type="button" onclick="closeModalUser(event)" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -800,8 +794,8 @@
                     </select>
                 </div>
                 <div id="group-user-kelas">
-                    <label class="block font-bold text-slate-700 mb-1">Pilih Kelas yang Diampu</label>
-                    <select id="user-form-kelas" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-bold"></select>
+                    <label class="block font-bold text-slate-700 mb-1">Pilih Kelas yang Diampu (Bisa Centang Banyak Kelas)</label>
+                    <div id="user-form-kelas-checkboxes" class="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs max-h-40 overflow-y-auto custom-scrollbar"></div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeModalUser(event)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer">Batal</button>
@@ -886,9 +880,9 @@
         ];
 
         const DEFAULT_USERS = [
-            { id: "u1", nama: "Administrator Sistem", email: "admin@sekolah.id", password: "admin123", role: "admin", classId: "" },
-            { id: "u2", nama: "Drs. H. M. Supian, M.Pd.", email: "kepsek@sekolah.id", password: "kepsek123", role: "kepsek", classId: "" },
-            { id: "u3", nama: "Siti Rahmah, S.Pd.", email: "guru@sekolah.id", password: "guru123", role: "walikelas", classId: "K1" }
+            { id: "u1", nama: "Administrator Sistem", email: "admin@sekolah.id", password: "admin123", role: "admin", classIds: [] },
+            { id: "u2", nama: "Drs. H. M. Supian, M.Pd.", email: "kepsek@sekolah.id", password: "kepsek123", role: "kepsek", classIds: [] },
+            { id: "u3", nama: "Siti Rahmah, S.Pd.", email: "guru@sekolah.id", password: "guru123", role: "walikelas", classIds: ["K1", "K2"] }
         ];
 
         let appState = {
@@ -1005,7 +999,8 @@
         }
 
         function applyRolePermissions() {
-            const role = appState.currentUser.role;
+            const user = appState.currentUser;
+            const role = user.role;
             const tabPresensi = document.getElementById('tab-btn-presensi');
             const tabJurnal = document.getElementById('tab-btn-jurnal');
             const tabEvaluasi = document.getElementById('tab-btn-evaluasi');
@@ -1016,24 +1011,16 @@
             tabEvaluasi.style.display = 'flex';
             tabMaster.style.display = 'flex';
 
+            populateDropdowns();
+
             if (role === 'walikelas') {
                 tabEvaluasi.style.display = 'none';
                 tabMaster.style.display = 'none';
-                
-                const presensiSelect = document.getElementById('presensi-kelas-select');
-                if (presensiSelect && appState.currentUser.classId) {
-                    presensiSelect.value = appState.currentUser.classId;
-                    presensiSelect.disabled = true;
-                }
                 switchTab(null, 'presensi');
             } else if (role === 'kepsek') {
                 tabMaster.style.display = 'none';
-                const presensiSelect = document.getElementById('presensi-kelas-select');
-                if (presensiSelect) presensiSelect.disabled = false;
                 switchTab(null, 'evaluasi');
             } else if (role === 'admin') {
-                const presensiSelect = document.getElementById('presensi-kelas-select');
-                if (presensiSelect) presensiSelect.disabled = false;
                 switchTab(null, 'master');
             }
         }
@@ -1094,26 +1081,50 @@
             const filterJurnalSelect = document.getElementById('filter-jurnal-kelas');
             const filterMasterSiswaSelect = document.getElementById('master-siswa-filter-kelas');
             const formSiswaKelasSelect = document.getElementById('siswa-form-kelas');
-            const userFormKelasSelect = document.getElementById('user-form-kelas');
 
-            let classOptions = '';
+            let allClassOptions = '';
             (appState.classes || []).forEach(c => {
-                classOptions += `<option value="${c.id}">${c.name}</option>`;
+                allClassOptions += `<option value="${c.id}">${c.name}</option>`;
             });
 
-            if (presensiClassSelect) presensiClassSelect.innerHTML = classOptions || `<option value="">Belum Ada Kelas</option>`;
-            if (jurnalClassSelect) jurnalClassSelect.innerHTML = classOptions || `<option value="">Belum Ada Kelas</option>`;
-            if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = classOptions || `<option value="">Belum Ada Kelas</option>`;
-            if (userFormKelasSelect) userFormKelasSelect.innerHTML = classOptions || `<option value="">Belum Ada Kelas</option>`;
-            if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
-            if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
-            if (filterEvalKelasSelect) filterEvalKelasSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + classOptions;
+            // Opsi Kelas Khusus Wali Kelas
+            let teacherClassOptions = '';
+            if (appState.currentUser && appState.currentUser.role === 'walikelas') {
+                const userClasses = appState.currentUser.classIds || (appState.currentUser.classId ? [appState.currentUser.classId] : []);
+                const filteredClasses = (appState.classes || []).filter(c => userClasses.includes(c.id));
+                filteredClasses.forEach(c => {
+                    teacherClassOptions += `<option value="${c.id}">${c.name}</option>`;
+                });
+            } else {
+                teacherClassOptions = allClassOptions;
+            }
+
+            if (presensiClassSelect) presensiClassSelect.innerHTML = teacherClassOptions || `<option value="">Tidak ada kelas diampu</option>`;
+            if (jurnalClassSelect) jurnalClassSelect.innerHTML = teacherClassOptions || `<option value="">Tidak ada kelas diampu</option>`;
+            if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = allClassOptions || `<option value="">Belum Ada Kelas</option>`;
+            if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
+            if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
+            if (filterEvalKelasSelect) filterEvalKelasSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
 
             let mapelOptions = '';
             (appState.mapels || []).forEach(m => {
                 mapelOptions += `<option value="${m}">${m}</option>`;
             });
             if (jurnalMapelSelect) jurnalMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
+
+            renderUserFormClassCheckboxes();
+        }
+
+        function renderUserFormClassCheckboxes() {
+            const container = document.getElementById('user-form-kelas-checkboxes');
+            if (!container) return;
+            container.innerHTML = '';
+            (appState.classes || []).forEach(c => {
+                const label = document.createElement('label');
+                label.className = "flex items-center gap-2 font-medium text-slate-700 cursor-pointer";
+                label.innerHTML = `<input type="checkbox" name="user_class_opt" value="${c.id}" class="rounded text-indigo-600"> ${c.name}`;
+                container.appendChild(label);
+            });
         }
 
         function getClassName(classId) {
@@ -1127,6 +1138,8 @@
             document.getElementById('user-form-email').value = '';
             document.getElementById('user-form-password').value = '';
             document.getElementById('user-form-role').value = 'walikelas';
+            const checkboxes = document.querySelectorAll('input[name="user_class_opt"]');
+            checkboxes.forEach(cb => cb.checked = false);
             toggleUserClassSelect();
             document.getElementById('modal-user').classList.remove('hidden');
         }
@@ -1149,9 +1162,12 @@
             const email = document.getElementById('user-form-email').value.trim();
             const password = document.getElementById('user-form-password').value.trim();
             const role = document.getElementById('user-form-role').value;
-            const classId = role === 'walikelas' ? document.getElementById('user-form-kelas').value : '';
 
-            const newUser = { id: "u" + Date.now(), nama, email, password, role, classId };
+            const selectedClassIds = role === 'walikelas' 
+                ? Array.from(document.querySelectorAll('input[name="user_class_opt"]:checked')).map(cb => cb.value)
+                : [];
+
+            const newUser = { id: "u" + Date.now(), nama, email, password, role, classIds: selectedClassIds };
             if (!appState.users) appState.users = [];
             appState.users.push(newUser);
             saveAppState();
@@ -1167,11 +1183,18 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition";
                 const roleBadge = u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : (u.role === 'kepsek' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800');
+                
+                let assignedClasses = '-';
+                if (u.role === 'walikelas') {
+                    const cList = u.classIds || (u.classId ? [u.classId] : []);
+                    assignedClasses = cList.map(id => getClassName(id)).join(', ') || 'Belum diatur';
+                }
+
                 tr.innerHTML = `
                     <td class="p-3 font-bold text-slate-800">${u.nama}</td>
                     <td class="p-3 text-slate-600">${u.email}</td>
                     <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${roleBadge}">${u.role}</span></td>
-                    <td class="p-3 text-slate-600">${u.role === 'walikelas' ? getClassName(u.classId) : '-'}</td>
+                    <td class="p-3 text-slate-600">${assignedClasses}</td>
                     <td class="p-3 text-center">
                         <button type="button" onclick="deleteUser(event, '${u.id}')" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Hapus User">
                             <i class="fa-solid fa-trash-can"></i>
@@ -1203,7 +1226,7 @@
             const classSelect = document.getElementById('presensi-kelas-select');
             if (!classSelect || !classSelect.value) {
                 document.getElementById('label-presensi-kelas').innerText = "-";
-                document.getElementById('presensi-table-body').innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Belum ada kelas. Silakan atur di data master.</td></tr>`;
+                document.getElementById('presensi-table-body').innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Belum ada kelas terpilih atau diampu.</td></tr>`;
                 calculatePresensiCounters([]);
                 return;
             }
@@ -1600,7 +1623,6 @@
             return { labels: ['Hadir', 'Izin', 'Sakit', 'Alpa'], datasets: [{ data: [hadir, izin, sakit, alpa], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f43f5e'] }] };
         }
 
-        // LOGIKA WIDGET AKUMULASI (SAKIT, ALPA, IZIN) DARI SELURUH KELAS
         function updateChartsAndWidgets(startDate, endDate) {
             const activeStudentIds = (appState.students || []).map(s => s.id);
             
@@ -1636,12 +1658,10 @@
                 }
             });
 
-            // Update Angka Widget
             document.getElementById('widget-sakit-count').innerText = totalSakit;
             document.getElementById('widget-alpa-count').innerText = totalAlpa;
             document.getElementById('widget-izin-count').innerText = totalIzin;
 
-            // Cari Kelas Terbanyak Masing-Masing Status
             function getHighestClassText(mapObj) {
                 let maxCount = 0;
                 let maxClassId = null;
@@ -1658,7 +1678,6 @@
             document.getElementById('widget-alpa-highest-class').innerText = getHighestClassText(alpaPerClass);
             document.getElementById('widget-izin-highest-class').innerText = getHighestClassText(izinPerClass);
 
-            // Update Chart Utama (Bar & Pie Kehadiran)
             if (barChartInstance && pieChartInstance) {
                 barChartInstance.data = getBarChartData(startDate, endDate);
                 barChartInstance.update();
