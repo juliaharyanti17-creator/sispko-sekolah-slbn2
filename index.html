@@ -90,7 +90,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl font-extrabold tracking-tight text-white">SISPKO SLB</h1>
-                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.3 Multi-Class Teacher</span>
+                            <span class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">v3.4 Personalized Feedback</span>
                         </div>
                         <p class="text-xs text-indigo-200">Sistem Presensi Siswa, Jurnal KBM & Evaluasi Kepala Sekolah SLB</p>
                     </div>
@@ -223,6 +223,17 @@
 
             <!-- TAB 2: JURNAL KBM GURU -->
             <section id="modul-jurnal" class="space-y-6 hidden">
+                <!-- BOX BARU: HISTORI UMPAN BALIK KEPSEK KHUSUS GURU LOGGED IN -->
+                <div class="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white p-5 rounded-2xl shadow-md space-y-3">
+                    <div class="flex items-center justify-between border-b border-white/20 pb-2">
+                        <h3 class="font-bold text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-comment-dots text-amber-200"></i> Umpan Balik & Catatan Supervisi Kepala Sekolah
+                        </h3>
+                        <span class="text-[10px] bg-white/20 px-2.5 py-0.5 rounded-full font-bold">Khusus Anda</span>
+                    </div>
+                    <div id="guru-feedback-container" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar"></div>
+                </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                         <div class="border-b border-slate-100 pb-3">
@@ -240,7 +251,7 @@
 
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block font-bold text-slate-700 mb-1">Kelas</label>
+                                    <label class="block font-bold text-slate-700 mb-1">Kelas Tanggungan</label>
                                     <select id="jurnal-kelas-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></select>
                                 </div>
                                 <div>
@@ -291,7 +302,7 @@
                             <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                                 <input type="text" id="jurnal-search" oninput="renderJurnalList()" placeholder="Cari materi/guru..." class="bg-slate-50 border border-slate-300 text-xs text-slate-700 rounded-xl p-2 w-full sm:w-36">
                                 <select id="filter-jurnal-kelas" onchange="renderJurnalList()" class="bg-slate-50 border border-slate-300 text-xs text-slate-700 rounded-xl p-2">
-                                    <option value="ALL">Semua Kelas</option>
+                                    <option value="ALL">Semua Kelas Tanggungan</option>
                                 </select>
                             </div>
                         </div>
@@ -552,6 +563,7 @@
                         </div>
                     </div>
 
+                    <!-- FORM KEPSEK & HISTORI PER GURU -->
                     <div class="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                         <div class="border-b border-slate-100 pb-2">
                             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -562,8 +574,13 @@
 
                         <form id="form-evaluasi-kepsek" onsubmit="handleSaveEvaluasi(event)" class="space-y-3 text-xs">
                             <div>
-                                <label class="block font-bold text-slate-700 mb-1">Ditujukan Kepada Guru / Mapel</label>
-                                <input type="text" id="eval-input-target" placeholder="Contoh: Guru Kelas Tunagrahita" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium">
+                                <label class="block font-bold text-slate-700 mb-1">Ditujukan Kepada Guru</label>
+                                <select id="eval-input-target-guru" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></select>
+                            </div>
+
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Mata Pelajaran (Opsional)</label>
+                                <select id="eval-input-target-mapel" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 font-medium"></select>
                             </div>
 
                             <div>
@@ -587,8 +604,13 @@
                             </button>
                         </form>
 
-                        <div class="pt-3 border-t border-slate-100">
-                            <h4 class="font-bold text-slate-700 text-xs mb-2">Riwayat Umpan Balik Kepsek</h4>
+                        <div class="pt-3 border-t border-slate-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-slate-700 text-xs">Riwayat Umpan Balik</h4>
+                                <select id="filter-feed-guru" onchange="renderEvaluasiFeed()" class="bg-slate-50 border border-slate-200 text-[11px] text-slate-700 rounded-lg p-1 font-semibold">
+                                    <option value="ALL">Semua Guru</option>
+                                </select>
+                            </div>
                             <div id="eval-feed-container" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar"></div>
                         </div>
                     </div>
@@ -765,7 +787,6 @@
         </div>
     </div>
 
-    <!-- MODAL FORM USER DENGAN CHECKBOX MULTI-KELAS -->
     <div id="modal-user" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b pb-3">
@@ -1016,6 +1037,7 @@
             if (role === 'walikelas') {
                 tabEvaluasi.style.display = 'none';
                 tabMaster.style.display = 'none';
+                document.getElementById('jurnal-guru').value = user.nama;
                 switchTab(null, 'presensi');
             } else if (role === 'kepsek') {
                 tabMaster.style.display = 'none';
@@ -1047,7 +1069,10 @@
 
         function refreshCurrentTabUI() {
             if (appState.currentTab === 'presensi') loadPresensiTable();
-            if (appState.currentTab === 'jurnal') renderJurnalList();
+            if (appState.currentTab === 'jurnal') {
+                renderJurnalList();
+                renderGuruFeedbackSection();
+            }
             if (appState.currentTab === 'evaluasi') updateEvaluasiDashboard();
             if (appState.currentTab === 'master') {
                 renderMasterUsersTable();
@@ -1081,6 +1106,10 @@
             const filterJurnalSelect = document.getElementById('filter-jurnal-kelas');
             const filterMasterSiswaSelect = document.getElementById('master-siswa-filter-kelas');
             const formSiswaKelasSelect = document.getElementById('siswa-form-kelas');
+            
+            const evalTargetGuruSelect = document.getElementById('eval-input-target-guru');
+            const evalTargetMapelSelect = document.getElementById('eval-input-target-mapel');
+            const filterFeedGuruSelect = document.getElementById('filter-feed-guru');
 
             let allClassOptions = '';
             (appState.classes || []).forEach(c => {
@@ -1089,9 +1118,10 @@
 
             // Opsi Kelas Khusus Wali Kelas
             let teacherClassOptions = '';
+            let teacherClassIds = [];
             if (appState.currentUser && appState.currentUser.role === 'walikelas') {
-                const userClasses = appState.currentUser.classIds || (appState.currentUser.classId ? [appState.currentUser.classId] : []);
-                const filteredClasses = (appState.classes || []).filter(c => userClasses.includes(c.id));
+                teacherClassIds = appState.currentUser.classIds || (appState.currentUser.classId ? [appState.currentUser.classId] : []);
+                const filteredClasses = (appState.classes || []).filter(c => teacherClassIds.includes(c.id));
                 filteredClasses.forEach(c => {
                     teacherClassOptions += `<option value="${c.id}">${c.name}</option>`;
                 });
@@ -1102,7 +1132,16 @@
             if (presensiClassSelect) presensiClassSelect.innerHTML = teacherClassOptions || `<option value="">Tidak ada kelas diampu</option>`;
             if (jurnalClassSelect) jurnalClassSelect.innerHTML = teacherClassOptions || `<option value="">Tidak ada kelas diampu</option>`;
             if (formSiswaKelasSelect) formSiswaKelasSelect.innerHTML = allClassOptions || `<option value="">Belum Ada Kelas</option>`;
-            if (filterJurnalSelect) filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
+            
+            // Filter Jurnal KBM
+            if (filterJurnalSelect) {
+                if (appState.currentUser && appState.currentUser.role === 'walikelas') {
+                    filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas Tanggungan</option>` + teacherClassOptions;
+                } else {
+                    filterJurnalSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
+                }
+            }
+
             if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
             if (filterEvalKelasSelect) filterEvalKelasSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
 
@@ -1111,6 +1150,16 @@
                 mapelOptions += `<option value="${m}">${m}</option>`;
             });
             if (jurnalMapelSelect) jurnalMapelSelect.innerHTML = mapelOptions || `<option value="">Belum Ada Mapel</option>`;
+            if (evalTargetMapelSelect) evalTargetMapelSelect.innerHTML = `<option value="Semua Mapel">Semua Mapel / General</option>` + mapelOptions;
+
+            // Populate Dropdown Guru (Wali Kelas)
+            const guruList = (appState.users || []).filter(u => u.role === 'walikelas');
+            let guruOptions = '';
+            guruList.forEach(g => {
+                guruOptions += `<option value="${g.nama}">${g.nama}</option>`;
+            });
+            if (evalTargetGuruSelect) evalTargetGuruSelect.innerHTML = guruOptions || `<option value="">Belum Ada Guru Registered</option>`;
+            if (filterFeedGuruSelect) filterFeedGuruSelect.innerHTML = `<option value="ALL">Semua Guru</option>` + guruOptions;
 
             renderUserFormClassCheckboxes();
         }
@@ -1171,6 +1220,7 @@
             if (!appState.users) appState.users = [];
             appState.users.push(newUser);
             saveAppState();
+            populateDropdowns();
             renderMasterUsersTable();
             closeModalUser(e);
             showToast(`Akun "${nama}" berhasil ditambahkan!`);
@@ -1210,6 +1260,7 @@
             if (confirm("Apakah Anda yakin ingin menghapus akun pengguna ini?")) {
                 appState.users = appState.users.filter(u => u.id !== id);
                 saveAppState();
+                populateDropdowns();
                 renderMasterUsersTable();
                 showToast("Akun berhasil dihapus.");
             }
@@ -1375,6 +1426,9 @@
             renderJurnalList();
             document.getElementById('form-jurnal-kbm').reset();
             document.getElementById('jurnal-tanggal').value = new Date().toISOString().split('T')[0];
+            if (appState.currentUser && appState.currentUser.role === 'walikelas') {
+                document.getElementById('jurnal-guru').value = appState.currentUser.nama;
+            }
             showToast("Jurnal KBM harian tersimpan!");
         }
 
@@ -1384,10 +1438,17 @@
             const container = document.getElementById('jurnal-list-container');
             const journals = appState.journals || [];
 
+            // Jika Guru, batasi hanya kelas tanggungannya
+            let allowedClassIds = (appState.classes || []).map(c => c.id);
+            if (appState.currentUser && appState.currentUser.role === 'walikelas') {
+                allowedClassIds = appState.currentUser.classIds || (appState.currentUser.classId ? [appState.currentUser.classId] : []);
+            }
+
             let filtered = journals.filter(j => {
+                const isClassAllowed = allowedClassIds.includes(j.classId);
                 const matchKelas = filterKelas === 'ALL' || j.classId === filterKelas;
                 const matchSearch = j.materi.toLowerCase().includes(searchText) || j.guru.toLowerCase().includes(searchText);
-                return matchKelas && matchSearch;
+                return isClassAllowed && matchKelas && matchSearch;
             });
 
             if (filtered.length === 0) {
@@ -1420,6 +1481,39 @@
             });
         }
 
+        // TAMPILKAN HISTORI UMPAN BALIK DI TAB JURNAL KHUSUS GURU TERSEBUT
+        function renderGuruFeedbackSection() {
+            const container = document.getElementById('guru-feedback-container');
+            if (!container) return;
+            const currentUser = appState.currentUser;
+
+            if (!currentUser) return;
+
+            let myFeedbacks = (appState.evaluations || []).filter(ev => ev.target === currentUser.nama);
+
+            if (myFeedbacks.length === 0) {
+                container.innerHTML = `<div class="p-3 bg-white/10 rounded-xl text-xs text-amber-100 text-center">Belum ada umpan balik atau catatan supervisi dari Kepsek.</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            myFeedbacks.forEach(ev => {
+                const div = document.createElement('div');
+                div.className = "p-3 bg-white text-slate-800 rounded-xl text-xs space-y-1 shadow-xs";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-indigo-900">${ev.mapel || 'Semua Mapel'}</span>
+                        <span class="text-[10px] text-slate-400 font-semibold">${ev.tanggal}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">${ev.kategori}</span>
+                    </div>
+                    <p class="text-slate-600 font-medium pt-1">${ev.catatan}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
         function deleteJurnal(e, id) {
             if (e) e.preventDefault();
             if (confirm("Hapus catatan jurnal ini?")) {
@@ -1432,13 +1526,25 @@
 
         function handleSaveEvaluasi(e) {
             if (e) e.preventDefault();
+            const targetGuru = document.getElementById('eval-input-target-guru').value;
+            const targetMapel = document.getElementById('eval-input-target-mapel').value;
+            const kategori = document.getElementById('eval-input-kategori').value;
+            const catatan = document.getElementById('eval-input-catatan').value;
+
+            if (!targetGuru) {
+                alert("Silakan pilih guru tujuan terlebih dahulu.");
+                return;
+            }
+
             const newEval = {
                 id: Date.now(),
-                target: document.getElementById('eval-input-target').value,
-                kategori: document.getElementById('eval-input-kategori').value,
-                catatan: document.getElementById('eval-input-catatan').value,
+                target: targetGuru,
+                mapel: targetMapel,
+                kategori: kategori,
+                catatan: catatan,
                 tanggal: new Date().toISOString().split('T')[0]
             };
+
             if (!appState.evaluations) appState.evaluations = [];
             appState.evaluations.unshift(newEval);
             saveAppState();
@@ -1546,20 +1652,37 @@
                 });
             }
 
+            renderEvaluasiFeed();
+            updateChartsAndWidgets(startDate, endDate);
+        }
+
+        // RENDER FEEDBACK KEPSEK DI DASHBOARD EVALUASI (DENGAN FILTER GURU)
+        function renderEvaluasiFeed() {
             const feedContainer = document.getElementById('eval-feed-container');
+            const filterGuru = document.getElementById('filter-feed-guru') ? document.getElementById('filter-feed-guru').value : 'ALL';
+            if (!feedContainer) return;
+
             feedContainer.innerHTML = '';
-            (appState.evaluations || []).forEach(ev => {
+            let filteredFeed = (appState.evaluations || []).filter(ev => filterGuru === 'ALL' || ev.target === filterGuru);
+
+            if (filteredFeed.length === 0) {
+                feedContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Belum ada riwayat umpan balik.</p>`;
+                return;
+            }
+
+            filteredFeed.forEach(ev => {
                 const div = document.createElement('div');
                 div.className = "p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1";
                 div.innerHTML = `
-                    <div class="flex justify-between items-center"><strong class="text-indigo-700 font-bold">${ev.target}</strong><span class="text-[10px] text-slate-400">${ev.tanggal}</span></div>
+                    <div class="flex justify-between items-center">
+                        <strong class="text-indigo-700 font-bold">${ev.target} (${ev.mapel || 'Semua Mapel'})</strong>
+                        <span class="text-[10px] text-slate-400">${ev.tanggal}</span>
+                    </div>
                     <span class="inline-block text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">${ev.kategori}</span>
                     <p class="text-slate-600 mt-1">${ev.catatan}</p>
                 `;
                 feedContainer.appendChild(div);
             });
-
-            updateChartsAndWidgets(startDate, endDate);
         }
 
         function initCharts() {
