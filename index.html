@@ -76,13 +76,32 @@
     </div>
 
     <!-- HALAMAN UTAMA APLIKASI -->
-    <div id="screen-app" class="hidden flex-col md:flex-row min-h-screen">
+    <div id="screen-app" class="hidden flex-col md:flex-row min-h-screen relative">
 
-        <!-- SIDEBAR NAVIGATION BANNER (SAMPING KIRI) -->
-        <aside id="sidebar-nav" class="bg-indigo-900 text-white w-full md:w-64 flex-shrink-0 flex flex-col justify-between no-print z-40 transition-all duration-300">
+        <!-- MOBILE TOP BAR (PERMANEN DI HP, SEMBUNYI DI DESKTOP) -->
+        <header class="md:hidden bg-indigo-900 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-md no-print">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-1.5 rounded-lg border border-white/20 shadow-inner flex items-center justify-center">
+                    <i class="fa-solid fa-hands-holding-child text-lg text-amber-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-black tracking-tight text-white leading-tight">SISPKO SLB</h1>
+                    <p class="text-[9px] text-indigo-200">Presensi, KBM & Evaluasi</p>
+                </div>
+            </div>
+            <button type="button" onclick="toggleMobileSidebar()" class="p-2 text-white hover:text-amber-300 focus:outline-none cursor-pointer">
+                <i id="mobile-hamburger-icon" class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </header>
+
+        <!-- BACKDROP OVERLAY UNTUK HP SAAT SIDEBAR TERBUKA -->
+        <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" class="hidden fixed inset-0 bg-slate-900/60 z-40 md:hidden backdrop-blur-xs no-print"></div>
+
+        <!-- SIDEBAR NAVIGATION (MELAYANG DI HP, TETAP DI KIRI PADA LAPTOP) -->
+        <aside id="sidebar-nav" class="hidden md:flex bg-indigo-900 text-white w-64 flex-shrink-0 flex-col justify-between no-print fixed md:static top-0 left-0 bottom-0 h-full z-50 shadow-2xl md:shadow-none transition-all duration-300">
             <div>
-                <!-- SIDEBAR HEADER / BRAND -->
-                <div class="p-4 border-b border-indigo-800/80 flex items-center justify-between">
+                <!-- BRAND SIDEBAR DESKTOP -->
+                <div class="p-4 border-b border-indigo-800/80 hidden md:flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="bg-white/10 p-2 rounded-xl border border-white/20 shadow-inner flex items-center justify-center">
                             <i class="fa-solid fa-hands-holding-child text-xl text-amber-300"></i>
@@ -92,10 +111,6 @@
                             <p class="text-[10px] text-indigo-200">Presensi, KBM & Evaluasi</p>
                         </div>
                     </div>
-                    <!-- MOBILE MENU TOGGLE BUTTON -->
-                    <button type="button" onclick="toggleMobileSidebar()" class="md:hidden text-indigo-200 hover:text-white p-1">
-                        <i class="fa-solid fa-bars text-lg"></i>
-                    </button>
                 </div>
 
                 <!-- USER PROFILE BADGE IN SIDEBAR -->
@@ -1007,7 +1022,22 @@
 
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar-nav');
-            sidebar.classList.toggle('hidden');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const icon = document.getElementById('mobile-hamburger-icon');
+
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('flex');
+                backdrop.classList.remove('hidden');
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('flex');
+                backdrop.classList.add('hidden');
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
         }
 
         function saveAppState() {
@@ -1132,6 +1162,14 @@
                     if (section) section.classList.add('hidden');
                 }
             });
+
+            // Tutup otomatis sidebar pada tampilan HP setelah memilih menu
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar-nav');
+                if (!sidebar.classList.contains('hidden')) {
+                    toggleMobileSidebar();
+                }
+            }
 
             refreshCurrentTabUI();
         }
