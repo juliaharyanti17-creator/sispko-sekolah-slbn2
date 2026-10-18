@@ -132,7 +132,7 @@
                     </div>
                 </div>
 
-                <!-- MENU TABS & SUB-MENU DROPDOWN -->
+                <!-- MENU TABS -->
                 <nav class="p-3 space-y-1.5" id="nav-tabs">
                     <button type="button" onclick="switchTab(event, 'presensi')" id="tab-btn-presensi" class="tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all cursor-pointer">
                         <i class="fa-solid fa-clipboard-user text-base w-5 text-center"></i>
@@ -142,6 +142,15 @@
                     <button type="button" onclick="switchTab(event, 'jurnal')" id="tab-btn-jurnal" class="tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all cursor-pointer">
                         <i class="fa-solid fa-book-open text-base w-5 text-center"></i>
                         <span class="truncate">2. Aktivitas Jurnal Guru</span>
+                    </button>
+
+                    <!-- TAB REKAPITULASI DATA (KHUSUS ADMIN) -->
+                    <button type="button" onclick="switchTab(event, 'rekap')" id="tab-btn-rekap" class="tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer">
+                        <div class="flex items-center gap-3 truncate">
+                            <i class="fa-solid fa-file-invoice text-base w-5 text-center text-amber-300"></i>
+                            <span class="truncate">3. Rekapitulasi Data</span>
+                        </div>
+                        <span class="px-1.5 py-0.5 text-[9px] bg-amber-400 text-indigo-950 rounded-md font-black uppercase">Admin</span>
                     </button>
 
                     <!-- MENU DASHBOARD KEPSEK DENGAN SUB-MENU DROPDOWN -->
@@ -154,7 +163,6 @@
                             <i id="icon-submenu-evaluasi" class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
                         </button>
 
-                        <!-- SUB-MENU ITEM DENGAN SCROLL TO SECTION -->
                         <div id="submenu-evaluasi" class="hidden pl-8 space-y-1 text-xs">
                             <a href="#sec-eval-filter" onclick="scrollToSubSection(event, 'evaluasi', 'sec-eval-filter')" class="block py-2 px-3 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-800/50 font-medium transition">
                                 <i class="fa-solid fa-circle-dot text-[8px] mr-1.5 text-amber-300"></i> Filter Periode
@@ -373,7 +381,143 @@
                     </div>
                 </section>
 
-                <!-- TAB 3: DASHBOARD EVALUASI KEPALA SEKOLAH -->
+                <!-- TAB 3: REKAPITULASI DATA (KHUSUS ADMIN) -->
+                <section id="modul-rekap" class="space-y-6 hidden">
+                    <!-- HEADER REKAP DATA -->
+                    <div class="bg-gradient-to-r from-amber-600 via-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-wrap justify-between items-center gap-4">
+                        <div class="space-y-1">
+                            <span class="bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full inline-block">
+                                <i class="fa-solid fa-file-invoice mr-1"></i> Modul Laporan Sistem Admin
+                            </span>
+                            <h2 class="text-xl font-black tracking-tight">Rekapitulasi Presensi & Jurnal KBM Guru</h2>
+                            <p class="text-xs text-indigo-200">Pusat rekap data terpadu seluruh kelas dan guru. Dapat difilter dan dicetak/disimpan sebagai PDF.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 no-print">
+                            <button type="button" onclick="triggerPrintReport(event)" class="bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs px-5 py-2.5 rounded-xl font-black transition flex items-center gap-2 cursor-pointer shadow-lg">
+                                <i class="fa-solid fa-file-pdf"></i> Cetak / Save ke PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- FILTER BAR REKAPITULASI -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 no-print">
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                                    <i class="fa-solid fa-filter text-base"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-extrabold text-slate-800">Filter Parameter Rekapitulasi</h3>
+                                    <p class="text-xs text-slate-500">Sesuaikan tanggal dan kelas untuk menyaring seluruh rekapitulasi data.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="setPresetRekapRange('today')" class="px-3 py-1.5 bg-slate-100 hover:bg-amber-50 hover:text-amber-700 text-slate-600 text-xs font-bold rounded-xl transition cursor-pointer">Hari Ini</button>
+                                <button type="button" onclick="setPresetRekapRange('this_week')" class="px-3 py-1.5 bg-slate-100 hover:bg-amber-50 hover:text-amber-700 text-slate-600 text-xs font-bold rounded-xl transition cursor-pointer">Minggu Ini</button>
+                                <button type="button" onclick="setPresetRekapRange('this_month')" class="px-3 py-1.5 bg-slate-100 hover:bg-amber-50 hover:text-amber-700 text-slate-600 text-xs font-bold rounded-xl transition cursor-pointer">Bulan Ini</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1"><i class="fa-regular fa-calendar mr-1"></i> Dari Tanggal</label>
+                                <input type="date" id="filter-rekap-start-date" onchange="renderRekapModule()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl p-2.5 font-semibold focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1"><i class="fa-regular fa-calendar-check mr-1"></i> Sampai Tanggal</label>
+                                <input type="date" id="filter-rekap-end-date" onchange="renderRekapModule()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl p-2.5 font-semibold focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1"><i class="fa-solid fa-door-open mr-1"></i> Filter Kelas</label>
+                                <select id="filter-rekap-kelas" onchange="renderRekapModule()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl p-2.5 font-semibold focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="ALL">Semua Kelas</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABEL 1: REKAP PRESENSI SELURUH KELAS -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-users-viewfinder text-indigo-600"></i> Rekapitulasi Presensi Siswa per Kelas
+                            </h3>
+                            <span class="text-xs text-amber-700 font-extrabold bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl" id="rekap-presensi-period-label">Periode Terpilih</span>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-xl border border-slate-200">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3 w-12 text-center">No</th>
+                                        <th class="p-3">Nama Kelas</th>
+                                        <th class="p-3 text-center">Total Siswa</th>
+                                        <th class="p-3 text-center text-emerald-700">Hadir</th>
+                                        <th class="p-3 text-center text-blue-700">Izin</th>
+                                        <th class="p-3 text-center text-amber-700">Sakit</th>
+                                        <th class="p-3 text-center text-rose-700">Alpa</th>
+                                        <th class="p-3 text-center">% Kehadiran</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rekap-table-presensi-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TABEL 2: REKAP SELURUH JURNAL GURU -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-book-bookmark text-indigo-600"></i> Rekapitulasi Aktivitas Jurnal KBM Guru
+                            </h3>
+                            <span class="text-xs text-amber-700 font-extrabold bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl" id="rekap-jurnal-period-label">Periode Terpilih</span>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-xl border border-slate-200">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3 w-12 text-center">No</th>
+                                        <th class="p-3">Tanggal</th>
+                                        <th class="p-3">Nama Guru</th>
+                                        <th class="p-3">Kelas & Mapel</th>
+                                        <th class="p-3">Materi / CP Pembelajaran</th>
+                                        <th class="p-3">Kegiatan Pembelajaran</th>
+                                        <th class="p-3">Kendala & Solusi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rekap-table-jurnal-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- AREA PRINT DOKUMEN LAPORAN -->
+                    <div class="print-only pt-8 border-t-2 border-slate-800 text-slate-900">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-black uppercase">LAPORAN REKAPITULASI PRESENSI & JURNAL KBM</h2>
+                            <h3 class="text-lg font-bold">SLB NEGERI 2 PELAIHARI</h3>
+                            <p class="text-xs text-slate-600">Sistem Informasi Monitoring Presensi, Aktivitas dan Evaluasi Kinerja (SIMPATIK)</p>
+                        </div>
+                        <div class="flex justify-between text-xs my-8 px-8">
+                            <div>
+                                <p class="font-bold">Mengetahui,</p>
+                                <p class="font-bold">Kepala SLB Negeri 2 Pelaihari</p>
+                                <div class="h-20"></div>
+                                <p class="font-bold underline">( Drs. H. M. Supian, M.Pd. )</p>
+                                <p class="text-[10px]">NIP. 19680512 199403 1 008</p>
+                            </div>
+                            <div>
+                                <p>Dicetak pada: <span class="print-date-stamp">...</span></p>
+                                <p class="font-bold">Administrator / Kurikulum</p>
+                                <div class="h-20"></div>
+                                <p class="font-bold underline">( ________________________ )</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: DASHBOARD EVALUASI KEPALA SEKOLAH -->
                 <section id="modul-evaluasi" class="space-y-6 hidden">
                     <!-- HEADER DASHBOARD KEPSEK -->
                     <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-wrap justify-between items-center gap-4">
@@ -723,7 +867,7 @@
                                 <p class="font-bold underline">( ________________________ )</p>
                             </div>
                             <div>
-                                <p>Dicetak pada: <span id="print-date-stamp">...</span></p>
+                                <p>Dicetak pada: <span class="print-date-stamp">...</span></p>
                                 <p class="font-bold">Wakil Kepala Sekolah / Kurikulum</p>
                                 <div class="h-16"></div>
                                 <p class="font-bold underline">( ________________________ )</p>
@@ -732,7 +876,7 @@
                     </div>
                 </section>
 
-                <!-- TAB 4: KELOLA DATA MASTER & MANAJEMEN AKUN -->
+                <!-- TAB 5: KELOLA DATA MASTER & MANAJEMEN AKUN -->
                 <section id="modul-master" class="space-y-6 hidden">
                     <div class="bg-indigo-900 text-white p-5 rounded-2xl shadow-md flex flex-wrap justify-between items-center gap-4">
                         <div>
@@ -1016,9 +1160,11 @@
             if (document.getElementById('jurnal-tanggal')) document.getElementById('jurnal-tanggal').value = todayStr;
 
             setPresetEvalRange('today');
+            setPresetRekapRange('today');
 
-            const printDate = document.getElementById('print-date-stamp');
-            if (printDate) printDate.innerText = new Date().toLocaleDateString('id-ID');
+            document.querySelectorAll('.print-date-stamp').forEach(el => {
+                el.innerText = new Date().toLocaleDateString('id-ID');
+            });
 
             initCharts();
 
@@ -1052,11 +1198,9 @@
             }
         };
 
-        /* FUNGSI DROPDOWN MENU SIDEBAR & SMOOTH SCROLL */
         function toggleSubMenu(subMenuId, iconId, tabId, event) {
             if (event) event.preventDefault();
             
-            // Pindah tab jika diperlukan
             if (tabId && appState.currentTab !== tabId) {
                 switchTab(null, tabId);
             }
@@ -1078,7 +1222,6 @@
         function scrollToSubSection(event, tabId, sectionId) {
             if (event) event.preventDefault();
 
-            // Pastikan tab aktif terlebih dahulu
             if (appState.currentTab !== tabId) {
                 switchTab(null, tabId);
             }
@@ -1090,7 +1233,6 @@
                 }
             }, 100);
 
-            // Tutup sidebar jika pada tampilan HP
             if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar-nav');
                 if (!sidebar.classList.contains('hidden')) {
@@ -1213,17 +1355,20 @@
             const role = appState.currentUser.role;
             const tabPresensi = document.getElementById('tab-btn-presensi');
             const tabJurnal = document.getElementById('tab-btn-jurnal');
+            const tabRekap = document.getElementById('tab-btn-rekap');
             const tabEvaluasi = document.getElementById('tab-btn-evaluasi');
             const tabMaster = document.getElementById('tab-btn-master');
 
             tabPresensi.style.display = 'flex';
             tabJurnal.style.display = 'flex';
-            tabEvaluasi.style.display = 'flex';
+            if (tabRekap) tabRekap.style.display = 'flex';
+            if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'block';
             tabMaster.style.display = 'flex';
 
             populateDropdowns();
 
             if (role === 'walikelas') {
+                if (tabRekap) tabRekap.style.display = 'none';
                 if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'none';
                 tabMaster.style.display = 'none';
                 if(document.getElementById('jurnal-guru')) {
@@ -1233,17 +1378,18 @@
             } else if (role === 'kepsek') {
                 tabPresensi.style.display = 'none';
                 tabJurnal.style.display = 'none';
+                if (tabRekap) tabRekap.style.display = 'none';
                 tabMaster.style.display = 'none';
                 switchTab(null, 'evaluasi');
             } else if (role === 'admin') {
-                switchTab(null, 'master');
+                switchTab(null, 'rekap');
             }
         }
 
         function switchTab(e, tabId) {
             if (e) e.preventDefault();
             appState.currentTab = tabId;
-            const tabs = ['presensi', 'jurnal', 'evaluasi', 'master'];
+            const tabs = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
 
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-btn-${t}`);
@@ -1273,6 +1419,7 @@
                 renderJurnalList();
                 renderGuruFeedbackSection();
             }
+            if (appState.currentTab === 'rekap') renderRekapModule();
             if (appState.currentTab === 'evaluasi') updateEvaluasiDashboard();
             if (appState.currentTab === 'master') {
                 renderMasterUsersTable();
@@ -1303,6 +1450,7 @@
             const jurnalClassSelect = document.getElementById('jurnal-kelas-select');
             const jurnalMapelSelect = document.getElementById('jurnal-mapel-select');
             const filterEvalKelasSelect = document.getElementById('filter-eval-kelas');
+            const filterRekapKelasSelect = document.getElementById('filter-rekap-kelas');
             const filterJurnalSelect = document.getElementById('filter-jurnal-kelas');
             const evalJurnalFilterKelas = document.getElementById('eval-jurnal-filter-kelas');
             const filterMasterSiswaSelect = document.getElementById('master-siswa-filter-kelas');
@@ -1344,6 +1492,7 @@
             if (evalJurnalFilterKelas) evalJurnalFilterKelas.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
             if (filterMasterSiswaSelect) filterMasterSiswaSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
             if (filterEvalKelasSelect) filterEvalKelasSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
+            if (filterRekapKelasSelect) filterRekapKelasSelect.innerHTML = `<option value="ALL">Semua Kelas</option>` + allClassOptions;
 
             let mapelOptions = '';
             (appState.mapels || []).forEach(m => {
@@ -1362,6 +1511,133 @@
 
             updateTargetKelasDropdown();
             renderUserFormClassCheckboxes();
+        }
+
+        /* FUNGSI KONTROL REKAPITULASI DATA (KHUSUS ADMIN) */
+        function setPresetRekapRange(type) {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const startInput = document.getElementById('filter-rekap-start-date');
+            const endInput = document.getElementById('filter-rekap-end-date');
+
+            if (!startInput || !endInput) return;
+
+            if (type === 'today') {
+                startInput.value = todayStr;
+                endInput.value = todayStr;
+            } else if (type === 'this_week') {
+                const dayOfWeek = today.getDay();
+                const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                const monday = new Date(today);
+                monday.setDate(today.getDate() + distanceToMonday);
+                startInput.value = monday.toISOString().split('T')[0];
+                endInput.value = todayStr;
+            } else if (type === 'this_month') {
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                startInput.value = firstDay.toISOString().split('T')[0];
+                endInput.value = todayStr;
+            }
+            renderRekapModule();
+        }
+
+        function renderRekapModule() {
+            const startDate = document.getElementById('filter-rekap-start-date').value || new Date().toISOString().split('T')[0];
+            const endDate = document.getElementById('filter-rekap-end-date').value || startDate;
+            const filterKelas = document.getElementById('filter-rekap-kelas').value;
+
+            let periodLabel = `${new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${new Date(endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+            if (startDate === endDate) {
+                periodLabel = new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+
+            document.getElementById('rekap-presensi-period-label').innerText = periodLabel;
+            document.getElementById('rekap-jurnal-period-label').innerText = periodLabel;
+
+            // 1. REKAP PRESENSI SISWA PER KELAS
+            const tbodyPresensi = document.getElementById('rekap-table-presensi-body');
+            tbodyPresensi.innerHTML = '';
+
+            const activeStudentIds = (appState.students || []).map(s => s.id);
+            const classesToRender = filterKelas === 'ALL' 
+                ? (appState.classes || []) 
+                : (appState.classes || []).filter(c => c.id === filterKelas);
+
+            if (classesToRender.length === 0) {
+                tbodyPresensi.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400 font-medium">Tidak ada kelas yang terdaftar.</td></tr>`;
+            } else {
+                classesToRender.forEach((c, idx) => {
+                    const totalSiswaKelas = (appState.students || []).filter(s => s.classId === c.id).length;
+                    let hadir = 0, izin = 0, sakit = 0, alpa = 0, totalRecords = 0;
+
+                    Object.keys(appState.presensiRecords || {}).forEach(key => {
+                        const parts = key.split('_');
+                        const tgl = parts[0];
+                        const classId = parts[1];
+
+                        if (classId === c.id && tgl >= startDate && tgl <= endDate) {
+                            (appState.presensiRecords[key] || []).forEach(r => {
+                                if (activeStudentIds.includes(r.studentId)) {
+                                    totalRecords++;
+                                    if (r.status === 'Hadir') hadir++;
+                                    else if (r.status === 'Izin') izin++;
+                                    else if (r.status === 'Sakit') sakit++;
+                                    else if (r.status === 'Alpa') alpa++;
+                                }
+                            });
+                        }
+                    });
+
+                    const percentHadir = totalRecords > 0 ? Math.round((hadir / totalRecords) * 100) : 0;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition";
+                    tr.innerHTML = `
+                        <td class="p-3 text-center text-slate-400 font-bold">${idx + 1}</td>
+                        <td class="p-3 font-extrabold text-slate-800">${c.name}</td>
+                        <td class="p-3 text-center font-bold text-slate-600">${totalSiswaKelas} Siswa</td>
+                        <td class="p-3 text-center font-bold text-emerald-700">${hadir}</td>
+                        <td class="p-3 text-center font-bold text-blue-700">${izin}</td>
+                        <td class="p-3 text-center font-bold text-amber-700">${sakit}</td>
+                        <td class="p-3 text-center font-bold text-rose-700">${alpa}</td>
+                        <td class="p-3 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-black ${percentHadir >= 80 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                ${percentHadir}%
+                            </span>
+                        </td>
+                    `;
+                    tbodyPresensi.appendChild(tr);
+                });
+            }
+
+            // 2. REKAP JURNAL KBM GURU
+            const tbodyJurnal = document.getElementById('rekap-table-jurnal-body');
+            tbodyJurnal.innerHTML = '';
+
+            const journals = appState.journals || [];
+            let filteredJurnal = journals.filter(j => {
+                const inRange = j.tanggal >= startDate && j.tanggal <= endDate;
+                const matchKelas = filterKelas === 'ALL' || j.classId === filterKelas;
+                return inRange && matchKelas;
+            });
+
+            if (filteredJurnal.length === 0) {
+                tbodyJurnal.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 font-medium">Tidak ada aktivitas jurnal KBM pada rentang tanggal terpilih.</td></tr>`;
+            } else {
+                filteredJurnal.forEach((j, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition";
+                    tr.innerHTML = `
+                        <td class="p-3 text-center text-slate-400 font-bold">${idx + 1}</td>
+                        <td class="p-3 font-semibold text-slate-600 shrink-0">${j.tanggal}</td>
+                        <td class="p-3 font-extrabold text-indigo-900">${j.guru}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-[10px]">${getClassName(j.classId)}</span><br><span class="text-slate-500 font-medium">${j.mapel}</span></td>
+                        <td class="p-3"><strong class="text-slate-800 font-bold block">${j.materi}</strong><span class="text-slate-500 text-[11px]">${j.capaian}</span></td>
+                        <td class="p-3 text-slate-600 font-medium">${j.kegiatan}</td>
+                        <td class="p-3 text-slate-600">${j.kendala ? `<span class="bg-amber-50 text-amber-900 border border-amber-200 p-1.5 rounded-lg block text-[11px]">${j.kendala}</span>` : '-'}</td>
+                    `;
+                    tbodyJurnal.appendChild(tr);
+                });
+            }
         }
 
         function updateTargetKelasDropdown() {
