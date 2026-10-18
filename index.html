@@ -45,8 +45,8 @@
     <div id="screen-login" class="min-h-screen bg-slate-900 flex items-center justify-center p-4">
         <div class="max-w-md w-full bg-white rounded-3xl p-8 shadow-2xl space-y-6 border border-slate-100">
             <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-indigo-100 rounded-2xl text-indigo-700 mb-1">
-                    <i class="fa-solid fa-hands-holding-child text-3xl"></i>
+                <div class="inline-flex p-2 mb-1 justify-center">
+                    <img src="https://lh3.googleusercontent.com/d/1hj51TEIggB0YcOGJIU2dR3-njnXpnh2V" alt="Logo SLBN 2 Pelaihari" class="w-24 h-24 object-contain">
                 </div>
                 <h2 class="text-2xl font-black text-slate-900 tracking-tight">SIMPATIK SLBN 2 PELAIHARI</h2>
                 <p class="text-xs text-slate-500 font-medium">Sistem Presensi, Jurnal KBM & Evaluasi Kepala Sekolah</p>
@@ -78,11 +78,11 @@
     <!-- HALAMAN UTAMA APLIKASI -->
     <div id="screen-app" class="hidden flex-col md:flex-row min-h-screen relative">
 
-        <!-- MOBILE TOP BAR (PERMANEN DI HP, SEMBUNYI DI DESKTOP) -->
+        <!-- MOBILE TOP BAR -->
         <header class="md:hidden bg-indigo-900 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-md no-print">
             <div class="flex items-center space-x-3">
-                <div class="bg-white/10 p-1.5 rounded-lg border border-white/20 shadow-inner flex items-center justify-center">
-                    <i class="fa-solid fa-hands-holding-child text-lg text-amber-300"></i>
+                <div class="p-1 flex items-center justify-center">
+                    <img src="https://lh3.googleusercontent.com/d/1hj51TEIggB0YcOGJIU2dR3-njnXpnh2V" alt="Logo SLBN 2 Pelaihari" class="w-8 h-8 object-contain">
                 </div>
                 <div>
                     <h1 class="text-xs font-black tracking-tight text-white leading-tight">SIMPATIK SLBN 2 PELAIHARI</h1>
@@ -94,17 +94,17 @@
             </button>
         </header>
 
-        <!-- BACKDROP OVERLAY UNTUK HP SAAT SIDEBAR TERBUKA -->
+        <!-- BACKDROP OVERLAY UNTUK HP -->
         <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" class="hidden fixed inset-0 bg-slate-900/60 z-40 md:hidden backdrop-blur-xs no-print"></div>
 
-        <!-- SIDEBAR NAVIGATION (MELAYANG DI HP, TETAP DI KIRI PADA LAPTOP) -->
+        <!-- SIDEBAR NAVIGATION -->
         <aside id="sidebar-nav" class="hidden md:flex bg-indigo-900 text-white w-64 flex-shrink-0 flex-col justify-between no-print fixed md:static top-0 left-0 bottom-0 h-full z-50 shadow-2xl md:shadow-none transition-all duration-300">
             <div>
                 <!-- BRAND SIDEBAR DESKTOP -->
                 <div class="p-4 border-b border-indigo-800/80 hidden md:flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <div class="bg-white/10 p-2 rounded-xl border border-white/20 shadow-inner flex items-center justify-center">
-                            <i class="fa-solid fa-hands-holding-child text-xl text-amber-300"></i>
+                        <div class="p-1 flex items-center justify-center">
+                            <img src="https://lh3.googleusercontent.com/d/1hj51TEIggB0YcOGJIU2dR3-njnXpnh2V" alt="Logo SLBN 2 Pelaihari" class="w-10 h-10 object-contain">
                         </div>
                         <div>
                             <h1 class="text-sm font-black tracking-tight text-white leading-tight">SIMPATIK</h1>
@@ -126,7 +126,7 @@
                     </div>
                 </div>
 
-                <!-- MENU TABS (VERTIKAL) -->
+                <!-- MENU TABS -->
                 <nav class="p-3 space-y-1.5" id="nav-tabs">
                     <button type="button" onclick="switchTab(event, 'presensi')" id="tab-btn-presensi" class="tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all cursor-pointer">
                         <i class="fa-solid fa-clipboard-user text-base w-5 text-center"></i>
@@ -685,7 +685,7 @@
                     </div>
                 </section>
 
-                <!-- TAB 4: KELOLA DATA MASTER & MANAJEMEN AKUN (KHUSUS ADMIN) -->
+                <!-- TAB 4: KELOLA DATA MASTER & MANAJEMEN AKUN -->
                 <section id="modul-master" class="space-y-6 hidden">
                     <div class="bg-indigo-900 text-white p-5 rounded-2xl shadow-md flex flex-wrap justify-between items-center gap-4">
                         <div>
