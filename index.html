@@ -1162,7 +1162,7 @@
                         appState.evaluations = data.evaluations || [];
                     }
                     populateDropdowns();
-                    checkSession(false); // Parameter false agar tidak memicu pemaksaan pergantian tab saat sync data
+                    checkSession(false);
                     refreshCurrentTabUI();
                 });
             } else {
@@ -1373,7 +1373,6 @@
                 tabMaster.style.display = 'none';
                 if (isInitial) switchTab(null, 'evaluasi');
             } else if (role === 'admin') {
-                // Saat login awal admin default ke presensi (dapat beralih bebas tanpa auto-redirect ke rekap)
                 if (isInitial && !appState.currentTab) switchTab(null, 'presensi');
             }
         }
