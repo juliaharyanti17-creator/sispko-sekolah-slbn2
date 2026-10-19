@@ -1133,6 +1133,7 @@
             currentTab: 'presensi'
         };
 
+        let isInitialLoad = true;
         let barChartInstance = null, pieChartInstance = null;
 
         window.onload = function() {
@@ -1161,9 +1162,14 @@
                         appState.journals = data.journals || [];
                         appState.evaluations = data.evaluations || [];
                     }
-                    populateDropdowns();
-                    checkSession(false);
-                    refreshCurrentTabUI();
+                    
+                    if (isInitialLoad) {
+                        populateDropdowns();
+                        checkSession(true);
+                        isInitialLoad = false;
+                    } else {
+                        refreshCurrentTabUI();
+                    }
                 });
             } else {
                 const localData = localStorage.getItem('sispko_local_backup');
@@ -1177,6 +1183,7 @@
                 if (!appState.users || appState.users.length === 0) appState.users = [...DEFAULT_USERS];
                 populateDropdowns();
                 checkSession(true);
+                isInitialLoad = false;
             }
         };
 
@@ -1373,7 +1380,7 @@
                 tabMaster.style.display = 'none';
                 if (isInitial) switchTab(null, 'evaluasi');
             } else if (role === 'admin') {
-                if (isInitial && !appState.currentTab) switchTab(null, 'presensi');
+                if (isInitial) switchTab(null, 'presensi');
             }
         }
 
