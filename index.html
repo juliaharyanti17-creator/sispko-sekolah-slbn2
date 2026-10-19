@@ -1162,7 +1162,8 @@
                         appState.evaluations = data.evaluations || [];
                     }
                     populateDropdowns();
-                    checkSession();
+                    checkSession(false); // Parameter false agar tidak memicu pemaksaan pergantian tab saat sync data
+                    refreshCurrentTabUI();
                 });
             } else {
                 const localData = localStorage.getItem('sispko_local_backup');
@@ -1175,7 +1176,7 @@
                 }
                 if (!appState.users || appState.users.length === 0) appState.users = [...DEFAULT_USERS];
                 populateDropdowns();
-                checkSession();
+                checkSession(true);
             }
         };
 
@@ -1305,7 +1306,7 @@
                 document.getElementById('user-display-name').innerText = user.nama;
                 document.getElementById('user-display-role').innerText = user.role;
 
-                applyRolePermissions();
+                applyRolePermissions(true);
                 showToast(`Selamat datang, ${user.nama}!`);
             } else {
                 alert("Nama pengguna/username atau password salah! Silakan coba lagi.");
@@ -1321,7 +1322,7 @@
             showToast("Anda telah keluar dari aplikasi.");
         }
 
-        function checkSession() {
+        function checkSession(isInitial = false) {
             const savedSession = localStorage.getItem('sispko_session_user');
             if (savedSession) {
                 try {
@@ -1333,14 +1334,14 @@
                     document.getElementById('user-display-name').innerText = appState.currentUser.nama;
                     document.getElementById('user-display-role').innerText = appState.currentUser.role;
 
-                    applyRolePermissions();
+                    applyRolePermissions(isInitial);
                 } catch (err) {
                     localStorage.removeItem('sispko_session_user');
                 }
             }
         }
 
-        function applyRolePermissions() {
+        function applyRolePermissions(isInitial = false) {
             if (!appState.currentUser) return;
             const role = appState.currentUser.role;
             const tabPresensi = document.getElementById('tab-btn-presensi');
@@ -1364,15 +1365,16 @@
                 if(document.getElementById('jurnal-guru')) {
                     document.getElementById('jurnal-guru').value = appState.currentUser.nama;
                 }
-                switchTab(null, 'presensi');
+                if (isInitial) switchTab(null, 'presensi');
             } else if (role === 'kepsek') {
                 tabPresensi.style.display = 'none';
                 tabJurnal.style.display = 'none';
                 if (tabRekap) tabRekap.style.display = 'none';
                 tabMaster.style.display = 'none';
-                switchTab(null, 'evaluasi');
+                if (isInitial) switchTab(null, 'evaluasi');
             } else if (role === 'admin') {
-                switchTab(null, 'rekap');
+                // Saat login awal admin default ke presensi (dapat beralih bebas tanpa auto-redirect ke rekap)
+                if (isInitial && !appState.currentTab) switchTab(null, 'presensi');
             }
         }
 
