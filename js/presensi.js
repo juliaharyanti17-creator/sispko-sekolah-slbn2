@@ -1,13 +1,22 @@
-// Logika Modul Presensi Siswa
-function getPresensiKey() {
+// Logika Modul Presensi Siswa dengen Override Mapel
+function getPresensiBaseKey() {
     const date = document.getElementById('presensi-tanggal').value;
     const classSelect = document.getElementById('presensi-kelas-select');
     const classId = classSelect ? classSelect.value : '';
     return `${date}_${classId}`;
 }
 
+function getPresensiMapelKey(mapelName) {
+    const baseKey = getPresensiBaseKey();
+    if (!mapelName || mapelName === 'GENERAL') return baseKey;
+    return `${baseKey}_${mapelName}`;
+}
+
 function loadPresensiTable() {
     const classSelect = document.getElementById('presensi-kelas-select');
+    const mapelSelect = document.getElementById('presensi-mapel-select');
+    const selectedMapel = mapelSelect ? mapelSelect.value : 'GENERAL';
+
     if (!classSelect || !classSelect.value) {
         document.getElementById('label-presensi-kelas').innerText = "-";
         document.getElementById('presensi-table-body').innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Belum ada kelas terpilih atau diampu.</td></tr>`;
@@ -15,20 +24,27 @@ function loadPresensiTable() {
         return;
     }
     const classId = classSelect.value;
-    document.getElementById('label-presensi-kelas').innerText = getClassName(classId);
+    document.getElementById('label-presensi-kelas').innerText = `${getClassName(classId)} (${selectedMapel})`;
 
-    const key = getPresensiKey();
+    const baseKey = getPresensiBaseKey();
+    const mapelKey = getPresensiMapelKey(selectedMapel);
     const classStudents = (appState.students || []).filter(s => s.classId === classId);
     const tbody = document.getElementById('presensi-table-body');
 
     if (!appState.presensiRecords) appState.presensiRecords = {};
-    if (!appState.presensiRecords[key]) {
-        appState.presensiRecords[key] = classStudents.map(s => ({
+    
+    // Pastikan record dasar harian wali kelas sudah ada
+    if (!appState.presensiRecords[baseKey]) {
+        appState.presensiRecords[baseKey] = classStudents.map(s => ({
             studentId: s.id, status: 'Hadir', notes: ''
         }));
     }
 
-    const currentRecordList = appState.presensiRecords[key];
+    const baseList = appState.presensiRecords[baseKey];
+    const mapelOverrideList = (selectedMapel !== 'GENERAL' && appState.presensiRecords[mapelKey]) 
+        ? appState.presensiRecords[mapelKey] 
+        : [];
+
     tbody.innerHTML = '';
 
     if (classStudents.length === 0) {
@@ -37,12 +53,21 @@ function loadPresensiTable() {
         return;
     }
 
+    const currentDisplayList = [];
+
     classStudents.forEach((student, index) => {
-        let record = currentRecordList.find(r => r.studentId === student.id);
-        if (!record) {
-            record = { studentId: student.id, status: 'Hadir', notes: '' };
-            currentRecordList.push(record);
+        let baseRecord = baseList.find(r => r.studentId === student.id);
+        if (!baseRecord) {
+            baseRecord = { studentId: student.id, status: 'Hadir', notes: '' };
+            baseList.push(baseRecord);
         }
+
+        // Ambil status override mapel jika ada, jika tidak pakai status dasar Wali Kelas
+        let overrideRecord = mapelOverrideList.find(r => r.studentId === student.id);
+        const activeStatus = overrideRecord ? overrideRecord.status : baseRecord.status;
+        const activeNotes = overrideRecord ? overrideRecord.notes : baseRecord.notes;
+
+        currentDisplayList.push({ studentId: student.id, status: activeStatus, notes: activeNotes });
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50/80 transition";
@@ -59,20 +84,20 @@ function loadPresensiTable() {
             </td>
             <td class="p-3.5 text-center">
                 <div class="inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-1 gap-1">
-                    ${renderPresensiRadioBtn(student.id, 'Hadir', record.status)}
-                    ${renderPresensiRadioBtn(student.id, 'Izin', record.status)}
-                    ${renderPresensiRadioBtn(student.id, 'Sakit', record.status)}
-                    ${renderPresensiRadioBtn(student.id, 'Alpa', record.status)}
+                    ${renderPresensiRadioBtn(student.id, 'Hadir', activeStatus)}
+                    ${renderPresensiRadioBtn(student.id, 'Izin', activeStatus)}
+                    ${renderPresensiRadioBtn(student.id, 'Sakit', activeStatus)}
+                    ${renderPresensiRadioBtn(student.id, 'Alpa', activeStatus)}
                 </div>
             </td>
             <td class="p-3.5">
-                <input type="text" value="${record.notes || ''}" onchange="updatePresensiNotes('${student.id}', this.value)" placeholder="Catatan perilaku/alasan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500">
+                <input type="text" value="${activeNotes || ''}" onchange="updatePresensiNotes('${student.id}', this.value)" placeholder="Catatan/keterangan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500">
             </td>
         `;
         tbody.appendChild(tr);
     });
 
-    calculatePresensiCounters(currentRecordList);
+    calculatePresensiCounters(currentDisplayList);
 }
 
 function renderPresensiRadioBtn(studentId, statusType, activeStatus) {
@@ -89,31 +114,63 @@ function renderPresensiRadioBtn(studentId, statusType, activeStatus) {
 
 function updatePresensiStatus(e, studentId, newStatus) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
-    const key = getPresensiKey();
-    if (!appState.presensiRecords[key]) return;
-    const target = appState.presensiRecords[key].find(r => r.studentId === studentId);
-    if (target) {
-        target.status = newStatus;
-        saveAppState();
-        loadPresensiTable();
+    const mapelSelect = document.getElementById('presensi-mapel-select');
+    const selectedMapel = mapelSelect ? mapelSelect.value : 'GENERAL';
+    
+    const baseKey = getPresensiBaseKey();
+    const mapelKey = getPresensiMapelKey(selectedMapel);
+
+    if (selectedMapel === 'GENERAL' || (appState.currentUser && appState.currentUser.role === 'walikelas')) {
+        // Jika Wali Kelas yang ubah di status Umum, update status dasar harian
+        if (!appState.presensiRecords[baseKey]) return;
+        const target = appState.presensiRecords[baseKey].find(r => r.studentId === studentId);
+        if (target) target.status = newStatus;
+    } else {
+        // Jika Guru Mapel yang ubah, simpan sebagai override mapel
+        if (!appState.presensiRecords[mapelKey]) appState.presensiRecords[mapelKey] = [];
+        let target = appState.presensiRecords[mapelKey].find(r => r.studentId === studentId);
+        if (!target) {
+            target = { studentId: studentId, status: newStatus, notes: '' };
+            appState.presensiRecords[mapelKey].push(target);
+        } else {
+            target.status = newStatus;
+        }
     }
+
+    saveAppState();
+    loadPresensiTable();
 }
 
 function updatePresensiNotes(studentId, noteText) {
-    const key = getPresensiKey();
-    if (!appState.presensiRecords[key]) return;
-    const target = appState.presensiRecords[key].find(r => r.studentId === studentId);
-    if (target) {
-        target.notes = noteText;
-        saveAppState();
+    const mapelSelect = document.getElementById('presensi-mapel-select');
+    const selectedMapel = mapelSelect ? mapelSelect.value : 'GENERAL';
+    
+    const baseKey = getPresensiBaseKey();
+    const mapelKey = getPresensiMapelKey(selectedMapel);
+
+    if (selectedMapel === 'GENERAL' || (appState.currentUser && appState.currentUser.role === 'walikelas')) {
+        if (!appState.presensiRecords[baseKey]) return;
+        const target = appState.presensiRecords[baseKey].find(r => r.studentId === studentId);
+        if (target) target.notes = noteText;
+    } else {
+        if (!appState.presensiRecords[mapelKey]) appState.presensiRecords[mapelKey] = [];
+        let target = appState.presensiRecords[mapelKey].find(r => r.studentId === studentId);
+        if (!target) {
+            target = { studentId: studentId, status: 'Hadir', notes: noteText };
+            appState.presensiRecords[mapelKey].push(target);
+        } else {
+            target.notes = noteText;
+        }
     }
+
+    saveAppState();
 }
 
 function bulkSetPresensiStatus(e, statusType) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
-    const key = getPresensiKey();
-    if (!appState.presensiRecords[key]) return;
-    appState.presensiRecords[key].forEach(r => r.status = statusType);
+    const baseKey = getPresensiBaseKey();
+    if (!appState.presensiRecords[baseKey]) return;
+    appState.presensiRecords[baseKey].forEach(r => r.status = statusType);
     saveAppState();
     loadPresensiTable();
     showToast(`Semua siswa di-set ${statusType}`);
