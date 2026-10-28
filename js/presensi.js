@@ -1,4 +1,4 @@
-// Modul Presensi & Rekapitulasi Presensi
+// Modul Presensi & Rekapitulasi Presensi (Dengan Fitur Warisan / Inherited Attendance)
 
 function loadPresensiTable() {
     populatePresensiDropdowns();
@@ -14,18 +14,15 @@ function populatePresensiDropdowns() {
 
     if (!selectKelas) return;
 
-    // 1. FILTER PILIHAN KELAS
     var currentSelectedClass = selectKelas.value;
     selectKelas.innerHTML = '';
     
     var availableClasses = [];
     if (user.role === 'walikelas') {
-        // Wali Kelas HANYA bisa memilih kelas yang diampu
         availableClasses = (appState.classes || []).filter(function(c) {
             return (user.classIds || []).includes(c.id);
         });
     } else {
-        // Admin, Kepsek, dan Guru Mapel BISA memilih semua kelas
         availableClasses = appState.classes || [];
     }
 
@@ -40,17 +37,14 @@ function populatePresensiDropdowns() {
         }
     }
 
-    // 2. FILTER PILIHAN MATA PELAJARAN (JIKA ADA DROPDOWN MAPEL DI PRESENSI)
     if (selectMapel) {
         var currentSelectedMapel = selectMapel.value;
         selectMapel.innerHTML = '';
         
         var availableMapels = [];
         if (user.role === 'gurumapel') {
-            // Guru Mapel HANYA melihat mata pelajaran ampuannya
             availableMapels = user.assignedMapels || [];
         } else {
-            // Wali Kelas / Admin melihat semua mata pelajaran
             availableMapels = appState.mapels || [];
         }
 
@@ -69,6 +63,7 @@ function populatePresensiDropdowns() {
 
 function renderPresensiForm() {
     var selectKelas = document.getElementById('presensi-kelas-select');
+    var selectMapel = document.getElementById('presensi-mapel-select');
     var inputTgl = document.getElementById('presensi-tanggal');
     var tbody = document.getElementById('presensi-table-body');
 
@@ -76,6 +71,8 @@ function renderPresensiForm() {
 
     var classId = selectKelas.value;
     var tgl = inputTgl.value;
+    var user = appState.currentUser;
+    var mapel = (selectMapel && user && user.role === 'gurumapel') ? selectMapel.value : '';
 
     tbody.innerHTML = '';
 
@@ -84,7 +81,6 @@ function renderPresensiForm() {
         return;
     }
 
-    // Ambil siswa sesuai kelas
     var studentsInClass = (appState.students || []).filter(function(s) {
         return s.classId === classId;
     });
@@ -94,12 +90,22 @@ function renderPresensiForm() {
         return;
     }
 
-    // Ambil record presensi yang tersimpan
-    var key = classId + "_" + tgl;
-    var savedRecord = (appState.presensiRecords && appState.presensiRecords[key]) ? appState.presensiRecords[key] : {};
+    // LOGIKA WARISAN PRESENSI
+    var keyInduk = classId + "_" + tgl;
+    var keyMapel = classId + "_" + tgl + "_" + (mapel ? mapel.replace(/\s+/g, '') : '');
+
+    var recordInduk = (appState.presensiRecords && appState.presensiRecords[keyInduk]) ? appState.presensiRecords[keyInduk] : {};
+    var recordMapel = (mapel && appState.presensiRecords && appState.presensiRecords[keyMapel]) ? appState.presensiRecords[keyMapel] : null;
 
     studentsInClass.forEach(function(s, idx) {
-        var status = savedRecord[s.id] || 'H'; // Default Hadir
+        // Jika Guru Mapel sudah punya catatan tersendiri, pakai itu. Jika belum, warisi dari data Induk Wali Kelas (Default 'H').
+        var status = 'H';
+        if (recordMapel && recordMapel[s.id]) {
+            status = recordMapel[s.id];
+        } else if (recordInduk && recordInduk[s.id]) {
+            status = recordInduk[s.id];
+        }
+
         var tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
 
@@ -131,21 +137,28 @@ function renderPresensiForm() {
 function handleSavePresensi(e) {
     if (e) e.preventDefault();
     var selectKelas = document.getElementById('presensi-kelas-select');
+    var selectMapel = document.getElementById('presensi-mapel-select');
     var inputTgl = document.getElementById('presensi-tanggal');
 
     if (!selectKelas || !inputTgl) return;
 
     var classId = selectKelas.value;
     var tgl = inputTgl.value;
+    var user = appState.currentUser;
+    var mapel = (selectMapel && user && user.role === 'gurumapel') ? selectMapel.value : '';
 
     if (!classId) {
         alert("Pilih kelas terlebih dahulu!");
         return;
     }
 
+    // Tentukan Key Simpan (Induk atau Spesifik Mapel)
     var key = classId + "_" + tgl;
-    var record = {};
+    if (mapel) {
+        key = classId + "_" + tgl + "_" + mapel.replace(/\s+/g, '');
+    }
 
+    var record = {};
     var studentsInClass = (appState.students || []).filter(function(s) { return s.classId === classId; });
     studentsInClass.forEach(function(s) {
         var checkedRadio = document.querySelector('input[name="presensi_' + s.id + '"]:checked');
@@ -160,5 +173,5 @@ function handleSavePresensi(e) {
     appState.presensiRecords[key] = record;
 
     saveAppState();
-    showToast("Presensi kelas berhasil disimpan!");
+    showToast(mapel ? "Presensi mapel " + mapel + " berhasil disimpan!" : "Presensi harian induk berhasil disimpan!");
 }
