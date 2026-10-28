@@ -1,5 +1,5 @@
 // Konfigurasi Firebase & Global State
-const firebaseConfig = {
+var firebaseConfig = {
     apiKey: "AIzaSyDo7NJQTNqt2OyDjVetYajtR-g1dsWwj_8",
     authDomain: "sispko-sekolah.firebaseapp.com",
     databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -14,7 +14,9 @@ var auth = null;
 
 try {
     if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         db = firebase.database();
         auth = firebase.auth();
     }
@@ -22,19 +24,19 @@ try {
     console.warn("Firebase gagal dimuat:", err);
 }
 
-const DEFAULT_MAPELS = [
+var DEFAULT_MAPELS = [
     "Pendidikan Agama Islam", "PPKN", "Bahasa Indonesia", "Matematika", 
     "IPAS", "PJOK", "Seni Budaya", "Muatan Lokal", "Bina Diri", "Bahasa Inggris"
 ];
 
-const DEFAULT_USERS = [
+var DEFAULT_USERS = [
     { id: "u1", username: "admin", nama: "Administrator Sistem", role: "admin", classIds: [], assignedMapels: [] },
     { id: "u2", username: "kepsek", nama: "Maisyanti Disi Fatimah,S.Pd.I.,M.Pd", role: "kepsek", classIds: [], assignedMapels: [] },
     { id: "u3", username: "guru", nama: "Siti Rahmah, S.Pd.", role: "walikelas", classIds: ["K1", "K2"], assignedMapels: [] },
     { id: "u4", username: "gurumapel", nama: "Ahmad Rizky, S.Pd.", role: "gurumapel", classIds: [], assignedMapels: ["PJOK"] }
 ];
 
-let appState = {
+var appState = {
     classes: [{ id: "K1", name: "Kelas I A" }, { id: "K2", name: "Kelas II B" }],
     students: [],
     mapels: [...DEFAULT_MAPELS],
@@ -46,13 +48,13 @@ let appState = {
     currentTab: 'presensi'
 };
 
-let isInitialLoad = true;
-let barChartInstance = null, pieChartInstance = null;
+var isInitialLoad = true;
+var barChartInstance = null, pieChartInstance = null;
 
 function formatUserEmail(username) {
     if (!username) return "admin@slbn2pelaihari.sch.id";
-    const cleanUsername = username.trim().toLowerCase().replace(/\s+/g, '');
-    return `${cleanUsername}@slbn2pelaihari.sch.id`;
+    var cleanUsername = username.trim().toLowerCase().replace(/\s+/g, '');
+    return cleanUsername + "@slbn2pelaihari.sch.id";
 }
 
 function saveAppState() {
@@ -71,9 +73,10 @@ function saveAppState() {
     }
 }
 
-function showToast(msg, type = "success") {
-    const toast = document.getElementById('toast-banner');
-    const toastIcon = document.getElementById('toast-icon');
+function showToast(msg, type) {
+    if (!type) type = "success";
+    var toast = document.getElementById('toast-banner');
+    var toastIcon = document.getElementById('toast-icon');
     if (!toast) return;
     document.getElementById('toast-msg').innerText = msg;
 
@@ -84,11 +87,11 @@ function showToast(msg, type = "success") {
     }
 
     toast.classList.remove('hidden');
-    setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+    setTimeout(function() { toast.classList.add('hidden'); }, 3000);
 }
 
 function getClassName(classId) {
     if (classId === 'Semua Kelas') return 'Semua Kelas';
-    const found = (appState.classes || []).find(c => c.id === classId);
+    var found = (appState.classes || []).find(function(c) { return c.id === classId; });
     return found ? found.name : classId;
 }
