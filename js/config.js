@@ -1,14 +1,12 @@
 // Konfigurasi Firebase & Global State
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDo7HJQTNgH2OyOjVetYajtR-gIdsWwj_0",
-  authDomain: "sispko-sekolah.firebaseapp.com",
-  databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sispko-sekolah",
-  storageBucket: "sispko-sekolah.firebasestorage.app",
-  messagingSenderId: "280921949204",
-  appId: "1:280921949204:web:94781a66e1d16f72911301",
-  measurementId: "G-NHZLZGTSD0"
+    apiKey: "AIzaSyDo7NJQTNqt2OyDjVetYajtR-g1dsWwj_8",
+    authDomain: "sispko-sekolah.firebaseapp.com",
+    databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "sispko-sekolah",
+    storageBucket: "sispko-sekolah.firebasestorage.app",
+    messagingSenderId: "280921949204",
+    appId: "1:280921949204:web:94781a66e1d16f72911301"
 };
 
 var db = null;
@@ -30,10 +28,10 @@ const DEFAULT_MAPELS = [
 ];
 
 const DEFAULT_USERS = [
-    { id: "u1", username: "admin", nama: "Administrator Sistem", role: "admin", classIds: [], assignedMapels: [] },
-    { id: "u2", username: "kepsek", nama: "Maisyanti Disi Fatimah,S.Pd.I.,M.Pd", role: "kepsek", classIds: [], assignedMapels: [] },
-    { id: "u3", username: "guru", nama: "Siti Rahmah, S.Pd.", role: "walikelas", classIds: ["K1", "K2"], assignedMapels: [] },
-    { id: "u4", username: "gurumapel", nama: "Ahmad Rizky, S.Pd.", role: "gurumapel", classIds: [], assignedMapels: ["PJOK"] }
+    { id: 'u1', username: 'admin', nama: 'Administrator Sistem', role: 'admin', classIds: [], assignedMapels: [] },
+    { id: 'u2', username: 'kepsek', nama: 'Maisyanti Disi Fatimah,S.Pd.I.,M.Pd', role: 'kepsek', classIds: [], assignedMapels: [] },
+    { id: 'u3', username: 'guru', nama: 'Siti Rahmah, S.Pd.', role: 'walikelas', classIds: ['K1', 'K2'], assignedMapels: [] },
+    { id: 'u4', username: 'gurumapel', nama: 'Ahmad Rizky, S.Pd.', role: 'gurumapel', classIds: [], assignedMapels: ['PJOK'] }
 ];
 
 let appState = {
