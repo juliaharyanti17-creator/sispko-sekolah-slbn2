@@ -1,14 +1,16 @@
 // Konfigurasi Firebase & Global State (Update API Key Resmi)
-var firebaseConfig = {
-    apiKey: "AIzaSyDo7HJQTNgH2OyOjVetYajtR-gIdsWwj_0",
-    authDomain: "sispko-sekolah.firebaseapp.com",
-    databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "sispko-sekolah",
-    storageBucket: "sispko-sekolah.firebasestorage.app",
-    messagingSenderId: "280921949204",
-    appId: "1:280921949204:web:94781a66e1d16f72911301",
-    measurementId: "G-NHZLZGTSD0"
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDo7HJQTNgH2OyOjVetYajtR-gIdsWwj_0",
+  authDomain: "sispko-sekolah.firebaseapp.com",
+  databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sispko-sekolah",
+  storageBucket: "sispko-sekolah.firebasestorage.app",
+  messagingSenderId: "280921949204",
+  appId: "1:280921949204:web:94781a66e1d16f72911301",
+  measurementId: "G-NHZLZGTSD0"
 };
+
 
 var db = null;
 var auth = null;
