@@ -51,14 +51,12 @@ function syncDatabaseListener() {
             var userEmail = (currentFirebaseUser.email || "").toLowerCase();
             var cleanEmailUsername = userEmail.split('@')[0].trim();
 
-            // 1. Cari kecocokan presisi di appState.users berdasarkan username atau format email
             var foundUser = (appState.users || []).find(function(u) {
                 var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
                 var uEmail = formatUserEmail(u.username || u.nama).toLowerCase();
                 return uUsername === cleanEmailUsername || uEmail === userEmail;
             });
 
-            // 2. Jika tidak ditemukan di appState.users, cari di DEFAULT_USERS
             if (!foundUser) {
                 foundUser = DEFAULT_USERS.find(function(u) {
                     var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
@@ -67,7 +65,6 @@ function syncDatabaseListener() {
                 });
             }
 
-            // 3. Fallback jika tidak ada di database master (default ke walikelas, BUKAN kepsek)
             if (!foundUser) {
                 foundUser = {
                     id: "u_" + Date.now(),
@@ -127,19 +124,16 @@ async function handleLogin(e) {
     }
 
     try {
-        // 1. Coba login biasa menggunakan Firebase Auth
         await auth.signInWithEmailAndPassword(email, passInput);
         showToast("Login berhasil!");
     } catch (error) {
         console.error("Login Error:", error);
 
-        // 2. Jika akun belum terdaftar di Firebase Auth (user-not-found / invalid-credential)
         if (
             error.code === 'auth/user-not-found' || 
             error.code === 'auth/invalid-credential' || 
             error.code === 'auth/invalid-login-credentials'
         ) {
-            // Cek apakah username terdaftar di Data Master lokal/Realtime Database
             var existingUser = (appState.users || []).find(function(u) {
                 var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
                 var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
@@ -154,7 +148,6 @@ async function handleLogin(e) {
                 });
             }
 
-            // Jika username ada di Data Master, daftarkan otomatis ke Firebase Auth
             if (existingUser) {
                 if (passInput.length < 6) {
                     alert("Password untuk akun ini minimal harus 6 karakter agar dapat terdaftar di sistem baru!");
@@ -244,7 +237,8 @@ function applyRolePermissions(isInitial) {
 
     populateDropdowns();
 
-    if (role === 'walikelas' || role === 'gurumapel') {
+    // PEMISAHAN KETAT HAK AKSES PER ROLE
+    if (role === 'walikelas') {
         if (tabRekap) tabRekap.style.display = 'none';
         if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'none';
         if (tabMaster) tabMaster.style.display = 'none';
@@ -252,12 +246,23 @@ function applyRolePermissions(isInitial) {
             document.getElementById('jurnal-guru').value = appState.currentUser.nama;
         }
         if (isInitial) switchTab(null, 'presensi');
+
+    } else if (role === 'gurumapel') {
+        if (tabRekap) tabRekap.style.display = 'none';
+        if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'none';
+        if (tabMaster) tabMaster.style.display = 'none';
+        if (document.getElementById('jurnal-guru')) {
+            document.getElementById('jurnal-guru').value = appState.currentUser.nama;
+        }
+        if (isInitial) switchTab(null, 'presensi');
+
     } else if (role === 'kepsek') {
         if (tabPresensi) tabPresensi.style.display = 'none';
         if (tabJurnal) tabJurnal.style.display = 'none';
         if (tabRekap) tabRekap.style.display = 'none';
         if (tabMaster) tabMaster.style.display = 'none';
         if (isInitial) switchTab(null, 'evaluasi');
+
     } else if (role === 'admin') {
         if (isInitial) switchTab(null, 'presensi');
     }
