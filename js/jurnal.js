@@ -1,115 +1,148 @@
-// Logika Modul Jurnal KBM Guru
-function handleSaveJurnal(e) {
-    if (e) e.preventDefault();
-    const newEntry = {
-        id: Date.now(),
-        tanggal: document.getElementById('jurnal-tanggal').value,
-        classId: document.getElementById('jurnal-kelas-select').value,
-        mapel: document.getElementById('jurnal-mapel-select').value,
-        guru: document.getElementById('jurnal-guru').value,
-        materi: document.getElementById('jurnal-materi').value,
-        capaian: document.getElementById('jurnal-capaian').value,
-        kegiatan: document.getElementById('jurnal-kegiatan').value,
-        kendala: document.getElementById('jurnal-kendala').value
-    };
-    if (!appState.journals) appState.journals = [];
-    appState.journals.unshift(newEntry);
-    saveAppState();
-    renderJurnalList();
-    document.getElementById('form-jurnal-kbm').reset();
-    document.getElementById('jurnal-tanggal').value = new Date().toISOString().split('T')[0];
-    if (appState.currentUser && appState.currentUser.role === 'walikelas') {
-        document.getElementById('jurnal-guru').value = appState.currentUser.nama;
+// Modul Jurnal Pembelajaran & Feedback Kepsek
+
+function populateJurnalDropdowns() {
+    var user = appState.currentUser;
+    if (!user) return;
+
+    var selectKelas = document.getElementById('jurnal-kelas-select');
+    var selectMapel = document.getElementById('jurnal-mapel-select');
+
+    if (!selectKelas || !selectMapel) return;
+
+    selectKelas.innerHTML = '';
+    selectMapel.innerHTML = '';
+
+    // 1. FILTER KELAS UTK JURNAL
+    var availableClasses = [];
+    if (user.role === 'walikelas') {
+        // Wali Kelas hanya bisa memilih kelas ampuannya
+        availableClasses = (appState.classes || []).filter(function(c) {
+            return (user.classIds || []).includes(c.id);
+        });
+    } else {
+        // Guru Mapel / Admin bisa memilih semua kelas
+        availableClasses = appState.classes || [];
     }
-    showToast("Jurnal KBM harian tersimpan!");
+
+    if (availableClasses.length === 0) {
+        selectKelas.innerHTML = '<option value="">- Tidak ada kelas ampu -</option>';
+    } else {
+        availableClasses.forEach(function(c) {
+            selectKelas.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>';
+        });
+    }
+
+    // 2. FILTER MAPEL UTK JURNAL
+    var availableMapels = [];
+    if (user.role === 'gurumapel') {
+        // Guru Mapel HANYA bisa memilih mapel ampuannya
+        availableMapels = user.assignedMapels || [];
+    } else {
+        // Wali Kelas / Admin bisa memilih semua mapel umum
+        availableMapels = appState.mapels || [];
+    }
+
+    if (availableMapels.length === 0) {
+        selectMapel.innerHTML = '<option value="">- Tidak ada mapel ampu -</option>';
+    } else {
+        availableMapels.forEach(function(m) {
+            selectMapel.innerHTML += '<option value="' + m + '">' + m + '</option>';
+        });
+    }
 }
 
 function renderJurnalList() {
-    const filterKelas = document.getElementById('filter-jurnal-kelas').value;
-    const searchText = document.getElementById('jurnal-search').value.toLowerCase();
-    const container = document.getElementById('jurnal-list-container');
-    const journals = appState.journals || [];
+    populateJurnalDropdowns();
+    var container = document.getElementById('jurnal-list-container');
+    if (!container) return;
+    container.innerHTML = '';
 
-    let allowedClassIds = (appState.classes || []).map(c => c.id);
-    if (appState.currentUser && appState.currentUser.role === 'walikelas') {
-        allowedClassIds = appState.currentUser.classIds || (appState.currentUser.classId ? [appState.currentUser.classId] : []);
+    var user = appState.currentUser;
+    var journals = appState.journals || [];
+
+    // Filter jurnal berdasarkan role
+    var filtered = journals;
+    if (user && (user.role === 'walikelas' || user.role === 'gurumapel')) {
+        filtered = journals.filter(function(j) {
+            return j.guru === user.nama;
+        });
     }
 
-    let filtered = journals.filter(j => {
-        const isClassAllowed = allowedClassIds.includes(j.classId);
-        const matchKelas = filterKelas === 'ALL' || j.classId === filterKelas;
-        const matchSearch = j.materi.toLowerCase().includes(searchText) || j.guru.toLowerCase().includes(searchText);
-        return isClassAllowed && matchKelas && matchSearch;
-    });
-
     if (filtered.length === 0) {
-        container.innerHTML = `<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400"><i class="fa-regular fa-folder-open text-3xl mb-2"></i><p class="text-xs">Belum ada histori jurnal mengajar.</p></div>`;
+        container.innerHTML = '<div class="p-6 text-center text-slate-400 font-medium bg-slate-50 rounded-2xl border border-slate-200">Belum ada jurnal kegiatan tersimpan.</div>';
         return;
     }
 
-    container.innerHTML = '';
-    filtered.forEach(item => {
-        const card = document.createElement('div');
-        card.className = "bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 relative hover:border-indigo-200 transition";
-        card.innerHTML = `
-            <div class="flex justify-between items-start gap-2">
-                <div>
-                    <span class="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-lg mb-1">${getClassName(item.classId)} • ${item.mapel}</span>
-                    <h4 class="font-extrabold text-slate-800 text-sm">${item.materi}</h4>
-                    <p class="text-xs text-slate-500 font-semibold">Pengajar: ${item.guru}</p>
-                </div>
-                <div class="text-right">
-                    <span class="text-[11px] text-slate-400 font-medium block"><i class="fa-regular fa-calendar"></i> ${item.tanggal}</span>
-                    <button type="button" onclick="deleteJurnal(event, ${item.id})" class="text-slate-300 hover:text-rose-600 text-xs mt-1.5 transition cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <div><strong class="text-slate-700 block mb-0.5">CP/PPI:</strong><p class="text-slate-600">${item.capaian}</p></div>
-                <div><strong class="text-slate-700 block mb-0.5">Kegiatan:</strong><p class="text-slate-600">${item.kegiatan}</p></div>
-            </div>
-        `;
+    filtered.forEach(function(j) {
+        var card = document.createElement('div');
+        card.className = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2 relative";
+
+        var feedbackHtml = '';
+        if (j.feedback) {
+            feedbackHtml = 
+                '<div class="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-xs space-y-1">' +
+                    '<div class="font-bold text-indigo-900 flex items-center gap-1.5"><i class="fa-solid fa-comment-dots text-indigo-600"></i> Catatan Evaluasi Kepala Sekolah:</div>' +
+                    '<div class="text-indigo-800 italic">"' + j.feedback + '"</div>' +
+                '</div>';
+        }
+
+        card.innerHTML = 
+            '<div class="flex items-center justify-between border-b border-slate-100 pb-2">' +
+                '<span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100"><i class="fa-solid fa-calendar-day mr-1"></i>' + j.tanggal + '</span>' +
+                '<span class="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-door-open mr-1"></i>' + getClassName(j.classId) + '</span>' +
+            '</div>' +
+            '<div class="text-xs font-semibold text-slate-800">Mapel: <span class="text-slate-600">' + j.mapel + '</span></div>' +
+            '<div class="text-xs text-slate-600 line-clamp-3"><strong>Materi/Kegiatan:</strong> ' + j.materi + '</div>' +
+            '<div class="text-[11px] text-slate-400 pt-1 flex items-center justify-between">' +
+                '<span><i class="fa-solid fa-user-pen mr-1"></i>' + j.guru + '</span>' +
+                (user && user.role === 'admin' ? '<button type="button" onclick="handleDeleteJurnal(\'' + j.id + '\')" class="text-rose-500 hover:text-rose-700 cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>' : '') +
+            '</div>' +
+            feedbackHtml;
+
         container.appendChild(card);
     });
 }
 
-function deleteJurnal(e, id) {
+function handleSaveJurnal(e) {
     if (e) e.preventDefault();
-    if (confirm("Hapus catatan jurnal ini?")) {
-        appState.journals = appState.journals.filter(j => j.id !== id);
-        saveAppState();
-        renderJurnalList();
-        showToast("Jurnal berhasil dihapus.");
-    }
-}
+    var tgl = document.getElementById('jurnal-tanggal').value;
+    var classId = document.getElementById('jurnal-kelas-select').value;
+    var mapel = document.getElementById('jurnal-mapel-select').value;
+    var guru = document.getElementById('jurnal-guru').value.trim();
+    var materi = document.getElementById('jurnal-materi').value.trim();
 
-function renderGuruFeedbackSection() {
-    const container = document.getElementById('guru-feedback-container');
-    if (!container) return;
-    const currentUser = appState.currentUser;
-    if (!currentUser) return;
-
-    let myFeedbacks = (appState.evaluations || []).filter(ev => ev.target === currentUser.nama);
-
-    if (myFeedbacks.length === 0) {
-        container.innerHTML = `<div class="p-3 bg-white/10 rounded-xl text-xs text-amber-100 text-center">Belum ada umpan balik atau catatan supervisi dari Kepsek.</div>`;
+    if (!classId || !mapel || !materi) {
+        alert("Mohon lengkapi Kelas, Mata Pelajaran, dan Materi/Kegiatan!");
         return;
     }
 
-    container.innerHTML = '';
-    myFeedbacks.forEach(ev => {
-        const div = document.createElement('div');
-        div.className = "p-3 bg-white text-slate-800 rounded-xl text-xs space-y-1 shadow-xs";
-        const classLabel = ev.classId ? getClassName(ev.classId) : 'Semua Kelas';
-        div.innerHTML = `
-            <div class="flex justify-between items-center">
-                <span class="font-bold text-indigo-900">${classLabel} • ${ev.mapel || 'Semua Mapel'}</span>
-                <span class="text-[10px] text-slate-400 font-semibold">${ev.tanggal}</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">${ev.kategori}</span>
-            </div>
-            <p class="text-slate-600 font-medium pt-1">${ev.catatan}</p>
-        `;
-        container.appendChild(div);
-    });
+    var newJurnal = {
+        id: "j_" + Date.now(),
+        tanggal: tgl,
+        classId: classId,
+        mapel: mapel,
+        guru: guru || (appState.currentUser ? appState.currentUser.nama : 'Guru'),
+        materi: materi,
+        feedback: ""
+    };
+
+    if (!appState.journals) appState.journals = [];
+    appState.journals.unshift(newJurnal);
+
+    saveAppState();
+    document.getElementById('jurnal-materi').value = '';
+    renderJurnalList();
+    showToast("Jurnal kegiatan pembelajaran berhasil disimpan!");
+}
+
+function handleDeleteJurnal(jurnalId) {
+    if (!confirm("Hapus jurnal kegiatan ini?")) return;
+    appState.journals = (appState.journals || []).filter(function(j) { return j.id !== jurnalId; });
+    saveAppState();
+    renderJurnalList();
+    showToast("Jurnal berhasil dihapus.");
+}
+
+function renderGuruFeedbackSection() {
+    // Dipanggil saat refresh UI untuk menampilkan umpan balik terbaru dari Kepsek
 }
