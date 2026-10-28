@@ -28,10 +28,10 @@ const DEFAULT_MAPELS = [
 ];
 
 const DEFAULT_USERS = [
-    { id: 'u1', username: 'admin', nama: 'Administrator Sistem', role: 'admin', classIds: [], assignedMapels: [] },
-    { id: 'u2', username: 'kepsek', nama: 'Maisyanti Disi Fatimah,S.Pd.I.,M.Pd', role: 'kepsek', classIds: [], assignedMapels: [] },
-    { id: 'u3', username: 'guru', nama: 'Siti Rahmah, S.Pd.', role: 'walikelas', classIds: ['K1', 'K2'], assignedMapels: [] },
-    { id: 'u4', username: 'gurumapel', nama: 'Ahmad Rizky, S.Pd.', role: 'gurumapel', classIds: [], assignedMapels: ['PJOK'] }
+    { id: "u1", username: "admin", nama: "Administrator Sistem", role: "admin", classIds: [], assignedMapels: [] },
+    { id: "u2", username: "kepsek", nama: "Maisyanti Disi Fatimah,S.Pd.I.,M.Pd", role: "kepsek", classIds: [], assignedMapels: [] },
+    { id: "u3", username: "guru", nama: "Siti Rahmah, S.Pd.", role: "walikelas", classIds: ["K1", "K2"], assignedMapels: [] },
+    { id: "u4", username: "gurumapel", nama: "Ahmad Rizky, S.Pd.", role: "gurumapel", classIds: [], assignedMapels: ["PJOK"] }
 ];
 
 let appState = {
