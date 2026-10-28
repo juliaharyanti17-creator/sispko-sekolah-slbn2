@@ -1,12 +1,13 @@
-// Konfigurasi Firebase & Global State
+// Konfigurasi Firebase & Global State (Update API Key Resmi)
 var firebaseConfig = {
-    apiKey: "AIzaSyDo7NJQTNqt2OyDjVetYajtR-g1dsWwj_8",
+    apiKey: "AIzaSyDo7NJQTNgH2OyOjVetYajtR-gIdsWwj_0",
     authDomain: "sispko-sekolah.firebaseapp.com",
     databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "sispko-sekolah",
     storageBucket: "sispko-sekolah.firebasestorage.app",
     messagingSenderId: "280921949204",
-    appId: "1:280921949204:web:94781a66e1d16f72911301"
+    appId: "1:280921949204:web:94781a66e1d16f72911301",
+    measurementId: "G-NHZLZGTSD0"
 };
 
 var db = null;
