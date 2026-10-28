@@ -113,12 +113,51 @@ async function handleLogin(e) {
     }
 
     try {
+        // 1. Coba login biasa menggunakan Firebase Auth
         await auth.signInWithEmailAndPassword(email, passInput);
         showToast("Login berhasil!");
     } catch (error) {
         console.error("Login Error:", error);
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-            alert("Username/Nama Pengguna atau Kata Sandi salah!");
+        
+        // 2. Jika akun belum terdaftar di Firebase Auth (user-not-found / invalid-credential)
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            
+            // Cek apakah username ada di database lokal/Firebase Realtime Database
+            var cleanUsername = namaInput.trim().toLowerCase();
+            var existingUser = (appState.users || []).find(function(u) {
+                var uName = (u.username || u.nama || "").trim().toLowerCase();
+                return uName === cleanUsername;
+            });
+
+            if (!existingUser) {
+                existingUser = DEFAULT_USERS.find(function(u) {
+                    var uName = (u.username || u.nama || "").trim().toLowerCase();
+                    return uName === cleanUsername;
+                });
+            }
+
+            // Jika username terdaftar di data lama/master data, daftarkan otomatis ke Firebase Auth
+            if (existingUser) {
+                try {
+                    await auth.createUserWithEmailAndPassword(email, passInput);
+                    showToast("Akun berhasil dibuat otomatis & berhasil masuk!");
+                    return;
+                } catch (createErr) {
+                    console.error("Auto-Register Error:", createErr);
+                    if (createErr.code === 'auth/weak-password') {
+                        alert("Kata sandi terlalu pendek! Firebase membutuhkan kata sandi minimal 6 karakter.");
+                    } else if (createErr.code === 'auth/email-already-in-use') {
+                        alert("Kata sandi yang Anda masukkan salah!");
+                    } else {
+                        alert("Gagal membuat akun otomatis: " + createErr.message);
+                    }
+                    return;
+                }
+            } else {
+                alert("Username/Nama Pengguna tidak terdaftar di sistem!");
+            }
+        } else if (error.code === 'auth/wrong-password') {
+            alert("Kata sandi yang Anda masukkan salah!");
         } else {
             alert("Gagal Masuk: " + error.message);
         }
