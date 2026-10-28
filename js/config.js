@@ -1,6 +1,6 @@
 // Konfigurasi Firebase & Global State (Update API Key Resmi)
 var firebaseConfig = {
-    apiKey: "AIzaSyDo7NJQTNgH2OyOjVetYajtR-gIdsWwj_0",
+    apiKey: "AIzaSyDo7HJQTNgH2OyOjVetYajtR-gIdsWwj_0",
     authDomain: "sispko-sekolah.firebaseapp.com",
     databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "sispko-sekolah",
