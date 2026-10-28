@@ -49,22 +49,29 @@ function syncDatabaseListener() {
         var currentFirebaseUser = auth ? auth.currentUser : null;
         if (currentFirebaseUser) {
             var userEmail = currentFirebaseUser.email || "";
+            var cleanEmailUsername = userEmail.split('@')[0].toLowerCase();
+
+            // Cari kecocokan user fleksibel
             var foundUser = (appState.users || []).find(function(u) {
-                return formatUserEmail(u.username || u.nama) === userEmail;
+                var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
+                var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
+                return uUsername === cleanEmailUsername || uNama === cleanEmailUsername;
             });
 
             if (!foundUser) {
                 foundUser = DEFAULT_USERS.find(function(u) {
-                    return formatUserEmail(u.username || u.nama) === userEmail;
+                    var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
+                    var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
+                    return uUsername === cleanEmailUsername || uNama === cleanEmailUsername;
                 });
             }
 
+            // Fallback jika tidak ditemukan: Buat profil otomatis
             if (!foundUser) {
-                var usernameFromEmail = userEmail.split('@')[0];
                 foundUser = {
                     id: "u_" + Date.now(),
-                    username: usernameFromEmail,
-                    nama: usernameFromEmail.toUpperCase(),
+                    username: cleanEmailUsername,
+                    nama: cleanEmailUsername.toUpperCase(),
                     role: "admin",
                     classIds: [],
                     assignedMapels: []
@@ -105,7 +112,14 @@ async function handleLogin(e) {
     if (e) e.preventDefault();
     var namaInput = document.getElementById('login-nama').value.trim();
     var passInput = document.getElementById('login-password').value.trim();
-    var email = formatUserEmail(namaInput);
+
+    if (!namaInput || !passInput) {
+        alert("Username dan Password wajib diisi!");
+        return;
+    }
+
+    var cleanInput = namaInput.toLowerCase().replace(/\s+/g, '');
+    var email = formatUserEmail(cleanInput);
 
     if (!auth) {
         alert("Sistem Firebase Auth belum siap. Menggunakan mode lokal.");
@@ -113,51 +127,56 @@ async function handleLogin(e) {
     }
 
     try {
-        // 1. Coba login biasa menggunakan Firebase Auth
+        // 1. Coba login dengan Firebase Auth
         await auth.signInWithEmailAndPassword(email, passInput);
         showToast("Login berhasil!");
     } catch (error) {
         console.error("Login Error:", error);
-        
-        // 2. Jika akun belum terdaftar di Firebase Auth (user-not-found / invalid-credential)
+
+        // 2. Jika akun belum terdaftar di Firebase Auth, periksa database lokal
         if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
             
-            // Cek apakah username ada di database lokal/Firebase Realtime Database
-            var cleanUsername = namaInput.trim().toLowerCase();
             var existingUser = (appState.users || []).find(function(u) {
-                var uName = (u.username || u.nama || "").trim().toLowerCase();
-                return uName === cleanUsername;
+                var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
+                var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
+                return uName === cleanInput || uNama === cleanInput;
             });
 
             if (!existingUser) {
                 existingUser = DEFAULT_USERS.find(function(u) {
-                    var uName = (u.username || u.nama || "").trim().toLowerCase();
-                    return uName === cleanUsername;
+                    var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
+                    var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
+                    return uName === cleanInput || uNama === cleanInput;
                 });
             }
 
-            // Jika username terdaftar di data lama/master data, daftarkan otomatis ke Firebase Auth
+            // Jika username ditemukan di database lama, daftarkan otomatis ke Firebase Auth
             if (existingUser) {
+                if (passInput.length < 6) {
+                    alert("Password untuk akun ini minimal harus 6 karakter agar dapat didaftarkan ke sistem keamanan baru!");
+                    return;
+                }
+
                 try {
                     await auth.createUserWithEmailAndPassword(email, passInput);
-                    showToast("Akun berhasil dibuat otomatis & berhasil masuk!");
+                    showToast("Akun berhasil terintegrasi & masuk!");
                     return;
                 } catch (createErr) {
                     console.error("Auto-Register Error:", createErr);
-                    if (createErr.code === 'auth/weak-password') {
-                        alert("Kata sandi terlalu pendek! Firebase membutuhkan kata sandi minimal 6 karakter.");
-                    } else if (createErr.code === 'auth/email-already-in-use') {
-                        alert("Kata sandi yang Anda masukkan salah!");
+                    if (createErr.code === 'auth/email-already-in-use') {
+                        alert("Password yang Anda masukkan salah!");
+                    } else if (createErr.code === 'auth/weak-password') {
+                        alert("Password minimal 6 karakter!");
                     } else {
                         alert("Gagal membuat akun otomatis: " + createErr.message);
                     }
                     return;
                 }
             } else {
-                alert("Username/Nama Pengguna tidak terdaftar di sistem!");
+                alert("Username/Nama Pengguna '" + namaInput + "' tidak ditemukan di database!");
             }
         } else if (error.code === 'auth/wrong-password') {
-            alert("Kata sandi yang Anda masukkan salah!");
+            alert("Password yang Anda masukkan salah!");
         } else {
             alert("Gagal Masuk: " + error.message);
         }
