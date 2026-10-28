@@ -1,20 +1,20 @@
 // Autentikasi, Session, & Navigasi Tab
 window.onload = function() {
-    const todayStr = new Date().toISOString().split('T')[0];
+    var todayStr = new Date().toISOString().split('T')[0];
     if (document.getElementById('presensi-tanggal')) document.getElementById('presensi-tanggal').value = todayStr;
     if (document.getElementById('jurnal-tanggal')) document.getElementById('jurnal-tanggal').value = todayStr;
 
     setPresetEvalRange(null, 'today');
     setPresetRekapRange(null, 'today');
 
-    document.querySelectorAll('.print-date-stamp').forEach(el => {
+    document.querySelectorAll('.print-date-stamp').forEach(function(el) {
         el.innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     });
 
     initCharts();
 
     if (auth) {
-        auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged(function(user) {
             if (user) {
                 syncDatabaseListener();
             } else {
@@ -32,8 +32,8 @@ window.onload = function() {
 function syncDatabaseListener() {
     if (!db) return;
 
-    db.ref('sispko_data').on('value', (snapshot) => {
-        const data = snapshot.val();
+    db.ref('sispko_data').on('value', function(snapshot) {
+        var data = snapshot.val();
         if (data) {
             appState.classes = data.classes || [];
             appState.students = data.students || [];
@@ -46,17 +46,21 @@ function syncDatabaseListener() {
             saveAppState();
         }
 
-        const currentFirebaseUser = auth ? auth.currentUser : null;
+        var currentFirebaseUser = auth ? auth.currentUser : null;
         if (currentFirebaseUser) {
-            const userEmail = currentFirebaseUser.email || "";
-            let foundUser = (appState.users || []).find(u => formatUserEmail(u.username || u.nama) === userEmail);
+            var userEmail = currentFirebaseUser.email || "";
+            var foundUser = (appState.users || []).find(function(u) {
+                return formatUserEmail(u.username || u.nama) === userEmail;
+            });
 
             if (!foundUser) {
-                foundUser = DEFAULT_USERS.find(u => formatUserEmail(u.username || u.nama) === userEmail);
+                foundUser = DEFAULT_USERS.find(function(u) {
+                    return formatUserEmail(u.username || u.nama) === userEmail;
+                });
             }
 
             if (!foundUser) {
-                const usernameFromEmail = userEmail.split('@')[0];
+                var usernameFromEmail = userEmail.split('@')[0];
                 foundUser = {
                     id: "u_" + Date.now(),
                     username: usernameFromEmail,
@@ -70,8 +74,8 @@ function syncDatabaseListener() {
             appState.currentUser = foundUser;
             localStorage.setItem('sispko_session_user', JSON.stringify(foundUser));
             
-            const screenLogin = document.getElementById('screen-login');
-            const screenApp = document.getElementById('screen-app');
+            var screenLogin = document.getElementById('screen-login');
+            var screenApp = document.getElementById('screen-app');
 
             if (screenLogin) screenLogin.classList.add('hidden');
             if (screenApp) {
@@ -99,9 +103,9 @@ function syncDatabaseListener() {
 
 async function handleLogin(e) {
     if (e) e.preventDefault();
-    const namaInput = document.getElementById('login-nama').value.trim();
-    const passInput = document.getElementById('login-password').value.trim();
-    const email = formatUserEmail(namaInput);
+    var namaInput = document.getElementById('login-nama').value.trim();
+    var passInput = document.getElementById('login-password').value.trim();
+    var email = formatUserEmail(namaInput);
 
     if (!auth) {
         alert("Sistem Firebase Auth belum siap. Menggunakan mode lokal.");
@@ -116,7 +120,7 @@ async function handleLogin(e) {
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             alert("Username/Nama Pengguna atau Kata Sandi salah!");
         } else {
-            alert(`Gagal Masuk: ${error.message}`);
+            alert("Gagal Masuk: " + error.message);
         }
     }
 }
@@ -124,7 +128,7 @@ async function handleLogin(e) {
 function handleLogout(e) {
     if (e) e.preventDefault();
     if (auth) {
-        auth.signOut().then(() => {
+        auth.signOut().then(function() {
             showToast("Anda telah keluar dari aplikasi.");
         });
     } else {
@@ -136,8 +140,9 @@ function handleLogout(e) {
     }
 }
 
-function checkSession(isInitial = false) {
-    const savedSession = localStorage.getItem('sispko_session_user');
+function checkSession(isInitial) {
+    if (typeof isInitial === 'undefined') isInitial = false;
+    var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
         try {
             appState.currentUser = JSON.parse(savedSession);
@@ -154,14 +159,15 @@ function checkSession(isInitial = false) {
     }
 }
 
-function applyRolePermissions(isInitial = false) {
+function applyRolePermissions(isInitial) {
+    if (typeof isInitial === 'undefined') isInitial = false;
     if (!appState.currentUser) return;
-    const role = appState.currentUser.role;
-    const tabPresensi = document.getElementById('tab-btn-presensi');
-    const tabJurnal = document.getElementById('tab-btn-jurnal');
-    const tabRekap = document.getElementById('tab-btn-rekap');
-    const tabEvaluasi = document.getElementById('tab-btn-evaluasi');
-    const tabMaster = document.getElementById('tab-btn-master');
+    var role = appState.currentUser.role;
+    var tabPresensi = document.getElementById('tab-btn-presensi');
+    var tabJurnal = document.getElementById('tab-btn-jurnal');
+    var tabRekap = document.getElementById('tab-btn-rekap');
+    var tabEvaluasi = document.getElementById('tab-btn-evaluasi');
+    var tabMaster = document.getElementById('tab-btn-master');
 
     if (tabPresensi) tabPresensi.style.display = 'flex';
     if (tabJurnal) tabJurnal.style.display = 'flex';
@@ -193,11 +199,11 @@ function applyRolePermissions(isInitial = false) {
 function switchTab(e, tabId) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     appState.currentTab = tabId;
-    const tabs = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
+    var tabs = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
 
-    tabs.forEach(t => {
-        const btn = document.getElementById(`tab-btn-${t}`);
-        const section = document.getElementById(`modul-${t}`);
+    tabs.forEach(function(t) {
+        var btn = document.getElementById('tab-btn-' + t);
+        var section = document.getElementById('modul-' + t);
         if (t === tabId) {
             if (btn) btn.className = "tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all cursor-pointer";
             if (section) section.classList.remove('hidden');
@@ -208,7 +214,7 @@ function switchTab(e, tabId) {
     });
 
     if (window.innerWidth < 768) {
-        const sidebar = document.getElementById('sidebar-nav');
+        var sidebar = document.getElementById('sidebar-nav');
         if (sidebar && !sidebar.classList.contains('hidden')) toggleMobileSidebar(null);
     }
 
@@ -233,8 +239,8 @@ function refreshCurrentTabUI() {
 
 function togglePasswordVisibility(e) {
     if (e) e.preventDefault();
-    const passwordInput = document.getElementById('login-password');
-    const icon = document.getElementById('toggle-password-icon');
+    var passwordInput = document.getElementById('login-password');
+    var icon = document.getElementById('toggle-password-icon');
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         icon.classList.remove('fa-eye');
@@ -248,9 +254,9 @@ function togglePasswordVisibility(e) {
 
 function toggleMobileSidebar(e) {
     if (e) e.preventDefault();
-    const sidebar = document.getElementById('sidebar-nav');
-    const backdrop = document.getElementById('sidebar-backdrop');
-    const icon = document.getElementById('mobile-hamburger-icon');
+    var sidebar = document.getElementById('sidebar-nav');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    var icon = document.getElementById('mobile-hamburger-icon');
 
     if (sidebar.classList.contains('hidden')) {
         sidebar.classList.remove('hidden');
