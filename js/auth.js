@@ -133,9 +133,13 @@ async function handleLogin(e) {
     } catch (error) {
         console.error("Login Error:", error);
 
-        // 2. Jika akun belum terdaftar di Firebase Auth, periksa database lokal
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-            
+        // 2. Tangkap semua variasi error login gagal (user belum ada atau credentials invalid)
+        if (
+            error.code === 'auth/user-not-found' || 
+            error.code === 'auth/invalid-credential' || 
+            error.code === 'auth/invalid-login-credentials'
+        ) {
+            // Cari data user di database lokal/Realtime
             var existingUser = (appState.users || []).find(function(u) {
                 var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
                 var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
@@ -150,25 +154,25 @@ async function handleLogin(e) {
                 });
             }
 
-            // Jika username ditemukan di database lama, daftarkan otomatis ke Firebase Auth
+            // Jika akun ada di data master, daftarkan otomatis ke Firebase Auth
             if (existingUser) {
                 if (passInput.length < 6) {
-                    alert("Password untuk akun ini minimal harus 6 karakter agar dapat didaftarkan ke sistem keamanan baru!");
+                    alert("Password untuk akun ini minimal harus 6 karakter agar dapat didaftarkan!");
                     return;
                 }
 
                 try {
                     await auth.createUserWithEmailAndPassword(email, passInput);
-                    showToast("Akun berhasil terintegrasi & masuk!");
+                    showToast("Akun berhasil didaftarkan & masuk!");
                     return;
                 } catch (createErr) {
                     console.error("Auto-Register Error:", createErr);
                     if (createErr.code === 'auth/email-already-in-use') {
-                        alert("Password yang Anda masukkan salah!");
+                        alert("Password yang Anda masukkan salah untuk akun ini!");
                     } else if (createErr.code === 'auth/weak-password') {
-                        alert("Password minimal 6 karakter!");
+                        alert("Password minimal harus 6 karakter!");
                     } else {
-                        alert("Gagal membuat akun otomatis: " + createErr.message);
+                        alert("Gagal mendaftarkan akun otomatis: " + createErr.message);
                     }
                     return;
                 }
