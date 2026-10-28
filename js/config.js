@@ -10,10 +10,13 @@ const firebaseConfig = {
 };
 
 let db = null;
+let auth = null;
+
 try {
     if (typeof firebase !== 'undefined') {
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
+        auth = firebase.auth();
     }
 } catch (err) {
     console.warn("Firebase gagal dimuat, beralih ke penyimpanan lokal.", err);
@@ -25,10 +28,10 @@ const DEFAULT_MAPELS = [
 ];
 
 const DEFAULT_USERS = [
-    { id: "u1", username: "admin", nama: "Administrator Sistem", password: "admin123", role: "admin", classIds: [], assignedMapels: [] },
-    { id: "u2", username: "kepsek", nama: "Maisyanti Disi Fatimah,S.Pd.I.,M.Pd", password: "kepsek123", role: "kepsek", classIds: [], assignedMapels: [] },
-    { id: "u3", username: "guru", nama: "Siti Rahmah, S.Pd.", password: "guru123", role: "walikelas", classIds: ["K1", "K2"], assignedMapels: [] },
-    { id: "u4", username: "gurumapel", nama: "Ahmad Rizky, S.Pd.", password: "mapel123", role: "gurumapel", classIds: [], assignedMapels: ["PJOK"] }
+    { id: "u1", username: "admin", nama: "Administrator Sistem", role: "admin", classIds: [], assignedMapels: [] },
+    { id: "u2", username: "kepsek", nama: "Maisyanti Disi Fatimah,S.Pd.I.,M.Pd", role: "kepsek", classIds: [], assignedMapels: [] },
+    { id: "u3", username: "guru", nama: "Siti Rahmah, S.Pd.", role: "walikelas", classIds: ["K1", "K2"], assignedMapels: [] },
+    { id: "u4", username: "gurumapel", nama: "Ahmad Rizky, S.Pd.", role: "gurumapel", classIds: [], assignedMapels: ["PJOK"] }
 ];
 
 let appState = {
@@ -45,6 +48,12 @@ let appState = {
 
 let isInitialLoad = true;
 let barChartInstance = null, pieChartInstance = null;
+
+// FUNGSI INI YANG DIPANGGIL OLEH AUTH.JS
+function formatUserEmail(username) {
+    const cleanUsername = username.trim().toLowerCase().replace(/\s+/g, '');
+    return `${cleanUsername}@slbn2pelaihari.sch.id`;
+}
 
 function saveAppState() {
     if (db) {
