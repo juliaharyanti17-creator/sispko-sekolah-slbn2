@@ -48,31 +48,32 @@ function syncDatabaseListener() {
 
         var currentFirebaseUser = auth ? auth.currentUser : null;
         if (currentFirebaseUser) {
-            var userEmail = currentFirebaseUser.email || "";
-            var cleanEmailUsername = userEmail.split('@')[0].toLowerCase();
+            var userEmail = (currentFirebaseUser.email || "").toLowerCase();
+            var cleanEmailUsername = userEmail.split('@')[0].trim();
 
-            // Cari kecocokan user fleksibel
+            // 1. Cari kecocokan presisi di appState.users berdasarkan username atau format email
             var foundUser = (appState.users || []).find(function(u) {
                 var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
-                var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
-                return uUsername === cleanEmailUsername || uNama === cleanEmailUsername;
+                var uEmail = formatUserEmail(u.username || u.nama).toLowerCase();
+                return uUsername === cleanEmailUsername || uEmail === userEmail;
             });
 
+            // 2. Jika tidak ditemukan di appState.users, cari di DEFAULT_USERS
             if (!foundUser) {
                 foundUser = DEFAULT_USERS.find(function(u) {
                     var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
-                    var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
-                    return uUsername === cleanEmailUsername || uNama === cleanEmailUsername;
+                    var uEmail = formatUserEmail(u.username || u.nama).toLowerCase();
+                    return uUsername === cleanEmailUsername || uEmail === userEmail;
                 });
             }
 
-            // Fallback jika tidak ditemukan: Buat profil otomatis
+            // 3. Fallback jika tidak ada di database master (default ke walikelas, BUKAN kepsek)
             if (!foundUser) {
                 foundUser = {
                     id: "u_" + Date.now(),
                     username: cleanEmailUsername,
                     nama: cleanEmailUsername.toUpperCase(),
-                    role: "admin",
+                    role: "walikelas",
                     classIds: [],
                     assignedMapels: []
                 };
@@ -94,16 +95,15 @@ function syncDatabaseListener() {
                 document.getElementById('user-display-name').innerText = foundUser.nama;
             }
             if (document.getElementById('user-display-role')) {
-                document.getElementById('user-display-role').innerText = foundUser.role;
+                var roleLabel = foundUser.role.toUpperCase();
+                if (foundUser.role === 'walikelas') roleLabel = 'WALI KELAS';
+                if (foundUser.role === 'gurumapel') roleLabel = 'GURU MAPEL';
+                if (foundUser.role === 'kepsek') roleLabel = 'KEPALA SEKOLAH';
+                document.getElementById('user-display-role').innerText = roleLabel;
             }
 
-            if (isInitialLoad) {
-                populateDropdowns();
-                applyRolePermissions(true);
-                isInitialLoad = false;
-            } else {
-                refreshCurrentTabUI();
-            }
+            applyRolePermissions(isInitialLoad);
+            isInitialLoad = false;
         }
     });
 }
@@ -127,19 +127,19 @@ async function handleLogin(e) {
     }
 
     try {
-        // 1. Coba login dengan Firebase Auth
+        // 1. Coba login biasa menggunakan Firebase Auth
         await auth.signInWithEmailAndPassword(email, passInput);
         showToast("Login berhasil!");
     } catch (error) {
         console.error("Login Error:", error);
 
-        // 2. Tangkap semua variasi error login gagal (user belum ada atau credentials invalid)
+        // 2. Jika akun belum terdaftar di Firebase Auth (user-not-found / invalid-credential)
         if (
             error.code === 'auth/user-not-found' || 
             error.code === 'auth/invalid-credential' || 
             error.code === 'auth/invalid-login-credentials'
         ) {
-            // Cari data user di database lokal/Realtime
+            // Cek apakah username terdaftar di Data Master lokal/Realtime Database
             var existingUser = (appState.users || []).find(function(u) {
                 var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
                 var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
@@ -154,25 +154,25 @@ async function handleLogin(e) {
                 });
             }
 
-            // Jika akun ada di data master, daftarkan otomatis ke Firebase Auth
+            // Jika username ada di Data Master, daftarkan otomatis ke Firebase Auth
             if (existingUser) {
                 if (passInput.length < 6) {
-                    alert("Password untuk akun ini minimal harus 6 karakter agar dapat didaftarkan!");
+                    alert("Password untuk akun ini minimal harus 6 karakter agar dapat terdaftar di sistem baru!");
                     return;
                 }
 
                 try {
                     await auth.createUserWithEmailAndPassword(email, passInput);
-                    showToast("Akun berhasil didaftarkan & masuk!");
+                    showToast("Akun berhasil didaftarkan & otomatis masuk!");
                     return;
                 } catch (createErr) {
                     console.error("Auto-Register Error:", createErr);
                     if (createErr.code === 'auth/email-already-in-use') {
-                        alert("Password yang Anda masukkan salah untuk akun ini!");
+                        alert("Password yang Anda masukkan salah!");
                     } else if (createErr.code === 'auth/weak-password') {
                         alert("Password minimal harus 6 karakter!");
                     } else {
-                        alert("Gagal mendaftarkan akun otomatis: " + createErr.message);
+                        alert("Gagal membuat akun otomatis: " + createErr.message);
                     }
                     return;
                 }
@@ -212,7 +212,12 @@ function checkSession(isInitial) {
             document.getElementById('screen-app').classList.remove('hidden');
             document.getElementById('screen-app').classList.add('flex');
             document.getElementById('user-display-name').innerText = appState.currentUser.nama;
-            document.getElementById('user-display-role').innerText = appState.currentUser.role;
+            
+            var roleLabel = appState.currentUser.role.toUpperCase();
+            if (appState.currentUser.role === 'walikelas') roleLabel = 'WALI KELAS';
+            if (appState.currentUser.role === 'gurumapel') roleLabel = 'GURU MAPEL';
+            if (appState.currentUser.role === 'kepsek') roleLabel = 'KEPALA SEKOLAH';
+            document.getElementById('user-display-role').innerText = roleLabel;
 
             applyRolePermissions(isInitial);
         } catch (err) {
