@@ -692,14 +692,45 @@
     </div>
 
     <!-- SCRIPT LOADING ORDER -->
-    <script src="config.js"></script>
-    <script src="auth.js"></script>
-    <script src="presensi.js"></script>
-    <script src="jurnal.js"></script>
-    <script src="rekap.js"></script>
-    <script src="evaluasi.js"></script>
-    <script src="master.js"></script>
-    <script src="ai-assistant.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/presensi.js"></script>
+    <script src="js/jurnal.js"></script>
+    <script src="js/rekap.js"></script>
+    <script src="js/evaluasi.js"></script>
+    <script src="js/master.js"></script>
+    <script src="js/ai-assistant.js"></script>
+    
+<script>
+function forceLoginDirect(e) {
+    if (e) e.preventDefault();
+    var namaInput = document.getElementById('login-nama').value.trim();
+    var passInput = document.getElementById('login-password').value.trim();
 
+    if (!namaInput || !passInput) {
+        alert("Username dan Password wajib diisi!");
+        return;
+    }
+
+    // Paksa buka layar aplikasi utama
+    var screenLogin = document.getElementById('screen-login');
+    var screenApp = document.getElementById('screen-app');
+
+    if (screenLogin) {
+        screenLogin.classList.add('hidden');
+        screenLogin.style.setProperty('display', 'none', 'important');
+    }
+    if (screenApp) {
+        screenApp.classList.remove('hidden');
+        screenApp.classList.add('flex');
+        screenApp.style.setProperty('display', 'flex', 'important');
+    }
+
+    // Panggil handler auth utama jika fungsi tersedia
+    if (typeof handleLogin === 'function') {
+        handleLogin(e);
+    }
+}
+</script>
 </body>
 </html>
