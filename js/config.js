@@ -1,12 +1,12 @@
-// 1. Konfigurasi Gemini AI (Khusus Chatbot AI SIMPATIK)
+// 1. Konfigurasi Gemini AI (Chatbot SIMPATIK)
 const CONFIG = {
     GEMINI_API_KEY: "AQ.Ab8RN6KL5nLxo1l10NN5Z6u-HvvsCIZZ74664yXM_h5rLLvjRA",
     GEMINI_MODEL: "gemini-1.5-flash"
 };
 
-// 2. Konfigurasi Firebase (Dari Firebase Console Proyek SISPKO-Sekolah)
+// 2. Konfigurasi Firebase App SISPKO-Sekolah
 const firebaseConfig = {
-    apiKey: "AIzaSyDo7HJQTNg8S14pGZ32lATh_PllI4X1yO8", // Salin penuh apiKey asli dari Firebase Console
+    apiKey: "AIzaSyDo7HJQTNg8S14pGZ32lATh_PllI4X1yO8",
     authDomain: "sispko-sekolah-slbn2.firebaseapp.com",
     databaseURL: "https://sispko-sekolah-slbn2-default-rtdb.firebaseio.com",
     projectId: "sispko-sekolah-slbn2",
@@ -16,9 +16,13 @@ const firebaseConfig = {
     measurementId: "G-NHZLZ0J8N1"
 };
 
-// Inisialisasi Firebase App
+// Inisialisasi Firebase
 if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+    try {
+        firebase.initializeApp(firebaseConfig);
+    } catch (err) {
+        console.error("Firebase init error:", err);
+    }
 }
 
 var auth = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null;
