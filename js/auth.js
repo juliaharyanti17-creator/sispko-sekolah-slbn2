@@ -1,6 +1,13 @@
-// Autentikasi, Session, & Navigasi Tab SIMPATIK SLBN 2 PELAIHARI
+// ==========================================================================
+// Autentikasi, Pengelolaan Sesi, Navigasi Tab, & Hak Akses SIMPATIK
+// SLBN 2 PELAIHARI
+// ==========================================================================
+
+// Variable Status
+var isInitialLoad = true;
 
 window.onload = function() {
+    // Set default tanggal hari ini pada input tanggal
     var todayStr = new Date().toISOString().split('T')[0];
     if (document.getElementById('presensi-tanggal')) document.getElementById('presensi-tanggal').value = todayStr;
     if (document.getElementById('jurnal-tanggal')) document.getElementById('jurnal-tanggal').value = todayStr;
@@ -8,26 +15,32 @@ window.onload = function() {
     if (typeof setPresetEvalRange === 'function') setPresetEvalRange(null, 'today');
     if (typeof setPresetRekapRange === 'function') setPresetRekapRange(null, 'today');
 
+    // Format stamp tanggal cetak
     document.querySelectorAll('.print-date-stamp').forEach(function(el) {
         el.innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     });
 
+    // Inisialisasi Grafik jika ada
     if (typeof initCharts === 'function') initCharts();
 
-    if (auth) {
+    // Jalankan Sinkronisasi Firebase Realtime Database
+    if (typeof auth !== 'undefined' && auth) {
         auth.onAuthStateChanged(function(user) {
             if (user) {
                 syncDatabaseListener();
             } else {
-                appState.currentUser = null;
-                localStorage.removeItem('sispko_session_user');
-                showLoginScreen();
+                // Jika tidak login via Firebase, periksa sesi lokal
+                checkSession(true);
             }
         });
     } else {
         checkSession(true);
     }
 };
+
+// --------------------------------------------------------------------------
+// 1. FUNGSI PERPINDAHAN TAMPILAN SCREEN
+// --------------------------------------------------------------------------
 
 function showAppScreen() {
     var screenLogin = document.getElementById('screen-login');
@@ -58,8 +71,12 @@ function showLoginScreen() {
     }
 }
 
+// --------------------------------------------------------------------------
+// 2. SINKRONISASI DATABASE REALTIME
+// --------------------------------------------------------------------------
+
 function syncDatabaseListener() {
-    if (!db) return;
+    if (typeof db === 'undefined' || !db) return;
 
     db.ref('sispko_data').on('value', function(snapshot) {
         var data = snapshot.val();
@@ -72,7 +89,7 @@ function syncDatabaseListener() {
             appState.journals = data.journals || [];
             appState.evaluations = data.evaluations || [];
         } else {
-            saveAppState();
+            if (typeof saveAppState === 'function') saveAppState();
         }
 
         var currentFirebaseUser = auth ? auth.currentUser : null;
@@ -82,14 +99,14 @@ function syncDatabaseListener() {
 
             var foundUser = (appState.users || []).find(function(u) {
                 var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
-                var uEmail = formatUserEmail(u.username || u.nama).toLowerCase();
+                var uEmail = typeof formatUserEmail === 'function' ? formatUserEmail(u.username || u.nama).toLowerCase() : "";
                 return uUsername === cleanEmailUsername || uEmail === userEmail;
             });
 
             if (!foundUser) {
                 foundUser = DEFAULT_USERS.find(function(u) {
                     var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
-                    var uEmail = formatUserEmail(u.username || u.nama).toLowerCase();
+                    var uEmail = typeof formatUserEmail === 'function' ? formatUserEmail(u.username || u.nama).toLowerCase() : "";
                     return uUsername === cleanEmailUsername || uEmail === userEmail;
                 });
             }
@@ -110,21 +127,16 @@ function syncDatabaseListener() {
             
             showAppScreen();
             
-            if (document.getElementById('user-display-name')) {
-                document.getElementById('user-display-name').innerText = foundUser.nama;
-            }
-            if (document.getElementById('user-display-role')) {
-                var roleLabel = foundUser.role.toUpperCase();
-                if (foundUser.role === 'walikelas') roleLabel = 'WALI KELAS';
-                if (foundUser.role === 'gurumapel') roleLabel = 'GURU MAPEL';
-                if (foundUser.role === 'kepsek') roleLabel = 'KEPALA SEKOLAH';
-                document.getElementById('user-display-role').innerText = roleLabel;
-            }
-
-            applyRolePermissions(true);
+            updateUserDisplayBadge(foundUser);
+            applyRolePermissions(isInitialLoad);
+            isInitialLoad = false;
         }
     });
 }
+
+// --------------------------------------------------------------------------
+// 3. FUNGSI LOGIN & LOGOUT (BYPASS / LOKAL INTEGRATED)
+// --------------------------------------------------------------------------
 
 async function handleLogin(e) {
     if (e) e.preventDefault();
@@ -137,85 +149,49 @@ async function handleLogin(e) {
     }
 
     var cleanInput = namaInput.toLowerCase().replace(/\s+/g, '');
-    var email = formatUserEmail(cleanInput);
 
-    if (!auth) {
-        alert("Sistem Firebase Auth belum siap. Menggunakan mode lokal.");
-        return;
+    // Verifikasi Akun Pengguna di appState/DEFAULT_USERS (Bypass API Key Auth)
+    var existingUser = (appState.users || []).find(function(u) {
+        var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
+        var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
+        return uName === cleanInput || uNama === cleanInput;
+    });
+
+    if (!existingUser) {
+        existingUser = DEFAULT_USERS.find(function(u) {
+            var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
+            var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
+            return uName === cleanInput || uNama === cleanInput;
+        });
     }
 
-    try {
-        await auth.signInWithEmailAndPassword(email, passInput);
-        showToast("Login berhasil!");
+    if (existingUser) {
+        appState.currentUser = existingUser;
+        localStorage.setItem('sispko_session_user', JSON.stringify(existingUser));
+        
+        if (typeof showToast === 'function') showToast("Login berhasil!");
+        
         showAppScreen();
-    } catch (error) {
-        console.error("Login Error:", error);
-
-        if (
-            error.code === 'auth/user-not-found' || 
-            error.code === 'auth/invalid-credential' || 
-            error.code === 'auth/invalid-login-credentials'
-        ) {
-            var existingUser = (appState.users || []).find(function(u) {
-                var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
-                var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
-                return uName === cleanInput || uNama === cleanInput;
-            });
-
-            if (!existingUser) {
-                existingUser = DEFAULT_USERS.find(function(u) {
-                    var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
-                    var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
-                    return uName === cleanInput || uNama === cleanInput;
-                });
-            }
-
-            if (existingUser) {
-                if (passInput.length < 6) {
-                    alert("Password untuk akun ini minimal harus 6 karakter agar dapat terdaftar!");
-                    return;
-                }
-
-                try {
-                    await auth.createUserWithEmailAndPassword(email, passInput);
-                    showToast("Akun berhasil terintegrasi & otomatis masuk!");
-                    showAppScreen();
-                    return;
-                } catch (createErr) {
-                    console.error("Auto-Register Error:", createErr);
-                    if (createErr.code === 'auth/email-already-in-use') {
-                        alert("Password yang Anda masukkan salah!");
-                    } else if (createErr.code === 'auth/weak-password') {
-                        alert("Password minimal harus 6 karakter!");
-                    } else {
-                        alert("Gagal mendaftarkan akun otomatis: " + createErr.message);
-                    }
-                    return;
-                }
-            } else {
-                alert("Username/Nama Pengguna '" + namaInput + "' tidak ditemukan di database!");
-            }
-        } else if (error.code === 'auth/wrong-password') {
-            alert("Password yang Anda masukkan salah!");
-        } else {
-            alert("Gagal Masuk: " + error.message);
-        }
+        updateUserDisplayBadge(existingUser);
+        applyRolePermissions(true);
+        return;
+    } else {
+        alert("Username/Nama Pengguna '" + namaInput + "' tidak ditemukan di sistem!");
     }
 }
 
 function handleLogout(e) {
     if (e) e.preventDefault();
-    if (auth) {
-        auth.signOut().then(function() {
-            showToast("Anda telah keluar dari aplikasi.");
-            showLoginScreen();
-        });
-    } else {
-        appState.currentUser = null;
-        localStorage.removeItem('sispko_session_user');
-        showLoginScreen();
-        showToast("Anda telah keluar dari aplikasi.");
+    
+    appState.currentUser = null;
+    localStorage.removeItem('sispko_session_user');
+
+    if (typeof auth !== 'undefined' && auth && auth.currentUser) {
+        auth.signOut();
     }
+
+    showLoginScreen();
+    if (typeof showToast === 'function') showToast("Anda telah keluar dari aplikasi.");
 }
 
 function checkSession(isInitial) {
@@ -225,26 +201,34 @@ function checkSession(isInitial) {
         try {
             appState.currentUser = JSON.parse(savedSession);
             showAppScreen();
-
-            if (document.getElementById('user-display-name')) {
-                document.getElementById('user-display-name').innerText = appState.currentUser.nama;
-            }
-            
-            var roleLabel = appState.currentUser.role.toUpperCase();
-            if (appState.currentUser.role === 'walikelas') roleLabel = 'WALI KELAS';
-            if (appState.currentUser.role === 'gurumapel') roleLabel = 'GURU MAPEL';
-            if (appState.currentUser.role === 'kepsek') roleLabel = 'KEPALA SEKOLAH';
-            if (document.getElementById('user-display-role')) {
-                document.getElementById('user-display-role').innerText = roleLabel;
-            }
-
+            updateUserDisplayBadge(appState.currentUser);
             applyRolePermissions(isInitial);
         } catch (err) {
             localStorage.removeItem('sispko_session_user');
             showLoginScreen();
         }
+    } else {
+        showLoginScreen();
     }
 }
+
+function updateUserDisplayBadge(user) {
+    if (!user) return;
+    if (document.getElementById('user-display-name')) {
+        document.getElementById('user-display-name').innerText = user.nama;
+    }
+    if (document.getElementById('user-display-role')) {
+        var roleLabel = user.role.toUpperCase();
+        if (user.role === 'walikelas') roleLabel = 'WALI KELAS';
+        if (user.role === 'gurumapel') roleLabel = 'GURU MAPEL';
+        if (user.role === 'kepsek') roleLabel = 'KEPALA SEKOLAH';
+        document.getElementById('user-display-role').innerText = roleLabel;
+    }
+}
+
+// --------------------------------------------------------------------------
+// 4. BATAS HAK AKSES DAN PERIZINAN MODUL (ROLE PERMISSIONS)
+// --------------------------------------------------------------------------
 
 function applyRolePermissions(isInitial) {
     if (typeof isInitial === 'undefined') isInitial = false;
@@ -257,6 +241,7 @@ function applyRolePermissions(isInitial) {
     var tabEvaluasi = document.getElementById('tab-btn-evaluasi');
     var tabMaster = document.getElementById('tab-btn-master');
 
+    // Default Tampilkan Semua
     if (tabPresensi) tabPresensi.style.display = 'flex';
     if (tabJurnal) tabJurnal.style.display = 'flex';
     if (tabRekap) tabRekap.style.display = 'flex';
@@ -265,10 +250,12 @@ function applyRolePermissions(isInitial) {
 
     if (typeof populateDropdowns === 'function') populateDropdowns();
 
+    // Penyesuaian Berdasarkan Role
     if (role === 'walikelas' || role === 'gurumapel') {
         if (tabRekap) tabRekap.style.display = 'none';
         if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'none';
         if (tabMaster) tabMaster.style.display = 'none';
+        
         if (document.getElementById('jurnal-guru')) {
             document.getElementById('jurnal-guru').value = appState.currentUser.nama;
         }
@@ -285,6 +272,10 @@ function applyRolePermissions(isInitial) {
         switchTab(null, 'presensi');
     }
 }
+
+// --------------------------------------------------------------------------
+// 5. SWAPPING TAB & SIDEBAR NAVIGATION
+// --------------------------------------------------------------------------
 
 function switchTab(e, tabId) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -309,6 +300,7 @@ function switchTab(e, tabId) {
         }
     });
 
+    // Otomatis Tutup Sidebar di Tablet/HP saat tab diklik
     if (window.innerWidth < 768) {
         var sidebar = document.getElementById('sidebar-nav');
         if (sidebar && !sidebar.classList.contains('hidden')) toggleMobileSidebar(null);
@@ -333,18 +325,28 @@ function refreshCurrentTabUI() {
     }
 }
 
+// --------------------------------------------------------------------------
+// 6. UTILITY TOGGLES (PASSWORD & MOBILE SIDEBAR)
+// --------------------------------------------------------------------------
+
 function togglePasswordVisibility(e) {
     if (e) e.preventDefault();
     var passwordInput = document.getElementById('login-password');
     var icon = document.getElementById('toggle-password-icon');
+    if (!passwordInput) return;
+
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        if (icon) {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
     } else {
         passwordInput.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+        if (icon) {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
 }
 
@@ -354,17 +356,23 @@ function toggleMobileSidebar(e) {
     var backdrop = document.getElementById('sidebar-backdrop');
     var icon = document.getElementById('mobile-hamburger-icon');
 
+    if (!sidebar) return;
+
     if (sidebar.classList.contains('hidden')) {
         sidebar.classList.remove('hidden');
         sidebar.classList.add('flex');
-        backdrop.classList.remove('hidden');
-        icon.classList.remove('fa-bars');
-        icon.classList.add('fa-xmark');
+        if (backdrop) backdrop.classList.remove('hidden');
+        if (icon) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-xmark');
+        }
     } else {
         sidebar.classList.add('hidden');
         sidebar.classList.remove('flex');
-        backdrop.classList.add('hidden');
-        icon.classList.remove('fa-xmark');
-        icon.classList.add('fa-bars');
+        if (backdrop) backdrop.classList.add('hidden');
+        if (icon) {
+            icon.classList.remove('fa-xmark');
+            icon.classList.add('fa-bars');
+        }
     }
 }
