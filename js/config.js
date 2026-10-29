@@ -1,3 +1,9 @@
+// Konfigurasi API Key & Gemini Engine SIMPATIK SLBN 2 PELAIHARI
+const CONFIG = {
+    GEMINI_API_KEY: "AQ.Ab8RN6KL5nLxo1l10NN5Z6u-HvvsCIZZ74664yXM_h5rLLvjRA",
+    GEMINI_MODEL: "gemini-1.5-flash"
+};
+
 // Konfigurasi Firebase & Global State (Update API Key Resmi)
     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
