@@ -1,4 +1,4 @@
-// Modul Presensi & Rekapitulasi Presensi (Dengan Fitur Warisan / Inherited Attendance)
+// Modul Presensi & Rekapitulasi Presensi (Dengan Fitur Warisan & Fix Name Propery)
 
 function loadPresensiTable() {
     populatePresensiDropdowns();
@@ -32,8 +32,11 @@ function populatePresensiDropdowns() {
         availableClasses.forEach(function(c) {
             selectKelas.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>';
         });
+
         if (currentSelectedClass && availableClasses.some(function(c) { return c.id === currentSelectedClass; })) {
             selectKelas.value = currentSelectedClass;
+        } else if (availableClasses.length > 0) {
+            selectKelas.value = availableClasses[0].id;
         }
     }
 
@@ -56,6 +59,8 @@ function populatePresensiDropdowns() {
             });
             if (currentSelectedMapel && availableMapels.includes(currentSelectedMapel)) {
                 selectMapel.value = currentSelectedMapel;
+            } else if (availableMapels.length > 0) {
+                selectMapel.value = availableMapels[0];
             }
         }
     }
@@ -81,6 +86,7 @@ function renderPresensiForm() {
         return;
     }
 
+    // Ambil daftar siswa berdasarkan ID Kelas
     var studentsInClass = (appState.students || []).filter(function(s) {
         return s.classId === classId;
     });
@@ -90,7 +96,7 @@ function renderPresensiForm() {
         return;
     }
 
-    // LOGIKA WARISAN PRESENSI
+    // Logika Warisan Presensi
     var keyInduk = classId + "_" + tgl;
     var keyMapel = classId + "_" + tgl + "_" + (mapel ? mapel.replace(/\s+/g, '') : '');
 
@@ -98,7 +104,10 @@ function renderPresensiForm() {
     var recordMapel = (mapel && appState.presensiRecords && appState.presensiRecords[keyMapel]) ? appState.presensiRecords[keyMapel] : null;
 
     studentsInClass.forEach(function(s, idx) {
-        // Jika Guru Mapel sudah punya catatan tersendiri, pakai itu. Jika belum, warisi dari data Induk Wali Kelas (Default 'H').
+        // Ambil nama siswa secara presisi (fallback ke s.nama atau s.name)
+        var studentName = s.nama || s.name || "Siswa " + (idx + 1);
+        var studentKetunaan = s.ketunaan || s.jenisKebutuhan || '';
+
         var status = 'H';
         if (recordMapel && recordMapel[s.id]) {
             status = recordMapel[s.id];
@@ -111,7 +120,7 @@ function renderPresensiForm() {
 
         tr.innerHTML = 
             '<td class="p-3 text-center text-slate-500 font-bold">' + (idx + 1) + '</td>' +
-            '<td class="p-3 font-semibold text-slate-800">' + s.nama + '<div class="text-[10px] text-slate-400">' + (s.ketunaan || '') + '</div></td>' +
+            '<td class="p-3 font-semibold text-slate-800">' + studentName + '<div class="text-[10px] text-slate-400">' + studentKetunaan + '</div></td>' +
             '<td class="p-3 text-center">' +
                 '<div class="inline-flex rounded-xl p-1 bg-slate-100 gap-1 border border-slate-200">' +
                     '<label class="cursor-pointer px-2.5 py-1 rounded-lg text-xs font-bold transition ' + (status === 'H' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200') + '">' +
@@ -152,7 +161,6 @@ function handleSavePresensi(e) {
         return;
     }
 
-    // Tentukan Key Simpan (Induk atau Spesifik Mapel)
     var key = classId + "_" + tgl;
     if (mapel) {
         key = classId + "_" + tgl + "_" + mapel.replace(/\s+/g, '');
