@@ -1,25 +1,27 @@
-// Konfigurasi API Key & Gemini Engine SIMPATIK SLBN 2 PELAIHARI
+// Konfigurasi API Key & Engine SIMPATIK SLBN 2 PELAIHARI
 const CONFIG = {
     GEMINI_API_KEY: "AQ.Ab8RN6KL5nLxo1l10NN5Z6u-HvvsCIZZ74664yXM_h5rLLvjRA",
     GEMINI_MODEL: "gemini-1.5-flash"
 };
 
-// Konfigurasi Firebase & Global State (Update API Key Resmi)
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Inisialisasi Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDo7HJQTNgH2OyOjVetYajtR-gIdsWwj_0",
-  authDomain: "sispko-sekolah.firebaseapp.com",
-  databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sispko-sekolah",
-  storageBucket: "sispko-sekolah.firebasestorage.app",
-  messagingSenderId: "280921949204",
-  appId: "1:280921949204:web:94781a66e1d16f72911301",
-  measurementId: "G-NHZLZGTSD0"
+    apiKey: "AIzaSy...", // Ganti dengan Firebase Web API Key Anda
+    authDomain: "sispko-sekolah-slbn2.firebaseapp.com",
+    databaseURL: "https://sispko-sekolah-slbn2-default-rtdb.firebaseio.com",
+    projectId: "sispko-sekolah-slbn2",
+    storageBucket: "sispko-sekolah-slbn2.appspot.com",
+    messagingSenderId: "1234567890",
+    appId: "1:1234567890:web:abcdef"
 };
 
+// Initialize Firebase Application
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
-var db = null;
-var auth = null;
+var auth = firebase.auth();
+var db = firebase.database();
 
 try {
     if (typeof firebase !== 'undefined') {
