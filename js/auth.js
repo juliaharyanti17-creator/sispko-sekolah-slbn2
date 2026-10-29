@@ -1,17 +1,18 @@
-// Autentikasi, Session, & Navigasi Tab
+// Autentikasi, Session, & Navigasi Tab SIMPATIK SLBN 2 PELAIHARI
+
 window.onload = function() {
     var todayStr = new Date().toISOString().split('T')[0];
     if (document.getElementById('presensi-tanggal')) document.getElementById('presensi-tanggal').value = todayStr;
     if (document.getElementById('jurnal-tanggal')) document.getElementById('jurnal-tanggal').value = todayStr;
 
-    setPresetEvalRange(null, 'today');
-    setPresetRekapRange(null, 'today');
+    if (typeof setPresetEvalRange === 'function') setPresetEvalRange(null, 'today');
+    if (typeof setPresetRekapRange === 'function') setPresetRekapRange(null, 'today');
 
     document.querySelectorAll('.print-date-stamp').forEach(function(el) {
         el.innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     });
 
-    initCharts();
+    if (typeof initCharts === 'function') initCharts();
 
     if (auth) {
         auth.onAuthStateChanged(function(user) {
@@ -20,22 +21,42 @@ window.onload = function() {
             } else {
                 appState.currentUser = null;
                 localStorage.removeItem('sispko_session_user');
-                var screenApp = document.getElementById('screen-app');
-                var screenLogin = document.getElementById('screen-login');
-                if (screenApp) {
-                    screenApp.classList.add('hidden');
-                    screenApp.style.display = 'none';
-                }
-                if (screenLogin) {
-                    screenLogin.classList.remove('hidden');
-                    screenLogin.style.display = 'flex';
-                }
+                showLoginScreen();
             }
         });
     } else {
         checkSession(true);
     }
 };
+
+function showAppScreen() {
+    var screenLogin = document.getElementById('screen-login');
+    var screenApp = document.getElementById('screen-app');
+
+    if (screenLogin) {
+        screenLogin.classList.add('hidden');
+        screenLogin.style.setProperty('display', 'none', 'important');
+    }
+    if (screenApp) {
+        screenApp.classList.remove('hidden');
+        screenApp.classList.add('flex');
+        screenApp.style.setProperty('display', 'flex', 'important');
+    }
+}
+
+function showLoginScreen() {
+    var screenLogin = document.getElementById('screen-login');
+    var screenApp = document.getElementById('screen-app');
+
+    if (screenApp) {
+        screenApp.classList.add('hidden');
+        screenApp.style.setProperty('display', 'none', 'important');
+    }
+    if (screenLogin) {
+        screenLogin.classList.remove('hidden');
+        screenLogin.style.setProperty('display', 'flex', 'important');
+    }
+}
 
 function syncDatabaseListener() {
     if (!db) return;
@@ -87,19 +108,7 @@ function syncDatabaseListener() {
             appState.currentUser = foundUser;
             localStorage.setItem('sispko_session_user', JSON.stringify(foundUser));
             
-            // TAMPILKAN HALAMAN UTAMA SECARA KONSISTEN
-            var screenLogin = document.getElementById('screen-login');
-            var screenApp = document.getElementById('screen-app');
-
-            if (screenLogin) {
-                screenLogin.classList.add('hidden');
-                screenLogin.style.display = 'none';
-            }
-            if (screenApp) {
-                screenApp.classList.remove('hidden');
-                screenApp.classList.add('flex');
-                screenApp.style.display = 'flex';
-            }
+            showAppScreen();
             
             if (document.getElementById('user-display-name')) {
                 document.getElementById('user-display-name').innerText = foundUser.nama;
@@ -112,8 +121,7 @@ function syncDatabaseListener() {
                 document.getElementById('user-display-role').innerText = roleLabel;
             }
 
-            applyRolePermissions(isInitialLoad);
-            isInitialLoad = false;
+            applyRolePermissions(true);
         }
     });
 }
@@ -139,6 +147,7 @@ async function handleLogin(e) {
     try {
         await auth.signInWithEmailAndPassword(email, passInput);
         showToast("Login berhasil!");
+        showAppScreen();
     } catch (error) {
         console.error("Login Error:", error);
 
@@ -170,6 +179,7 @@ async function handleLogin(e) {
                 try {
                     await auth.createUserWithEmailAndPassword(email, passInput);
                     showToast("Akun berhasil terintegrasi & otomatis masuk!");
+                    showAppScreen();
                     return;
                 } catch (createErr) {
                     console.error("Auto-Register Error:", createErr);
@@ -198,20 +208,12 @@ function handleLogout(e) {
     if (auth) {
         auth.signOut().then(function() {
             showToast("Anda telah keluar dari aplikasi.");
+            showLoginScreen();
         });
     } else {
         appState.currentUser = null;
         localStorage.removeItem('sispko_session_user');
-        var screenApp = document.getElementById('screen-app');
-        var screenLogin = document.getElementById('screen-login');
-        if (screenApp) {
-            screenApp.classList.add('hidden');
-            screenApp.style.display = 'none';
-        }
-        if (screenLogin) {
-            screenLogin.classList.remove('hidden');
-            screenLogin.style.display = 'flex';
-        }
+        showLoginScreen();
         showToast("Anda telah keluar dari aplikasi.");
     }
 }
@@ -222,19 +224,7 @@ function checkSession(isInitial) {
     if (savedSession) {
         try {
             appState.currentUser = JSON.parse(savedSession);
-            
-            var screenLogin = document.getElementById('screen-login');
-            var screenApp = document.getElementById('screen-app');
-
-            if (screenLogin) {
-                screenLogin.classList.add('hidden');
-                screenLogin.style.display = 'none';
-            }
-            if (screenApp) {
-                screenApp.classList.remove('hidden');
-                screenApp.classList.add('flex');
-                screenApp.style.display = 'flex';
-            }
+            showAppScreen();
 
             if (document.getElementById('user-display-name')) {
                 document.getElementById('user-display-name').innerText = appState.currentUser.nama;
@@ -251,6 +241,7 @@ function checkSession(isInitial) {
             applyRolePermissions(isInitial);
         } catch (err) {
             localStorage.removeItem('sispko_session_user');
+            showLoginScreen();
         }
     }
 }
@@ -259,6 +250,7 @@ function applyRolePermissions(isInitial) {
     if (typeof isInitial === 'undefined') isInitial = false;
     if (!appState.currentUser) return;
     var role = appState.currentUser.role;
+
     var tabPresensi = document.getElementById('tab-btn-presensi');
     var tabJurnal = document.getElementById('tab-btn-jurnal');
     var tabRekap = document.getElementById('tab-btn-rekap');
@@ -271,35 +263,26 @@ function applyRolePermissions(isInitial) {
     if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'block';
     if (tabMaster) tabMaster.style.display = 'flex';
 
-    populateDropdowns();
+    if (typeof populateDropdowns === 'function') populateDropdowns();
 
-    if (role === 'walikelas') {
+    if (role === 'walikelas' || role === 'gurumapel') {
         if (tabRekap) tabRekap.style.display = 'none';
         if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'none';
         if (tabMaster) tabMaster.style.display = 'none';
         if (document.getElementById('jurnal-guru')) {
             document.getElementById('jurnal-guru').value = appState.currentUser.nama;
         }
-        if (isInitial) switchTab(null, 'presensi');
-
-    } else if (role === 'gurumapel') {
-        if (tabRekap) tabRekap.style.display = 'none';
-        if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'none';
-        if (tabMaster) tabMaster.style.display = 'none';
-        if (document.getElementById('jurnal-guru')) {
-            document.getElementById('jurnal-guru').value = appState.currentUser.nama;
-        }
-        if (isInitial) switchTab(null, 'presensi');
+        switchTab(null, 'presensi');
 
     } else if (role === 'kepsek') {
         if (tabPresensi) tabPresensi.style.display = 'none';
         if (tabJurnal) tabJurnal.style.display = 'none';
         if (tabRekap) tabRekap.style.display = 'none';
         if (tabMaster) tabMaster.style.display = 'none';
-        if (isInitial) switchTab(null, 'evaluasi');
+        switchTab(null, 'evaluasi');
 
     } else if (role === 'admin') {
-        if (isInitial) switchTab(null, 'presensi');
+        switchTab(null, 'presensi');
     }
 }
 
@@ -313,10 +296,16 @@ function switchTab(e, tabId) {
         var section = document.getElementById('modul-' + t);
         if (t === tabId) {
             if (btn) btn.className = "tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all cursor-pointer";
-            if (section) section.classList.remove('hidden');
+            if (section) {
+                section.classList.remove('hidden');
+                section.style.setProperty('display', 'block', 'important');
+            }
         } else {
             if (btn) btn.className = "tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between text-indigo-200 hover:bg-indigo-800/60 hover:text-white transition-all cursor-pointer";
-            if (section) section.classList.add('hidden');
+            if (section) {
+                section.classList.add('hidden');
+                section.style.setProperty('display', 'none', 'important');
+            }
         }
     });
 
@@ -325,22 +314,22 @@ function switchTab(e, tabId) {
         if (sidebar && !sidebar.classList.contains('hidden')) toggleMobileSidebar(null);
     }
 
-    refreshCurrentTabUI();
+    if (typeof refreshCurrentTabUI === 'function') refreshCurrentTabUI();
 }
 
 function refreshCurrentTabUI() {
-    if (appState.currentTab === 'presensi') loadPresensiTable();
+    if (appState.currentTab === 'presensi' && typeof loadPresensiTable === 'function') loadPresensiTable();
     if (appState.currentTab === 'jurnal') {
-        renderJurnalList();
-        renderGuruFeedbackSection();
+        if (typeof renderJurnalList === 'function') renderJurnalList();
+        if (typeof renderGuruFeedbackSection === 'function') renderGuruFeedbackSection();
     }
-    if (appState.currentTab === 'rekap') renderRekapModule();
-    if (appState.currentTab === 'evaluasi') updateEvaluasiDashboard();
+    if (appState.currentTab === 'rekap' && typeof renderRekapModule === 'function') renderRekapModule();
+    if (appState.currentTab === 'evaluasi' && typeof updateEvaluasiDashboard === 'function') updateEvaluasiDashboard();
     if (appState.currentTab === 'master') {
-        renderMasterUsersTable();
-        renderMasterKelasList();
-        renderMasterMapelList();
-        renderMasterSiswaTable();
+        if (typeof renderMasterUsersTable === 'function') renderMasterUsersTable();
+        if (typeof renderMasterKelasList === 'function') renderMasterKelasList();
+        if (typeof renderMasterMapelList === 'function') renderMasterMapelList();
+        if (typeof renderMasterSiswaTable === 'function') renderMasterSiswaTable();
     }
 }
 
