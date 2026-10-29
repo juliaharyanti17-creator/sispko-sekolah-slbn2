@@ -1,4 +1,4 @@
-// Modul Presensi & Rekapitulasi Presensi (Dengan Fitur Warisan & Fix Name Propery)
+// Modul Presensi & Rekapitulasi Presensi (Dengan Fitur Warisan & Fix Student Name)
 
 function loadPresensiTable() {
     populatePresensiDropdowns();
@@ -82,7 +82,7 @@ function renderPresensiForm() {
     tbody.innerHTML = '';
 
     if (!classId) {
-        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-medium">Silakan pilih kelas terlebih dahulu.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 font-medium">Silakan pilih kelas terlebih dahulu.</td></tr>';
         return;
     }
 
@@ -92,7 +92,7 @@ function renderPresensiForm() {
     });
 
     if (studentsInClass.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-medium">Belum ada data siswa di kelas ini.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 font-medium">Belum ada data siswa di kelas ini.</td></tr>';
         return;
     }
 
@@ -103,10 +103,14 @@ function renderPresensiForm() {
     var recordInduk = (appState.presensiRecords && appState.presensiRecords[keyInduk]) ? appState.presensiRecords[keyInduk] : {};
     var recordMapel = (mapel && appState.presensiRecords && appState.presensiRecords[keyMapel]) ? appState.presensiRecords[keyMapel] : null;
 
+    // Hitung Ringkasan Total Card
+    var countH = 0, countS = 0, countI = 0, countA = 0;
+
     studentsInClass.forEach(function(s, idx) {
-        // Ambil nama siswa secara presisi (fallback ke s.nama atau s.name)
-        var studentName = s.nama || s.name || "Siswa " + (idx + 1);
-        var studentKetunaan = s.ketunaan || s.jenisKebutuhan || '';
+        // Penanganan presisi nama & NISN agar tidak undefined
+        var studentName = s.nama || s.name || s.namaSiswa || "Siswa " + (idx + 1);
+        var studentNisn = (s.nisn && s.nisn !== 'undefined') ? s.nisn : '';
+        var studentKetunaan = s.ketunaan || s.jenisKebutuhan || '-';
 
         var status = 'H';
         if (recordMapel && recordMapel[s.id]) {
@@ -115,12 +119,20 @@ function renderPresensiForm() {
             status = recordInduk[s.id];
         }
 
+        if (status === 'H') countH++;
+        else if (status === 'S') countS++;
+        else if (status === 'I') countI++;
+        else if (status === 'A') countA++;
+
         var tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
 
+        var nisnDisplay = studentNisn ? '<div class="text-[10px] text-slate-400 font-normal">' + studentNisn + '</div>' : '';
+
         tr.innerHTML = 
             '<td class="p-3 text-center text-slate-500 font-bold">' + (idx + 1) + '</td>' +
-            '<td class="p-3 font-semibold text-slate-800">' + studentName + '<div class="text-[10px] text-slate-400">' + studentKetunaan + '</div></td>' +
+            '<td class="p-3 font-semibold text-slate-800">' + nisnDisplay + '<div class="font-bold text-slate-800">' + studentName + '</div></td>' +
+            '<td class="p-3 text-slate-600 text-xs font-medium">' + studentKetunaan + '</td>' +
             '<td class="p-3 text-center">' +
                 '<div class="inline-flex rounded-xl p-1 bg-slate-100 gap-1 border border-slate-200">' +
                     '<label class="cursor-pointer px-2.5 py-1 rounded-lg text-xs font-bold transition ' + (status === 'H' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200') + '">' +
@@ -141,6 +153,13 @@ function renderPresensiForm() {
 
         tbody.appendChild(tr);
     });
+
+    // Update Ringkasan Kartu Atas
+    if (document.getElementById('summary-hadir')) document.getElementById('summary-hadir').innerText = countH;
+    if (document.getElementById('summary-sakit')) document.getElementById('summary-sakit').innerText = countS;
+    if (document.getElementById('summary-izin')) document.getElementById('summary-izin').innerText = countI;
+    if (document.getElementById('summary-alpa')) document.getElementById('summary-alpa').innerText = countA;
+    if (document.getElementById('summary-total')) document.getElementById('summary-total').innerText = studentsInClass.length;
 }
 
 function handleSavePresensi(e) {
