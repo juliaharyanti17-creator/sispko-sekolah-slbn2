@@ -3,11 +3,10 @@
 // SLBN 2 PELAIHARI
 // ==========================================================================
 
-// Variable Status
 var isInitialLoad = true;
 
 window.onload = function() {
-    // Set default tanggal hari ini pada input tanggal
+    // Set default tanggal hari ini
     var todayStr = new Date().toISOString().split('T')[0];
     if (document.getElementById('presensi-tanggal')) document.getElementById('presensi-tanggal').value = todayStr;
     if (document.getElementById('jurnal-tanggal')) document.getElementById('jurnal-tanggal').value = todayStr;
@@ -15,33 +14,17 @@ window.onload = function() {
     if (typeof setPresetEvalRange === 'function') setPresetEvalRange(null, 'today');
     if (typeof setPresetRekapRange === 'function') setPresetRekapRange(null, 'today');
 
-    // Format stamp tanggal cetak
     document.querySelectorAll('.print-date-stamp').forEach(function(el) {
         el.innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     });
 
-    // Inisialisasi Grafik jika ada
     if (typeof initCharts === 'function') initCharts();
 
-    // Jalankan Sinkronisasi Firebase Realtime Database
-    if (typeof auth !== 'undefined' && auth) {
-        auth.onAuthStateChanged(function(user) {
-            if (user) {
-                syncDatabaseListener();
-            } else {
-                // Jika tidak login via Firebase, periksa sesi lokal
-                checkSession(true);
-            }
-        });
-    } else {
-        checkSession(true);
-    }
+    // Cek sesi login yang tersimpan
+    checkSession(true);
 };
 
-// --------------------------------------------------------------------------
-// 1. FUNGSI PERPINDAHAN TAMPILAN SCREEN
-// --------------------------------------------------------------------------
-
+// 1. FUNGSI PAKSA PERPINDAHAN TAMPILAN
 function showAppScreen() {
     var screenLogin = document.getElementById('screen-login');
     var screenApp = document.getElementById('screen-app');
@@ -71,73 +54,7 @@ function showLoginScreen() {
     }
 }
 
-// --------------------------------------------------------------------------
-// 2. SINKRONISASI DATABASE REALTIME
-// --------------------------------------------------------------------------
-
-function syncDatabaseListener() {
-    if (typeof db === 'undefined' || !db) return;
-
-    db.ref('sispko_data').on('value', function(snapshot) {
-        var data = snapshot.val();
-        if (data) {
-            appState.classes = data.classes || [];
-            appState.students = data.students || [];
-            appState.mapels = data.mapels || [...DEFAULT_MAPELS];
-            appState.users = (data.users && data.users.length > 0) ? data.users : [...DEFAULT_USERS];
-            appState.presensiRecords = data.presensiRecords || {};
-            appState.journals = data.journals || [];
-            appState.evaluations = data.evaluations || [];
-        } else {
-            if (typeof saveAppState === 'function') saveAppState();
-        }
-
-        var currentFirebaseUser = auth ? auth.currentUser : null;
-        if (currentFirebaseUser) {
-            var userEmail = (currentFirebaseUser.email || "").toLowerCase();
-            var cleanEmailUsername = userEmail.split('@')[0].trim();
-
-            var foundUser = (appState.users || []).find(function(u) {
-                var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
-                var uEmail = typeof formatUserEmail === 'function' ? formatUserEmail(u.username || u.nama).toLowerCase() : "";
-                return uUsername === cleanEmailUsername || uEmail === userEmail;
-            });
-
-            if (!foundUser) {
-                foundUser = DEFAULT_USERS.find(function(u) {
-                    var uUsername = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
-                    var uEmail = typeof formatUserEmail === 'function' ? formatUserEmail(u.username || u.nama).toLowerCase() : "";
-                    return uUsername === cleanEmailUsername || uEmail === userEmail;
-                });
-            }
-
-            if (!foundUser) {
-                foundUser = {
-                    id: "u_" + Date.now(),
-                    username: cleanEmailUsername,
-                    nama: cleanEmailUsername.toUpperCase(),
-                    role: "walikelas",
-                    classIds: [],
-                    assignedMapels: []
-                };
-            }
-
-            appState.currentUser = foundUser;
-            localStorage.setItem('sispko_session_user', JSON.stringify(foundUser));
-            
-            showAppScreen();
-            
-            updateUserDisplayBadge(foundUser);
-            applyRolePermissions(isInitialLoad);
-            isInitialLoad = false;
-        }
-    });
-}
-
-// --------------------------------------------------------------------------
-// 3. FUNGSI LOGIN & LOGOUT (BYPASS / LOKAL INTEGRATED)
-// --------------------------------------------------------------------------
-
+// 2. FUNGSI LOGIN LOKAL (LANGSUNG MASUK TANPA TERTAN)
 async function handleLogin(e) {
     if (e) e.preventDefault();
     var namaInput = document.getElementById('login-nama').value.trim();
@@ -150,7 +67,7 @@ async function handleLogin(e) {
 
     var cleanInput = namaInput.toLowerCase().replace(/\s+/g, '');
 
-    // Verifikasi Akun Pengguna di appState/DEFAULT_USERS (Bypass API Key Auth)
+    // Cari akun di data lokal
     var existingUser = (appState.users || []).find(function(u) {
         var uName = (u.username || "").trim().toLowerCase().replace(/\s+/g, '');
         var uNama = (u.nama || "").trim().toLowerCase().replace(/\s+/g, '');
@@ -169,33 +86,27 @@ async function handleLogin(e) {
         appState.currentUser = existingUser;
         localStorage.setItem('sispko_session_user', JSON.stringify(existingUser));
         
-        if (typeof showToast === 'function') showToast("Login berhasil!");
-        
+        // PAKSA BUKA HALAMAN UTAMA
         showAppScreen();
         updateUserDisplayBadge(existingUser);
         applyRolePermissions(true);
+
+        if (typeof showToast === 'function') showToast("Login berhasil!");
         return;
     } else {
-        alert("Username/Nama Pengguna '" + namaInput + "' tidak ditemukan di sistem!");
+        alert("Username/Nama Pengguna '" + namaInput + "' tidak ditemukan!");
     }
 }
 
 function handleLogout(e) {
     if (e) e.preventDefault();
-    
     appState.currentUser = null;
     localStorage.removeItem('sispko_session_user');
-
-    if (typeof auth !== 'undefined' && auth && auth.currentUser) {
-        auth.signOut();
-    }
-
     showLoginScreen();
-    if (typeof showToast === 'function') showToast("Anda telah keluar dari aplikasi.");
+    if (typeof showToast === 'function') showToast("Anda telah keluar.");
 }
 
 function checkSession(isInitial) {
-    if (typeof isInitial === 'undefined') isInitial = false;
     var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
         try {
@@ -226,12 +137,8 @@ function updateUserDisplayBadge(user) {
     }
 }
 
-// --------------------------------------------------------------------------
-// 4. BATAS HAK AKSES DAN PERIZINAN MODUL (ROLE PERMISSIONS)
-// --------------------------------------------------------------------------
-
+// 3. ATUR PERIZINAN PERAN (ROLE) & BUKA TAB AWAL
 function applyRolePermissions(isInitial) {
-    if (typeof isInitial === 'undefined') isInitial = false;
     if (!appState.currentUser) return;
     var role = appState.currentUser.role;
 
@@ -241,7 +148,7 @@ function applyRolePermissions(isInitial) {
     var tabEvaluasi = document.getElementById('tab-btn-evaluasi');
     var tabMaster = document.getElementById('tab-btn-master');
 
-    // Default Tampilkan Semua
+    // Tampilkan tombol navigasi sesuai role
     if (tabPresensi) tabPresensi.style.display = 'flex';
     if (tabJurnal) tabJurnal.style.display = 'flex';
     if (tabRekap) tabRekap.style.display = 'flex';
@@ -250,12 +157,11 @@ function applyRolePermissions(isInitial) {
 
     if (typeof populateDropdowns === 'function') populateDropdowns();
 
-    // Penyesuaian Berdasarkan Role
+    // Arahkan ke tab awal sesuai peran
     if (role === 'walikelas' || role === 'gurumapel') {
         if (tabRekap) tabRekap.style.display = 'none';
         if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'none';
         if (tabMaster) tabMaster.style.display = 'none';
-        
         if (document.getElementById('jurnal-guru')) {
             document.getElementById('jurnal-guru').value = appState.currentUser.nama;
         }
@@ -273,10 +179,7 @@ function applyRolePermissions(isInitial) {
     }
 }
 
-// --------------------------------------------------------------------------
-// 5. SWAPPING TAB & SIDEBAR NAVIGATION
-// --------------------------------------------------------------------------
-
+// 4. PERPINDAHAN TAB
 function switchTab(e, tabId) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     appState.currentTab = tabId;
@@ -300,7 +203,6 @@ function switchTab(e, tabId) {
         }
     });
 
-    // Otomatis Tutup Sidebar di Tablet/HP saat tab diklik
     if (window.innerWidth < 768) {
         var sidebar = document.getElementById('sidebar-nav');
         if (sidebar && !sidebar.classList.contains('hidden')) toggleMobileSidebar(null);
@@ -311,10 +213,7 @@ function switchTab(e, tabId) {
 
 function refreshCurrentTabUI() {
     if (appState.currentTab === 'presensi' && typeof loadPresensiTable === 'function') loadPresensiTable();
-    if (appState.currentTab === 'jurnal') {
-        if (typeof renderJurnalList === 'function') renderJurnalList();
-        if (typeof renderGuruFeedbackSection === 'function') renderGuruFeedbackSection();
-    }
+    if (appState.currentTab === 'jurnal' && typeof renderJurnalList === 'function') renderJurnalList();
     if (appState.currentTab === 'rekap' && typeof renderRekapModule === 'function') renderRekapModule();
     if (appState.currentTab === 'evaluasi' && typeof updateEvaluasiDashboard === 'function') updateEvaluasiDashboard();
     if (appState.currentTab === 'master') {
@@ -324,10 +223,6 @@ function refreshCurrentTabUI() {
         if (typeof renderMasterSiswaTable === 'function') renderMasterSiswaTable();
     }
 }
-
-// --------------------------------------------------------------------------
-// 6. UTILITY TOGGLES (PASSWORD & MOBILE SIDEBAR)
-// --------------------------------------------------------------------------
 
 function togglePasswordVisibility(e) {
     if (e) e.preventDefault();
