@@ -17,26 +17,15 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* Custom Scrollbar for Chat & Tables */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 antialiased">
 
-    <!-- ==================== SCREEN 1: LOGIN ==================== -->
+    <!-- SCREEN 1: LOGIN -->
     <div id="screen-login" class="min-h-screen flex items-center justify-center bg-slate-900 p-4">
         <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 md:p-8 border border-slate-100">
             <div class="text-center mb-6">
@@ -78,8 +67,7 @@
         </div>
     </div>
 
-
-    <!-- ==================== SCREEN 2: MAIN APP ==================== -->
+    <!-- SCREEN 2: MAIN APP -->
     <div id="screen-app" class="hidden min-h-screen bg-slate-100 flex-col md:flex-row">
 
         <!-- Mobile Header Bar -->
@@ -93,7 +81,6 @@
             </button>
         </div>
 
-        <!-- Sidebar Backdrop for Mobile -->
         <div id="sidebar-backdrop" onclick="toggleMobileSidebar(event)" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden"></div>
 
         <!-- Sidebar Navigation -->
@@ -147,9 +134,7 @@
                 </button>
             </nav>
 
-            <!-- Bottom Actions -->
             <div class="pt-4 mt-auto border-t border-indigo-900/80 space-y-2">
-                <!-- AI Assistant Trigger Button -->
                 <button type="button" onclick="toggleAIChatModal(event)" class="w-full py-2.5 px-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-robot"></i> AI Assistant SIMPATIK
                 </button>
@@ -186,7 +171,6 @@
                     </div>
                 </div>
 
-                <!-- Summary Cards -->
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                     <div class="bg-emerald-50 border border-emerald-200/60 p-3.5 rounded-2xl text-center">
                         <div class="text-[10px] font-bold text-emerald-700 uppercase">Hadir</div>
@@ -210,7 +194,6 @@
                     </div>
                 </div>
 
-                <!-- Presensi Table -->
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
                     <div class="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                         <h3 class="font-bold text-xs text-slate-700 flex items-center gap-2">
@@ -246,44 +229,148 @@
 
             <!-- MODUL 2: JURNAL -->
             <section id="modul-jurnal" class="hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-base font-bold text-slate-800 mb-4">Input Jurnal Mengajar</h2>
-                    <!-- Form Jurnal Mengajar -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-4">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Input Jurnal Mengajar Harian
+                    </h2>
+                    <form onsubmit="handleSaveJurnal(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Tanggal</label>
+                                <input type="date" id="jurnal-tanggal" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Kelas</label>
+                                <select id="jurnal-kelas-select" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">- Pilih Kelas -</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Mata Pelajaran</label>
+                                <select id="jurnal-mapel-select" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">- Pilih Mapel -</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Materi / Ringkasan Kegiatan Pengajaran</label>
+                            <textarea id="jurnal-materi" rows="3" required placeholder="Tuliskan ringkasan materi pembelajaran hari ini..." class="w-full p-3.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Catatan Hambatan / Perkembangan Siswa</label>
+                            <textarea id="jurnal-catatan" rows="2" placeholder="Catatan khusus kondisi/perkembangan siswa saat KBM..." class="w-full p-3.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-paper-plane"></i> Simpan Jurnal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="guru-feedback-container"></div>
+
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-5">
+                    <h3 class="font-bold text-xs text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-indigo-600"></i> Riwayat Jurnal Mengajar
+                    </h3>
+                    <div id="jurnal-list-container" class="space-y-3">
+                        <p class="text-xs text-slate-400 font-medium">Belum ada riwayat jurnal.</p>
+                    </div>
                 </div>
             </section>
 
             <!-- MODUL 3: REKAP -->
             <section id="modul-rekap" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-base font-bold text-slate-800 mb-4">Rekapitulasi Presensi & Jurnal</h2>
-                    <!-- Tampilan Rekapitulasi -->
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-indigo-600"></i> Rekapitulasi Presensi & Aktivitas Jurnal
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Dari Tanggal</label>
+                            <input type="date" id="rekap-start-date" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Sampai Tanggal</label>
+                            <input type="date" id="rekap-end-date" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Kelas</label>
+                            <select id="rekap-kelas-select" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold">
+                                <option value="ALL">Semua Kelas</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button type="button" onclick="renderRekapModule()" class="w-full py-2 px-4 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition cursor-pointer">
+                                Tampilkan Rekap
+                            </button>
+                        </div>
+                    </div>
+                    <div id="rekap-content-area" class="space-y-4">
+                        <p class="text-xs text-slate-400">Pilih filter dan klik Tampilkan Rekap.</p>
+                    </div>
                 </div>
             </section>
 
             <!-- MODUL 4: EVALUASI KEPSEK -->
             <section id="modul-evaluasi" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-base font-bold text-slate-800 mb-4">Dashboard Evaluasi Kepala Sekolah</h2>
-                    <!-- Panel Evaluasi -->
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
+                    </h2>
+                    <div id="evaluasi-dashboard-container" class="space-y-6">
+                        <p class="text-xs text-slate-400">Loading data evaluasi pengawasan...</p>
+                    </div>
                 </div>
             </section>
 
             <!-- MODUL 5: DATA MASTER -->
             <section id="modul-master" class="hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-base font-bold text-slate-800 mb-4">Kelola Data Master Sekolah</h2>
-                    <!-- Form & Tabel Data Master -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-indigo-600"></i> Kelola Data Master Sekolah
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- User Table -->
+                        <div class="border border-slate-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-xs text-slate-700 mb-3">Data Pengguna & Guru</h3>
+                            <div id="master-users-table" class="space-y-2 text-xs"></div>
+                        </div>
+
+                        <!-- Kelas Table -->
+                        <div class="border border-slate-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-xs text-slate-700 mb-3">Data Kelas</h3>
+                            <div id="master-kelas-list" class="space-y-2 text-xs"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Mapel Table -->
+                        <div class="border border-slate-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-xs text-slate-700 mb-3">Data Mata Pelajaran</h3>
+                            <div id="master-mapel-list" class="space-y-2 text-xs"></div>
+                        </div>
+
+                        <!-- Siswa Table -->
+                        <div class="border border-slate-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-xs text-slate-700 mb-3">Data Siswa</h3>
+                            <div id="master-siswa-table" class="space-y-2 text-xs"></div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
         </main>
     </div>
 
-
-    <!-- ==================== AI CHATBOT MODAL ==================== -->
+    <!-- AI CHATBOT MODAL -->
     <div id="ai-chat-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
         <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[85vh] border border-slate-100">
-            <!-- Modal Header -->
             <div class="bg-indigo-900 text-white p-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-lg shadow">
@@ -299,7 +386,6 @@
                 </button>
             </div>
 
-            <!-- Messages Area -->
             <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50">
                 <div class="flex justify-start my-2">
                     <div class="bg-slate-100 text-slate-800 text-xs p-3.5 rounded-2xl rounded-tl-none max-w-[90%] border border-slate-200 shadow-sm space-y-1">
@@ -309,7 +395,6 @@
                 </div>
             </div>
 
-            <!-- Modal Input Footer -->
             <div class="p-3.5 bg-white border-t border-slate-200">
                 <form onsubmit="handleSendAIPrompt(event)" class="flex items-center gap-2">
                     <input type="text" id="ai-input-prompt" placeholder="Ketik perintah (misal: Rangkum murid alpa tanggal 1 sampai 10)..." class="flex-1 px-4 py-3 bg-slate-100 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-slate-200">
@@ -321,22 +406,15 @@
         </div>
     </div>
 
-
     <!-- Toast Notification -->
     <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-bold z-50 items-center gap-2 border border-slate-700">
         <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
         <span>Notifikasi Sistem</span>
     </div>
 
-
-    <!-- ==================== SCRIPT LOADING ORDER ==================== -->
-    <!-- 1. Konfigurasi API & Gemini -->
+    <!-- SCRIPT LOADING ORDER -->
     <script src="js/config.js"></script>
-
-    <!-- 2. Engine AI Assistant Chatbot -->
     <script src="js/ai-assistant.js"></script>
-
-    <!-- 3. Core & Modul Aplikasi -->
     <script src="js/app.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/presensi.js"></script>
