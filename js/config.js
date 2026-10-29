@@ -17,16 +17,8 @@ const firebaseConfig = {
 };
 
 // Inisialisasi Firebase
-if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    try {
-        firebase.initializeApp(firebaseConfig);
-    } catch (err) {
-        console.error("Firebase init error:", err);
-    }
-}
-
-var auth = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null;
-var db = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
+var auth = null;
+var db = null;
 
 try {
     if (typeof firebase !== 'undefined') {
@@ -93,13 +85,17 @@ function showToast(msg, type) {
     if (!type) type = "success";
     var toast = document.getElementById('toast-banner');
     var toastIcon = document.getElementById('toast-icon');
+    var toastMsg = document.getElementById('toast-msg');
     if (!toast) return;
-    document.getElementById('toast-msg').innerText = msg;
 
-    if (type === "success") {
-        toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
-    } else {
-        toastIcon.className = "fa-solid fa-triangle-exclamation text-amber-400 text-lg";
+    if (toastMsg) toastMsg.innerText = msg;
+
+    if (toastIcon) {
+        if (type === "success") {
+            toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
+        } else {
+            toastIcon.className = "fa-solid fa-triangle-exclamation text-amber-400 text-lg";
+        }
     }
 
     toast.classList.remove('hidden');
@@ -107,7 +103,7 @@ function showToast(msg, type) {
 }
 
 function getClassName(classId) {
-    if (classId === 'Semua Kelas') return 'Semua Kelas';
+    if (classId === 'Semua Kelas' || classId === 'ALL') return 'Semua Kelas';
     var found = (appState.classes || []).find(function(c) { return c.id === classId; });
     return found ? found.name : classId;
 }
