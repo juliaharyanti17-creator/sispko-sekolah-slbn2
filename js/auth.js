@@ -20,8 +20,16 @@ window.onload = function() {
             } else {
                 appState.currentUser = null;
                 localStorage.removeItem('sispko_session_user');
-                document.getElementById('screen-app').classList.add('hidden');
-                document.getElementById('screen-login').classList.remove('hidden');
+                var screenApp = document.getElementById('screen-app');
+                var screenLogin = document.getElementById('screen-login');
+                if (screenApp) {
+                    screenApp.classList.add('hidden');
+                    screenApp.style.display = 'none';
+                }
+                if (screenLogin) {
+                    screenLogin.classList.remove('hidden');
+                    screenLogin.style.display = 'flex';
+                }
             }
         });
     } else {
@@ -79,13 +87,18 @@ function syncDatabaseListener() {
             appState.currentUser = foundUser;
             localStorage.setItem('sispko_session_user', JSON.stringify(foundUser));
             
+            // TAMPILKAN HALAMAN UTAMA SECARA KONSISTEN
             var screenLogin = document.getElementById('screen-login');
             var screenApp = document.getElementById('screen-app');
 
-            if (screenLogin) screenLogin.classList.add('hidden');
+            if (screenLogin) {
+                screenLogin.classList.add('hidden');
+                screenLogin.style.display = 'none';
+            }
             if (screenApp) {
                 screenApp.classList.remove('hidden');
                 screenApp.classList.add('flex');
+                screenApp.style.display = 'flex';
             }
             
             if (document.getElementById('user-display-name')) {
@@ -150,13 +163,13 @@ async function handleLogin(e) {
 
             if (existingUser) {
                 if (passInput.length < 6) {
-                    alert("Password untuk akun ini minimal harus 6 karakter agar dapat terdaftar di sistem baru!");
+                    alert("Password untuk akun ini minimal harus 6 karakter agar dapat terdaftar!");
                     return;
                 }
 
                 try {
                     await auth.createUserWithEmailAndPassword(email, passInput);
-                    showToast("Akun berhasil didaftarkan & otomatis masuk!");
+                    showToast("Akun berhasil terintegrasi & otomatis masuk!");
                     return;
                 } catch (createErr) {
                     console.error("Auto-Register Error:", createErr);
@@ -165,7 +178,7 @@ async function handleLogin(e) {
                     } else if (createErr.code === 'auth/weak-password') {
                         alert("Password minimal harus 6 karakter!");
                     } else {
-                        alert("Gagal membuat akun otomatis: " + createErr.message);
+                        alert("Gagal mendaftarkan akun otomatis: " + createErr.message);
                     }
                     return;
                 }
@@ -189,8 +202,16 @@ function handleLogout(e) {
     } else {
         appState.currentUser = null;
         localStorage.removeItem('sispko_session_user');
-        document.getElementById('screen-app').classList.add('hidden');
-        document.getElementById('screen-login').classList.remove('hidden');
+        var screenApp = document.getElementById('screen-app');
+        var screenLogin = document.getElementById('screen-login');
+        if (screenApp) {
+            screenApp.classList.add('hidden');
+            screenApp.style.display = 'none';
+        }
+        if (screenLogin) {
+            screenLogin.classList.remove('hidden');
+            screenLogin.style.display = 'flex';
+        }
         showToast("Anda telah keluar dari aplikasi.");
     }
 }
@@ -201,16 +222,31 @@ function checkSession(isInitial) {
     if (savedSession) {
         try {
             appState.currentUser = JSON.parse(savedSession);
-            document.getElementById('screen-login').classList.add('hidden');
-            document.getElementById('screen-app').classList.remove('hidden');
-            document.getElementById('screen-app').classList.add('flex');
-            document.getElementById('user-display-name').innerText = appState.currentUser.nama;
+            
+            var screenLogin = document.getElementById('screen-login');
+            var screenApp = document.getElementById('screen-app');
+
+            if (screenLogin) {
+                screenLogin.classList.add('hidden');
+                screenLogin.style.display = 'none';
+            }
+            if (screenApp) {
+                screenApp.classList.remove('hidden');
+                screenApp.classList.add('flex');
+                screenApp.style.display = 'flex';
+            }
+
+            if (document.getElementById('user-display-name')) {
+                document.getElementById('user-display-name').innerText = appState.currentUser.nama;
+            }
             
             var roleLabel = appState.currentUser.role.toUpperCase();
             if (appState.currentUser.role === 'walikelas') roleLabel = 'WALI KELAS';
             if (appState.currentUser.role === 'gurumapel') roleLabel = 'GURU MAPEL';
             if (appState.currentUser.role === 'kepsek') roleLabel = 'KEPALA SEKOLAH';
-            document.getElementById('user-display-role').innerText = roleLabel;
+            if (document.getElementById('user-display-role')) {
+                document.getElementById('user-display-role').innerText = roleLabel;
+            }
 
             applyRolePermissions(isInitial);
         } catch (err) {
@@ -237,7 +273,6 @@ function applyRolePermissions(isInitial) {
 
     populateDropdowns();
 
-    // PEMISAHAN KETAT HAK AKSES PER ROLE
     if (role === 'walikelas') {
         if (tabRekap) tabRekap.style.display = 'none';
         if (tabEvaluasi) tabEvaluasi.parentElement.style.display = 'none';
