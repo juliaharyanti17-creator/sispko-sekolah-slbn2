@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMPATIK</title>
+    <title>SIMPATIK SLBN 2 PELAIHARI</title>
 
-    <!-- Tailwind CSS & FontAwesome -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Chart.js CDN (Wajib untuk Dashboard Evaluasi Kepsek) -->
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Custom Style CSS -->
+    <link rel="stylesheet" href="style.css">
 
     <!-- Firebase SDK (v8) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -68,8 +70,8 @@
     <!-- ==================== SCREEN 2: MAIN APP ==================== -->
     <div id="screen-app" class="hidden min-h-screen bg-slate-100 flex-col md:flex-row">
 
-        <!-- Header Mobile Bar -->
-        <div class="md:hidden bg-indigo-950 text-white p-4 flex items-center justify-between shadow-md sticky top-0 z-30">
+        <!-- Mobile Header Bar -->
+        <div class="md:hidden bg-indigo-950 text-white p-4 flex items-center justify-between shadow-md sticky top-0 z-30 no-print">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-black text-sm text-white shadow">
                     <i class="fa-solid fa-graduation-cap"></i>
@@ -81,10 +83,10 @@
             </button>
         </div>
 
-        <div id="sidebar-backdrop" onclick="toggleMobileSidebar(event)" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden"></div>
+        <div id="sidebar-backdrop" onclick="toggleMobileSidebar(event)" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden no-print"></div>
 
         <!-- Sidebar Navigation -->
-        <aside id="sidebar-nav" class="hidden md:flex flex-col w-full md:w-64 bg-indigo-950 text-white p-4 shrink-0 fixed md:sticky top-0 h-screen z-40 transition-all">
+        <aside id="sidebar-nav" class="hidden md:flex flex-col w-full md:w-64 bg-indigo-950 text-white p-4 shrink-0 fixed md:sticky top-0 h-screen z-40 transition-all no-print">
             <div class="hidden md:flex items-center gap-3 p-2 mb-6 border-b border-indigo-900/60 pb-4">
                 <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-lg text-white shadow-lg shrink-0">
                     <i class="fa-solid fa-graduation-cap"></i>
@@ -95,7 +97,7 @@
                 </div>
             </div>
 
-            <!-- User Badge -->
+            <!-- User Info Badge -->
             <div class="bg-indigo-900/60 rounded-2xl p-3.5 mb-6 border border-indigo-800/50 flex items-center gap-3">
                 <div class="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center text-white font-bold shrink-0">
                     <i class="fa-solid fa-user-check"></i>
@@ -123,11 +125,26 @@
                     <i class="fa-solid fa-chevron-right text-[10px]"></i>
                 </button>
 
+                <!-- Dropdown Evaluasi Kepsek -->
                 <div>
-                    <button id="tab-btn-evaluasi" onclick="switchTab(event, 'evaluasi')" class="tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between text-indigo-200 hover:bg-indigo-800/60 hover:text-white transition-all cursor-pointer">
+                    <button id="tab-btn-evaluasi" onclick="toggleSubMenu('submenu-evaluasi', 'icon-eval-chevron', 'evaluasi', event)" class="tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between text-indigo-200 hover:bg-indigo-800/60 hover:text-white transition-all cursor-pointer">
                         <span class="flex items-center gap-2.5"><i class="fa-solid fa-user-tie text-sm"></i> Evaluasi Kepsek</span>
-                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        <i id="icon-eval-chevron" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
                     </button>
+                    <div id="submenu-evaluasi" class="hidden pl-8 pr-2 py-1.5 space-y-1 bg-indigo-900/40 rounded-xl mt-1 border border-indigo-800/30">
+                        <a href="#" onclick="scrollToSubSection(event, 'evaluasi', 'eval-section-supervisi')" class="block py-1.5 px-2 text-[11px] font-semibold text-indigo-200 hover:text-white hover:bg-indigo-800/50 rounded-lg transition">
+                            <i class="fa-solid fa-eye mr-1.5"></i> Supervisi KBM
+                        </a>
+                        <a href="#" onclick="scrollToSubSection(event, 'evaluasi', 'eval-section-kritis')" class="block py-1.5 px-2 text-[11px] font-semibold text-indigo-200 hover:text-white hover:bg-indigo-800/50 rounded-lg transition">
+                            <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Absensi Kritis
+                        </a>
+                        <a href="#" onclick="scrollToSubSection(event, 'evaluasi', 'eval-section-catatan')" class="block py-1.5 px-2 text-[11px] font-semibold text-indigo-200 hover:text-white hover:bg-indigo-800/50 rounded-lg transition">
+                            <i class="fa-solid fa-pen-to-square mr-1.5"></i> Evaluasi & Catatan
+                        </a>
+                        <a href="#" onclick="scrollToSubSection(event, 'evaluasi', 'eval-section-grafik')" class="block py-1.5 px-2 text-[11px] font-semibold text-indigo-200 hover:text-white hover:bg-indigo-800/50 rounded-lg transition">
+                            <i class="fa-solid fa-chart-column mr-1.5"></i> Grafik & Statistik
+                        </a>
+                    </div>
                 </div>
 
                 <button id="tab-btn-master" onclick="switchTab(event, 'master')" class="tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between text-indigo-200 hover:bg-indigo-800/60 hover:text-white transition-all cursor-pointer">
@@ -147,12 +164,12 @@
             </div>
         </aside>
 
-        <!-- Content Utama -->
-        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto print-container">
 
             <!-- MODUL 1: PRESENSI -->
             <section id="modul-presensi" class="space-y-6">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200/80">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200/80 no-print">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Tanggal Presensi</label>
@@ -173,7 +190,8 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <!-- Kartu Ringkasan -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 no-print">
                     <div class="bg-emerald-50 border border-emerald-200/60 p-3.5 rounded-2xl text-center">
                         <div class="text-[10px] font-bold text-emerald-700 uppercase">Hadir</div>
                         <div id="summary-hadir" class="text-xl font-black text-emerald-900 mt-0.5">0</div>
@@ -196,8 +214,9 @@
                     </div>
                 </div>
 
+                <!-- Tabel Presensi -->
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
-                    <div class="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                    <div class="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between no-print">
                         <h3 class="font-bold text-xs text-slate-700 flex items-center gap-2">
                             <i class="fa-solid fa-users text-indigo-600"></i> Daftar Presensi Siswa
                         </h3>
@@ -231,7 +250,7 @@
 
             <!-- MODUL 2: JURNAL -->
             <section id="modul-jurnal" class="hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-4">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-4 no-print">
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
                         <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Input Jurnal Mengajar Harian
                     </h2>
@@ -274,7 +293,7 @@
                 </div>
 
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-5">
-                    <h3 class="font-bold text-xs text-slate-700 mb-3 flex items-center gap-2">
+                    <h3 class="font-bold text-xs text-slate-700 mb-3 flex items-center gap-2 no-print">
                         <i class="fa-solid fa-list-check text-indigo-600"></i> Riwayat Jurnal Mengajar
                     </h3>
                     <div id="jurnal-list-container" class="space-y-3">
@@ -285,19 +304,30 @@
 
             <!-- MODUL 3: REKAP -->
             <section id="modul-rekap" class="hidden space-y-6">
+                <!-- Kop Surat Cetak Official -->
+                <div class="print-only border-b-2 border-slate-900 pb-4 mb-6">
+                    <div class="flex items-center justify-between text-center">
+                        <div>
+                            <h2 class="text-sm font-bold uppercase tracking-wider">PEMERINTAH PROVINSI KALIMANTAN SELATAN</h2>
+                            <h1 class="text-lg font-black uppercase tracking-tight">DINAS PENDIDIKAN DAN KEBUDAYAAN</h1>
+                            <h3 class="text-base font-extrabold uppercase">SLB NEGERI 2 PELAIHARI</h3>
+                            <p class="text-[10px] italic">Jl. H. Boejasin Pelaihari, Kab. Tanah Laut, Kalimantan Selatan</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 no-print">
                         <i class="fa-solid fa-chart-line text-indigo-600"></i> Rekapitulasi Presensi & Aktivitas Jurnal
                     </h2>
                     
-                    <!-- Presets Filter -->
-                    <div class="flex gap-2 mb-4">
+                    <div class="flex gap-2 mb-4 no-print">
                         <button onclick="setPresetRekapRange(event, 'today')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-xs font-bold transition">Hari Ini</button>
                         <button onclick="setPresetRekapRange(event, 'this_week')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-xs font-bold transition">Minggu Ini</button>
                         <button onclick="setPresetRekapRange(event, 'this_month')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-xs font-bold transition">Bulan Ini</button>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Dari Tanggal</label>
                             <input type="date" id="filter-rekap-start-date" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold">
@@ -322,7 +352,6 @@
                         </div>
                     </div>
 
-                    <!-- Rekap Tables -->
                     <div class="space-y-6">
                         <div>
                             <h3 class="text-xs font-bold text-slate-700 mb-2">Rekap Presensi (<span id="rekap-presensi-period-label">-</span>)</h3>
@@ -360,6 +389,20 @@
                                     </thead>
                                     <tbody id="rekap-table-jurnal-body" class="divide-y divide-slate-100 font-medium"></tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Blok Tanda Tangan Cetak -->
+                    <div class="print-only print-break-inside-avoid mt-12 flex justify-end">
+                        <div class="text-center w-64 space-y-12">
+                            <div>
+                                <p class="text-xs">Pelaihari, <span class="print-date-stamp">-</span></p>
+                                <p class="text-xs font-bold">Kepala Sekolah SLBN 2 Pelaihari,</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold underline">MAISYANTI DISI FATIMAH, S.Pd.I., M.Pd</p>
+                                <p class="text-[10px]">NIP. 198305142006042018</p>
                             </div>
                         </div>
                     </div>
@@ -414,7 +457,7 @@
                     </div>
 
                     <!-- Charts Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div id="eval-section-grafik" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
                             <h4 class="text-xs font-bold text-slate-700 mb-3 text-center">Persentase Kehadiran per Kelas (<span class="label-chart-period">-</span>)</h4>
                             <div class="h-48 relative">
@@ -429,8 +472,8 @@
                         </div>
                     </div>
 
-                    <!-- Widgets Summary -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Widgets Summary Absensi Kritis -->
+                    <div id="eval-section-kritis" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div class="p-3.5 bg-amber-50 rounded-2xl border border-amber-200/80">
                             <div class="text-[10px] font-bold text-amber-700 uppercase">Total Sakit</div>
                             <div id="widget-sakit-count" class="text-xl font-black text-amber-900">0</div>
@@ -449,7 +492,7 @@
                     </div>
 
                     <!-- Absensi Detail Table -->
-                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden mb-6">
                         <div class="p-3 bg-slate-50 border-b border-slate-200 font-bold text-xs text-slate-700">Detail Siswa Tidak Hadir</div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
@@ -468,6 +511,17 @@
                         </div>
                     </div>
 
+                    <!-- Supervisi KBM & Evaluasi Feed -->
+                    <div id="eval-section-supervisi" class="space-y-4">
+                        <h3 class="font-bold text-xs text-slate-700">Aktivitas Jurnal Supervisi Guru</h3>
+                        <div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <div id="eval-section-catatan" class="space-y-4 pt-4 border-t border-slate-100">
+                        <h3 class="font-bold text-xs text-slate-700">Riwayat Umpan Balik Kepsek</h3>
+                        <div id="eval-feed-container" class="space-y-2"></div>
+                    </div>
+
                 </div>
             </section>
 
@@ -483,7 +537,7 @@
                         <div class="border border-slate-200 rounded-2xl p-4 space-y-3">
                             <div class="flex items-center justify-between">
                                 <h3 class="font-bold text-xs text-slate-700">Data Pengguna & Guru</h3>
-                                <button onclick="openModalUser(event)" class="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition"><i class="fa-solid fa-plus mr-1"></i> Tambah User</button>
+                                <button onclick="openModalUser(event)" class="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition cursor-pointer"><i class="fa-solid fa-plus mr-1"></i> Tambah User</button>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-xs text-left">
@@ -505,7 +559,7 @@
                             <h3 class="font-bold text-xs text-slate-700">Data Kelas</h3>
                             <form onsubmit="handleAddKelas(event)" class="flex gap-2">
                                 <input type="text" id="input-nama-kelas-baru" placeholder="Nama kelas baru..." required class="flex-1 px-3 py-1.5 border border-slate-200 rounded-xl text-xs">
-                                <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition">Tambah</button>
+                                <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition cursor-pointer">Tambah</button>
                             </form>
                             <div id="master-kelas-list-container" class="space-y-2"></div>
                         </div>
@@ -517,7 +571,7 @@
                             <h3 class="font-bold text-xs text-slate-700">Data Mata Pelajaran</h3>
                             <form onsubmit="handleAddMapel(event)" class="flex gap-2">
                                 <input type="text" id="input-nama-mapel-baru" placeholder="Mata pelajaran baru..." required class="flex-1 px-3 py-1.5 border border-slate-200 rounded-xl text-xs">
-                                <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition">Tambah</button>
+                                <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition cursor-pointer">Tambah</button>
                             </form>
                             <div id="master-mapel-list-container" class="space-y-2"></div>
                         </div>
@@ -526,7 +580,7 @@
                         <div class="border border-slate-200 rounded-2xl p-4 space-y-3">
                             <div class="flex items-center justify-between">
                                 <h3 class="font-bold text-xs text-slate-700">Data Siswa</h3>
-                                <button onclick="openModalSiswa(event)" class="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition"><i class="fa-solid fa-plus mr-1"></i> Tambah Siswa</button>
+                                <button onclick="openModalSiswa(event)" class="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition cursor-pointer"><i class="fa-solid fa-plus mr-1"></i> Tambah Siswa</button>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <input type="text" id="master-siswa-search" onkeyup="renderMasterSiswaTable()" placeholder="Cari nama/NISN..." class="px-3 py-1.5 border border-slate-200 rounded-xl text-xs">
@@ -558,7 +612,6 @@
     </div>
 
     <!-- ==================== MODALS DATA MASTER ==================== -->
-    <!-- Modal User -->
     <div id="modal-user" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <h3 class="font-bold text-sm text-slate-800">Tambah Akun Pengguna / Guru</h3>
@@ -589,14 +642,13 @@
                     <div id="user-form-mapel-checkboxes" class="space-y-1 max-h-32 overflow-y-auto p-2 border border-slate-100 rounded-xl"></div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModalUser(event)" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold">Simpan User</button>
+                    <button type="button" onclick="closeModalUser(event)" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold cursor-pointer">Simpan User</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Siswa -->
     <div id="modal-siswa" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <h3 id="modal-siswa-title" class="font-bold text-sm text-slate-800">Tambah Siswa Baru</h3>
@@ -625,14 +677,13 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModalSiswa(event)" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold">Simpan Siswa</button>
+                    <button type="button" onclick="closeModalSiswa(event)" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold cursor-pointer">Simpan Siswa</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Edit Kelas -->
     <div id="modal-edit-kelas" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-6 w-full max-w-sm space-y-4 shadow-2xl text-xs">
             <h3 class="font-bold text-sm text-slate-800">Edit Nama Kelas</h3>
@@ -640,15 +691,15 @@
                 <input type="hidden" id="edit-kelas-id">
                 <input type="text" id="edit-kelas-nama" required class="w-full p-2.5 border border-slate-200 rounded-xl">
                 <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeModalKelas(event)" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold">Simpan</button>
+                    <button type="button" onclick="closeModalKelas(event)" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold cursor-pointer">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- AI CHATBOT MODAL -->
-    <div id="ai-chat-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div id="ai-chat-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4 no-print">
         <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[85vh] border border-slate-100">
             <div class="bg-indigo-900 text-white p-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -660,7 +711,7 @@
                         <p class="text-[10px] text-indigo-300">Analisis Data Presensi & Laporan Otomatis</p>
                     </div>
                 </div>
-                <button type="button" onclick="toggleAIChatModal(event)" class="text-indigo-200 hover:text-white text-xl p-1 focus:outline-none">
+                <button type="button" onclick="toggleAIChatModal(event)" class="text-indigo-200 hover:text-white text-xl p-1 focus:outline-none cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -685,52 +736,21 @@
         </div>
     </div>
 
-    <!-- Toast Banner (Unified Structure) -->
-    <div id="toast-banner" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-bold z-50 flex items-center gap-2 border border-slate-700">
+    <!-- Toast Notification -->
+    <div id="toast-banner" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-bold z-50 flex items-center gap-2 border border-slate-700 no-print">
         <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <span id="toast-msg">Notifikasi Sistem</span>
     </div>
 
     <!-- SCRIPT LOADING ORDER -->
-    <script src="js/config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/presensi.js"></script>
-    <script src="js/jurnal.js"></script>
-    <script src="js/rekap.js"></script>
-    <script src="js/evaluasi.js"></script>
-    <script src="js/master.js"></script>
-    <script src="js/ai-assistant.js"></script>
-    
-<script>
-function forceLoginDirect(e) {
-    if (e) e.preventDefault();
-    var namaInput = document.getElementById('login-nama').value.trim();
-    var passInput = document.getElementById('login-password').value.trim();
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script src="presensi.js"></script>
+    <script src="jurnal.js"></script>
+    <script src="rekap.js"></script>
+    <script src="evaluasi.js"></script>
+    <script src="master.js"></script>
+    <script src="ai-assistant.js"></script>
 
-    if (!namaInput || !passInput) {
-        alert("Username dan Password wajib diisi!");
-        return;
-    }
-
-    // Paksa buka layar aplikasi utama
-    var screenLogin = document.getElementById('screen-login');
-    var screenApp = document.getElementById('screen-app');
-
-    if (screenLogin) {
-        screenLogin.classList.add('hidden');
-        screenLogin.style.setProperty('display', 'none', 'important');
-    }
-    if (screenApp) {
-        screenApp.classList.remove('hidden');
-        screenApp.classList.add('flex');
-        screenApp.style.setProperty('display', 'flex', 'important');
-    }
-
-    // Panggil handler auth utama jika fungsi tersedia
-    if (typeof handleLogin === 'function') {
-        handleLogin(e);
-    }
-}
-</script>
 </body>
 </html>
