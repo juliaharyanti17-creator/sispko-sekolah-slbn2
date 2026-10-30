@@ -23,7 +23,43 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 antialiased custom-scrollbar">
+<script>
+function forceResetSession() {
+    // 1. Hapus memori tersimpan
+    localStorage.clear();
+    sessionStorage.clear();
 
+    // 2. Set akun default langsung
+    var defaultUser = {
+        id: "u1",
+        username: "admin",
+        nama: "Administrator Sistem",
+        role: "admin"
+    };
+    localStorage.setItem('sispko_session_user', JSON.stringify(defaultUser));
+
+    // 3. Paksa sembunyikan login & buka aplikasi utama
+    var screenLogin = document.getElementById('screen-login');
+    var screenApp = document.getElementById('screen-app');
+
+    if (screenLogin) {
+        screenLogin.classList.add('hidden');
+        screenLogin.style.setProperty('display', 'none', 'important');
+    }
+    if (screenApp) {
+        screenApp.classList.remove('hidden');
+        screenApp.classList.add('flex');
+        screenApp.style.setProperty('display', 'flex', 'important');
+    }
+
+    // 4. Buka tab presensi
+    if (typeof switchTab === 'function') {
+        switchTab(null, 'presensi');
+    }
+    
+    alert("Sesi berhasil di-reset! Anda masuk sebagai Administrator.");
+}
+        </script>
     <!-- ==================== SCREEN 1: LOGIN ==================== -->
     <div id="screen-login" class="min-h-screen flex items-center justify-center bg-slate-900 p-4">
         <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 md:p-8 border border-slate-100">
@@ -59,9 +95,15 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-200 transition duration-200 cursor-pointer flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i> Masuk Aplikasi
-                </button>
+                <<!-- Tombol Login -->
+<button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-200 transition duration-200 cursor-pointer flex items-center justify-center gap-2">
+    <i class="fa-solid fa-right-to-bracket"></i> Masuk Aplikasi
+</button>
+
+<!-- Tombol Reset Darurat (Tambahkan ini) -->
+<button type="button" onclick="forceResetSession()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer mt-2">
+    <i class="fa-solid fa-rotate-right"></i> Reset Sesi & Masuk Paksa
+</button>
             </form>
         </div>
     </div>
