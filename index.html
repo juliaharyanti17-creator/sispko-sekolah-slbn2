@@ -24,21 +24,10 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 antialiased custom-scrollbar">
 <script>
-function forceResetSession() {
-    // 1. Hapus memori tersimpan
-    localStorage.clear();
-    sessionStorage.clear();
-
-    // 2. Set akun default langsung
-    var defaultUser = {
-        id: "u1",
-        username: "admin",
-        nama: "Administrator Sistem",
-        role: "admin"
-    };
-    localStorage.setItem('sispko_session_user', JSON.stringify(defaultUser));
-
-    // 3. Paksa sembunyikan login & buka aplikasi utama
+function forceLoginDirect(e) {
+    if (e) e.preventDefault();
+    
+    // 1. Sembunyikan Layar Login & Tampilkan Layar Utama
     var screenLogin = document.getElementById('screen-login');
     var screenApp = document.getElementById('screen-app');
 
@@ -52,14 +41,46 @@ function forceResetSession() {
         screenApp.style.setProperty('display', 'flex', 'important');
     }
 
-    // 4. Buka tab presensi
-    if (typeof switchTab === 'function') {
-        switchTab(null, 'presensi');
+    // 2. Set Akun Default jika Belum Ada Sesi
+    if (!localStorage.getItem('sispko_session_user')) {
+        var defaultUser = {
+            id: "u1",
+            username: "admin",
+            nama: "Administrator Sistem",
+            role: "admin"
+        };
+        appState.currentUser = defaultUser;
+        localStorage.setItem('sispko_session_user', JSON.stringify(defaultUser));
     }
-    
-    alert("Sesi berhasil di-reset! Anda masuk sebagai Administrator.");
+
+    // 3. Set Tanggal Hari Ini Secara Otomatis
+    var todayStr = new Date().toISOString().split('T')[0];
+    if (document.getElementById('presensi-tanggal')) {
+        document.getElementById('presensi-tanggal').value = todayStr;
+    }
+    if (document.getElementById('jurnal-tanggal')) {
+        document.getElementById('jurnal-tanggal').value = todayStr;
+    }
+
+    // 4. Muat Data Dropdown & Tabel Presensi
+    if (typeof populateDropdowns === 'function') {
+        populateDropdowns();
+    }
+    if (typeof loadPresensiTable === 'function') {
+        loadPresensiTable();
+    }
+    if (typeof renderPresensiForm === 'function') {
+        renderPresensiForm();
+    }
 }
-        </script>
+
+function forceResetSession() {
+    localStorage.clear();
+    sessionStorage.clear();
+    forceLoginDirect(null);
+    alert("Sesi di-reset & data berhasil dimuat!");
+}
+</script>    
     <!-- ==================== SCREEN 1: LOGIN ==================== -->
     <div id="screen-login" class="min-h-screen flex items-center justify-center bg-slate-900 p-4">
         <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 md:p-8 border border-slate-100">
