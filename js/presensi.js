@@ -1,4 +1,4 @@
-// Modul Presensi & Rekapitulasi Presensi (Dengan Fitur Warisan & Fix Student Name)
+// Modul Presensi & Rekapitulasi Presensi
 
 function loadPresensiTable() {
     populatePresensiDropdowns();
@@ -7,8 +7,6 @@ function loadPresensiTable() {
 
 function populatePresensiDropdowns() {
     var user = appState.currentUser;
-    if (!user) return;
-
     var selectKelas = document.getElementById('presensi-kelas-select');
     var selectMapel = document.getElementById('presensi-mapel-select');
 
@@ -18,19 +16,22 @@ function populatePresensiDropdowns() {
     selectKelas.innerHTML = '';
     
     var availableClasses = [];
-    if (user.role === 'walikelas') {
+    if (user && user.role === 'walikelas' && user.classIds && user.classIds.length > 0) {
         availableClasses = (appState.classes || []).filter(function(c) {
-            return (user.classIds || []).includes(c.id);
+            return user.classIds.includes(c.id);
         });
     } else {
         availableClasses = appState.classes || [];
     }
 
     if (availableClasses.length === 0) {
-        selectKelas.innerHTML = '<option value="">- Tidak ada kelas diampu -</option>';
+        selectKelas.innerHTML = '<option value="">- Tidak ada kelas -</option>';
     } else {
         availableClasses.forEach(function(c) {
-            selectKelas.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>';
+            var opt = document.createElement('option');
+            opt.value = c.id;
+            opt.innerText = c.name;
+            selectKelas.appendChild(opt);
         });
 
         if (currentSelectedClass && availableClasses.some(function(c) { return c.id === currentSelectedClass; })) {
@@ -45,17 +46,20 @@ function populatePresensiDropdowns() {
         selectMapel.innerHTML = '';
         
         var availableMapels = [];
-        if (user.role === 'gurumapel') {
-            availableMapels = user.assignedMapels || [];
+        if (user && user.role === 'gurumapel' && user.assignedMapels && user.assignedMapels.length > 0) {
+            availableMapels = user.assignedMapels;
         } else {
-            availableMapels = appState.mapels || [];
+            availableMapels = appState.mapels || DEFAULT_MAPELS;
         }
 
         if (availableMapels.length === 0) {
-            selectMapel.innerHTML = '<option value="">- Tidak ada mapel diampu -</option>';
+            selectMapel.innerHTML = '<option value="">- Tidak ada mapel -</option>';
         } else {
             availableMapels.forEach(function(m) {
-                selectMapel.innerHTML += '<option value="' + m + '">' + m + '</option>';
+                var opt = document.createElement('option');
+                opt.value = m;
+                opt.innerText = m;
+                selectMapel.appendChild(opt);
             });
             if (currentSelectedMapel && availableMapels.includes(currentSelectedMapel)) {
                 selectMapel.value = currentSelectedMapel;
@@ -92,22 +96,19 @@ function renderPresensiForm() {
     });
 
     if (studentsInClass.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 font-medium">Belum ada data siswa di kelas ini.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 font-medium">Belum ada data siswa di kelas ini. Memuat data default...</td></tr>';
         return;
     }
 
-    // Logika Warisan Presensi
     var keyInduk = classId + "_" + tgl;
     var keyMapel = classId + "_" + tgl + "_" + (mapel ? mapel.replace(/\s+/g, '') : '');
 
     var recordInduk = (appState.presensiRecords && appState.presensiRecords[keyInduk]) ? appState.presensiRecords[keyInduk] : {};
     var recordMapel = (mapel && appState.presensiRecords && appState.presensiRecords[keyMapel]) ? appState.presensiRecords[keyMapel] : null;
 
-    // Hitung Ringkasan Total Card
     var countH = 0, countS = 0, countI = 0, countA = 0;
 
     studentsInClass.forEach(function(s, idx) {
-        // Penanganan presisi nama & NISN agar tidak undefined
         var studentName = s.nama || s.name || s.namaSiswa || "Siswa " + (idx + 1);
         var studentNisn = (s.nisn && s.nisn !== 'undefined') ? s.nisn : '';
         var studentKetunaan = s.ketunaan || s.jenisKebutuhan || '-';
@@ -154,7 +155,6 @@ function renderPresensiForm() {
         tbody.appendChild(tr);
     });
 
-    // Update Ringkasan Kartu Atas
     if (document.getElementById('summary-hadir')) document.getElementById('summary-hadir').innerText = countH;
     if (document.getElementById('summary-sakit')) document.getElementById('summary-sakit').innerText = countS;
     if (document.getElementById('summary-izin')) document.getElementById('summary-izin').innerText = countI;
@@ -200,5 +200,5 @@ function handleSavePresensi(e) {
     appState.presensiRecords[key] = record;
 
     saveAppState();
-    showToast(mapel ? "Presensi mapel " + mapel + " berhasil disimpan!" : "Presensi harian induk berhasil disimpan!");
+    showToast(mapel ? "Presensi mapel " + mapel + " berhasil disimpan!" : "Presensi harian berhasil disimpan!");
 }
