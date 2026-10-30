@@ -1,10 +1,10 @@
-// 1. Konfigurasi Gemini AI (Chatbot SIMPATIK)
+// Konfigurasi API & State Global SIMPATIK SLBN 2 PELAIHARI
+
 const CONFIG = {
     GEMINI_API_KEY: "AQ.Ab8RN6KL5nLxo1l10NN5Z6u-HvvsCIZZ74664yXM_h5rLLvjRA",
     GEMINI_MODEL: "gemini-1.5-flash"
 };
 
-// 2. Konfigurasi Firebase App SISPKO-Sekolah
 const firebaseConfig = {
     apiKey: "AIzaSyDo7HJQTNg8S14pGZ32lATh_PllI4X1yO8",
     authDomain: "sispko-sekolah-slbn2.firebaseapp.com",
@@ -16,7 +16,6 @@ const firebaseConfig = {
     measurementId: "G-NHZLZ0J8N1"
 };
 
-// Inisialisasi Firebase
 var auth = null;
 var db = null;
 
@@ -29,7 +28,7 @@ try {
         auth = firebase.auth();
     }
 } catch (err) {
-    console.warn("Firebase gagal dimuat:", err);
+    console.warn("Firebase Init Offline:", err);
 }
 
 var DEFAULT_MAPELS = [
@@ -44,9 +43,21 @@ var DEFAULT_USERS = [
     { id: "u4", username: "gurumapel", nama: "Ahmad Rizky, S.Pd.", role: "gurumapel", classIds: [], assignedMapels: ["PJOK"] }
 ];
 
+var DEFAULT_CLASSES = [
+    { id: "K1", name: "Kelas I A (Tuna Grahita)" },
+    { id: "K2", name: "Kelas II B (Autis)" }
+];
+
+var DEFAULT_STUDENTS = [
+    { id: "s1", nisn: "0123456781", nama: "Ahmad Rizky Pratama", ketunaan: "Tuna Grahita", classId: "K1" },
+    { id: "s2", nisn: "0123456782", nama: "Siti Nur Aisyah", ketunaan: "Tuna Grahita", classId: "K1" },
+    { id: "s3", nisn: "0123456783", nama: "Muhammad Bintang", ketunaan: "Autis", classId: "K2" },
+    { id: "s4", nisn: "0123456784", nama: "Dewi Lestari", ketunaan: "Autis", classId: "K2" }
+];
+
 var appState = {
-    classes: [{ id: "K1", name: "Kelas I A" }, { id: "K2", name: "Kelas II B" }],
-    students: [],
+    classes: [...DEFAULT_CLASSES],
+    students: [...DEFAULT_STUDENTS],
     mapels: [...DEFAULT_MAPELS],
     users: [...DEFAULT_USERS],
     presensiRecords: {},
