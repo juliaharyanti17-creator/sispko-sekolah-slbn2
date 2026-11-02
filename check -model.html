@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Cek Daftar Model Gemini API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white p-8 font-sans">
+    <div class="max-w-2xl mx-auto space-y-4">
+        <h1 class="text-xl font-bold">Pengecek Model Gemini API (SIMPATIK)</h1>
+        <button onclick="checkAvailableModels()" class="px-4 py-2 bg-indigo-600 font-bold rounded-lg hover:bg-indigo-700 transition">
+            🔍 Cek Model Yang Aktif Untuk API Key Ini
+        </button>
+        <div id="result" class="p-4 bg-slate-800 rounded-xl text-xs font-mono whitespace-pre-wrap border border-slate-700">
+            Klik tombol di atas untuk memulai tes...
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        async function checkAvailableModels() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = "Sedang menghubungi server Google API...";
+
+            const apiKey = (typeof CONFIG !== 'undefined' && CONFIG.GEMINI_API_KEY) ? CONFIG.GEMINI_API_KEY.trim() : "";
+
+            if (!apiKey) {
+                resultDiv.innerText = "Error: GEMINI_API_KEY tidak ditemukan di config.js!";
+                return;
+            }
+
+            try {
+                // Panggil endpoint resmi Listing Models
+                const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    resultDiv.innerText = "❌ Gagal mengambil daftar model:\n" + JSON.stringify(data.error || data, null, 2);
+                    return;
+                }
+
+                if (!data.models || data.models.length === 0) {
+                    resultDiv.innerText = "⚠️ Kunci API valid tetapi tidak ada model yang tersedia.";
+                    return;
+                }
+
+                // Filter model yang mendukung generateContent
+                const availableModels = data.models.filter(m => 
+                    m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")
+                );
+
+                let output = `✅ BERHASIL! Ditemukan ${availableModels.length} model yang mendukung fitur obrolan (generateContent):\n\n`;
+                
+                availableModels.forEach((m, idx) => {
+                    const cleanName = m.name.replace("models/", "");
+                    output += `${idx + 1}. String Model: "${cleanName}"\n   Nama Resmi: ${m.displayName}\n   Resource: ${m.name}\n----------------------------------------\n`;
+                });
+
+                resultDiv.innerText = output;
+
+            } catch (err) {
+                resultDiv.innerText = "❌ Terjadi kesalahan jaringan / Fetch Error:\n" + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
