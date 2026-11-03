@@ -13,7 +13,6 @@ function toggleMobileSidebar(e) {
     
     if (sidebar) {
         sidebar.classList.toggle('hidden');
-        sidebar.classList.toggle('-translate-x-full');
     }
     if (backdrop) {
         backdrop.classList.toggle('hidden');
@@ -52,7 +51,7 @@ function handleLogin(e) {
     }
 
     // B. Fallback Kepala Sekolah
-    if ((inputUser === 'kepsek' || inputUser === 'maisyanti') && (inputPass === 'kepsek' || inputPass === '123456')) {
+    if ((inputUser === 'kepsek' || inputUser === 'maisyanti') && (inputPass === 'kepsek' || inputPass === '123456' || inputPass === 'admin')) {
         var kepsekUser = {
             id: "u_kepsek_default",
             username: "kepsek",
@@ -117,7 +116,17 @@ function saveSessionAndEnterApp(userObj) {
     if (document.getElementById('jurnal-tanggal')) document.getElementById('jurnal-tanggal').value = todayStr;
     if (document.getElementById('jurnal-guru')) document.getElementById('jurnal-guru').value = userObj.nama || userObj.username;
 
+    // Terapkan Pembatasan Menu & Auto-Filter Dropdown
     applyRoleAccessControl();
+    window.populateDropdowns();
+
+    // Auto-Landing Page berdasarkan Role
+    var userRole = (userObj.role || '').toLowerCase();
+    if (userRole === 'kepsek') {
+        if (typeof window.switchTab === 'function') window.switchTab(null, 'evaluasi');
+    } else {
+        if (typeof window.switchTab === 'function') window.switchTab(null, 'presensi');
+    }
 
     if (typeof renderAllMasterData === 'function') renderAllMasterData();
     if (typeof renderJurnalList === 'function') renderJurnalList();
@@ -131,46 +140,113 @@ function applyRoleAccessControl() {
     if (!currentUser) return;
 
     var role = (currentUser.role || '').toLowerCase();
-    var allButtons = document.querySelectorAll('button, a');
 
-    allButtons.forEach(function(btn) {
-        var onclickAttr = (btn.getAttribute('onclick') || '').toLowerCase();
-        var text = (btn.innerText || '').toLowerCase();
+    var btnPresensi = document.getElementById('tab-btn-presensi');
+    var btnJurnal = document.getElementById('tab-btn-jurnal');
+    var btnRekap = document.getElementById('tab-btn-rekap');
+    var btnEvaluasi = document.getElementById('tab-btn-evaluasi');
+    var btnMaster = document.getElementById('tab-btn-master');
 
-        var isPresensi = onclickAttr.includes('presensi') || text.includes('presensi');
-        var isJurnal = onclickAttr.includes('jurnal') || text.includes('jurnal');
-        var isRekap = onclickAttr.includes('rekap') || text.includes('rekap');
-        var isEvaluasi = onclickAttr.includes('evaluasi') || text.includes('evaluasi');
-        var isMaster = onclickAttr.includes('master') || text.includes('data master') || text.includes('siswa') || text.includes('guru');
-
-        if (isPresensi || isJurnal || isRekap || isEvaluasi || isMaster) {
-            btn.style.pointerEvents = 'auto';
-            btn.style.opacity = '1';
-            
-            var parentItem = btn.closest('li') || btn.closest('div.space-y-1') || btn.parentElement || btn;
-
-            if (role === 'admin') {
-                parentItem.style.display = '';
-            } 
-            else if (role === 'walikelas' || role === 'guru' || role === 'gurumapel') {
-                if (isRekap || isEvaluasi || isMaster) {
-                    parentItem.style.display = 'none';
-                } else {
-                    parentItem.style.display = '';
-                }
-            } 
-            else if (role === 'kepsek') {
-                if (isPresensi || isJurnal || isMaster) {
-                    parentItem.style.display = 'none';
-                } else {
-                    parentItem.style.display = '';
-                }
-            }
-        }
+    // Reset Tampilan Menu
+    [btnPresensi, btnJurnal, btnRekap, btnEvaluasi, btnMaster].forEach(function(btn) {
+        if (btn) btn.parentElement.style.display = '';
     });
+
+    if (role === 'admin') {
+        // Admin: Semua menu terbuka
+        return;
+    } else if (role === 'kepsek') {
+        // Kepala Sekolah: Hanya Rekap Laporan & Dashboard Evaluasi Kepsek
+        if (btnPresensi) btnPresensi.parentElement.style.display = 'none';
+        if (btnJurnal) btnJurnal.parentElement.style.display = 'none';
+        if (btnMaster) btnMaster.parentElement.style.display = 'none';
+    } else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru') {
+        // Guru & Wali Kelas: Hanya Presensi, Jurnal, & Rekap Laporan
+        if (btnEvaluasi) btnEvaluasi.parentElement.style.display = 'none';
+        if (btnMaster) btnMaster.parentElement.style.display = 'none';
+    }
 }
 
-// --- 4. LOGOUT & UTILITIES ---
+// --- 4. HELPER DROPDOWN AUTO-FILTER BERDASARKAN AMPUAN ---
+window.populateDropdowns = function() {
+    var user = (window.appState && window.appState.currentUser) ? window.appState.currentUser : { role: 'admin' };
+    var role = (user.role || '').toLowerCase();
+    var classes = (window.appState && window.appState.classes) ? window.appState.classes : [];
+    var subjects = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
+
+    // Parse Ampuan Kelas User
+    var userKelasArr = [];
+    if (user.kelasAmpuan && user.kelasAmpuan !== 'ALL') {
+        userKelasArr = user.kelasAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
+    }
+
+    // Parse Ampuan Mapel User
+    var userMapelArr = [];
+    if (user.mapelAmpuan && user.mapelAmpuan !== 'ALL') {
+        userMapelArr = user.mapelAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
+    }
+
+    // Filter Kelas Terizin
+    var allowedClasses = classes.filter(function(c) {
+        if (role === 'admin' || role === 'kepsek' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL') return true;
+        var cId = (c.id || '').toLowerCase();
+        var cName = (c.name || c.nama || '').toLowerCase();
+        return userKelasArr.includes(cId) || userKelasArr.includes(cName);
+    });
+
+    // Filter Mapel Terizin
+    var allowedSubjects = subjects.filter(function(s) {
+        if (role === 'admin' || role === 'kepsek' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL') return true;
+        var sId = (s.id || '').toLowerCase();
+        var sName = (s.name || s.nama || '').toLowerCase();
+        return userMapelArr.includes(sId) || userMapelArr.includes(sName);
+    });
+
+    // Isi Dropdown secara Otomatis
+    fillSelectOptions('presensi-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
+    fillSelectOptions('presensi-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
+    fillSelectOptions('jurnal-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
+    fillSelectOptions('jurnal-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
+    fillSelectOptions('filter-rekap-kelas', allowedClasses, 'Semua Kelas', true);
+    fillSelectOptions('filter-eval-kelas', allowedClasses, 'Semua Kelas', true);
+    fillSelectOptions('master-siswa-filter-kelas', classes, 'Semua Kelas', true);
+};
+
+function fillSelectOptions(elemId, items, defaultText, includeAllOption) {
+    var sel = document.getElementById(elemId);
+    if (!sel) return;
+    var currentVal = sel.value;
+    sel.innerHTML = '';
+    
+    if (defaultText) {
+        var optDefault = document.createElement('option');
+        optDefault.value = includeAllOption ? 'ALL' : '';
+        optDefault.textContent = defaultText;
+        sel.appendChild(optDefault);
+    }
+
+    items.forEach(function(item) {
+        var opt = document.createElement('option');
+        opt.value = item.id || item.name || item.nama;
+        opt.textContent = item.name || item.nama;
+        sel.appendChild(opt);
+    });
+
+    if (currentVal && Array.from(sel.options).some(function(o) { return o.value === currentVal; })) {
+        sel.value = currentVal;
+    }
+}
+
+// Helper Nama Kelas
+window.getClassName = function(classId) {
+    if (!classId) return '-';
+    var found = (window.appState && window.appState.classes) 
+        ? window.appState.classes.find(function(c) { return c.id === classId || c.name === classId || c.nama === classId; }) 
+        : null;
+    return found ? (found.name || found.nama) : classId;
+};
+
+// --- 5. LOGOUT & UTILITIES ---
 function handleLogout(e) {
     if (e) e.preventDefault();
     if (!confirm("Apakah Anda yakin ingin keluar dari aplikasi SIMPATIK?")) return;
@@ -207,7 +283,7 @@ function togglePasswordVisibility(e) {
     }
 }
 
-// --- 5. MANAJEMEN USER / GURU (MASTER DATA) ---
+// --- 6. MANAJEMEN USER / GURU (MASTER DATA) ---
 function initDefaultUsers() {
     if (!window.appState.users || !Array.isArray(window.appState.users) || window.appState.users.length === 0) {
         window.appState.users = [
@@ -257,18 +333,33 @@ window.renderMasterUsersTable = function() {
         else if (u.role === 'walikelas') roleBadge = '<span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-indigo-200">Wali Kelas</span>';
         else roleBadge = '<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-emerald-200">Guru Mapel</span>';
 
-        var ampuanText = u.kelasAmpuan || u.mapelAmpuan || '-';
-        if (Array.isArray(ampuanText)) ampuanText = ampuanText.join(', ');
+        var kAmpuan = u.kelasAmpuan || '-';
+        var mAmpuan = u.mapelAmpuan || '-';
+        var ampuanText = "Kelas: " + kAmpuan + " | Mapel: " + mAmpuan;
 
         tr.innerHTML = 
             '<td class="p-2.5 font-bold text-slate-800">' + (u.nama || u.username) + '<div class="text-[10px] font-semibold text-slate-400">@' + (u.username || u.nama.toLowerCase().replace(/\s+/g, '')) + '</div></td>' +
             '<td class="p-2.5 text-center">' + roleBadge + '</td>' +
-            '<td class="p-2.5 text-slate-600 font-medium text-[11px] truncate max-w-[120px]">' + ampuanText + '</td>' +
+            '<td class="p-2.5 text-slate-600 font-medium text-[11px] truncate max-w-[140px]" title="' + ampuanText + '">' + ampuanText + '</td>' +
             '<td class="p-2.5 text-center">' +
                 (u.role === 'admin' ? '<span class="text-slate-300 text-[10px] font-bold">Utama</span>' : '<button type="button" onclick="handleDeleteUser(' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>') +
             '</td>';
         tbody.appendChild(tr);
     });
+};
+
+window.toggleUserClassSelect = function() {
+    var role = document.getElementById('user-form-role')?.value;
+    var groupKelas = document.getElementById('group-user-kelas');
+    var groupMapel = document.getElementById('group-user-mapel');
+
+    if (role === 'walikelas' || role === 'gurumapel') {
+        if (groupKelas) groupKelas.classList.remove('hidden');
+        if (groupMapel) groupMapel.classList.remove('hidden');
+    } else {
+        if (groupKelas) groupKelas.classList.add('hidden');
+        if (groupMapel) groupMapel.classList.add('hidden');
+    }
 };
 
 window.openModalUser = function(e) {
@@ -281,16 +372,31 @@ window.openModalUser = function(e) {
     if (formPass) formPass.value = '';
     if (formRole) formRole.value = 'walikelas';
 
+    // Populate Checkbox Ampuan Kelas
     var kelasContainer = document.getElementById('user-form-kelas-checkboxes');
     if (kelasContainer) {
         kelasContainer.innerHTML = '';
         (window.appState.classes || []).forEach(function(c) {
             var lbl = document.createElement('label');
             lbl.className = 'flex items-center gap-1.5 font-medium text-slate-700 cursor-pointer text-xs';
-            lbl.innerHTML = '<input type="checkbox" name="user_kelas_opt" value="' + (c.id || c.name) + '" class="rounded text-indigo-600"> ' + (c.name || c.nama);
+            lbl.innerHTML = '<input type="checkbox" name="user_kelas_opt" value="' + (c.id || c.name || c.nama) + '" class="rounded text-indigo-600"> ' + (c.name || c.nama);
             kelasContainer.appendChild(lbl);
         });
     }
+
+    // Populate Checkbox Ampuan Mapel
+    var mapelContainer = document.getElementById('user-form-mapel-checkboxes');
+    if (mapelContainer) {
+        mapelContainer.innerHTML = '';
+        (window.appState.subjects || []).forEach(function(m) {
+            var lbl = document.createElement('label');
+            lbl.className = 'flex items-center gap-1.5 font-medium text-slate-700 cursor-pointer text-xs';
+            lbl.innerHTML = '<input type="checkbox" name="user_mapel_opt" value="' + (m.id || m.name || m.nama) + '" class="rounded text-indigo-600"> ' + (m.name || m.nama);
+            mapelContainer.appendChild(lbl);
+        });
+    }
+
+    toggleUserClassSelect();
 
     var modal = document.getElementById('modal-user');
     if (modal) modal.classList.remove('hidden');
@@ -318,6 +424,11 @@ window.handleSaveUser = function(e) {
         selectedKelas.push(cb.value);
     });
 
+    var selectedMapel = [];
+    document.querySelectorAll('input[name="user_mapel_opt"]:checked').forEach(function(cb) {
+        selectedMapel.push(cb.value);
+    });
+
     var usernameClean = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
 
     var newUser = {
@@ -326,7 +437,8 @@ window.handleSaveUser = function(e) {
         username: usernameClean,
         password: pass,
         role: role,
-        kelasAmpuan: selectedKelas.join(', ') || 'ALL'
+        kelasAmpuan: selectedKelas.length > 0 ? selectedKelas.join(', ') : 'ALL',
+        mapelAmpuan: selectedMapel.length > 0 ? selectedMapel.join(', ') : 'ALL'
     };
 
     if (!window.appState.users) window.appState.users = [];
@@ -346,13 +458,16 @@ window.handleDeleteUser = function(idx) {
     if (typeof showToast === 'function') showToast("Pengguna berhasil dihapus.");
 };
 
-// Inisialisasi pengecekan sesi saat halaman dimuat
+// Inisialisasi Sesi Login saat pertama muat
 document.addEventListener('DOMContentLoaded', function() {
     var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
         try {
             window.appState.currentUser = JSON.parse(savedSession);
-            setTimeout(applyRoleAccessControl, 300);
+            setTimeout(function() {
+                applyRoleAccessControl();
+                window.populateDropdowns();
+            }, 300);
         } catch(e) {}
     }
 });
