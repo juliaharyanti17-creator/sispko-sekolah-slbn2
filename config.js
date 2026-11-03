@@ -35,15 +35,70 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-// 3. Fungsi Simpan State (Hybrid: Firebase + LocalStorage Backup)
-window.saveAppState = function() {
-    // Selalu simpan backup aman ke LocalStorage browser terlebih dahulu
+// ==========================================================================
+// 3. FUNGSI SIMPAN TERPISAH (PER CABANG DATA)
+// ==========================================================================
+
+// Fungsi utilitas untuk pencadangan lokal
+function updateLocalBackup() {
     try {
         localStorage.setItem('simpatik_backup_state', JSON.stringify(window.appState));
-    } catch(e) {
-        console.error("Gagal menyimpan ke LocalStorage:", e);
-    }
+    } catch(e) { console.error("Gagal backup lokal:", e); }
+}
 
+// Simpan KHUSUS Data Murid
+window.saveStudentsData = function() {
+    updateLocalBackup();
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/students').set(window.appState.students || [])
+            .then(function() { console.log("✓ Data Murid berhasil disimpan ke cabang terpisah."); })
+            .catch(function(err) { console.error("✕ Gagal simpan murid:", err); });
+    }
+};
+
+// Simpan KHUSUS Data Kelas
+window.saveClassesData = function() {
+    updateLocalBackup();
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/classes').set(window.appState.classes || [])
+            .then(function() { console.log("✓ Data Kelas berhasil disimpan ke cabang terpisah."); })
+            .catch(function(err) { console.error("✕ Gagal simpan kelas:", err); });
+    }
+};
+
+// Simpan KHUSUS Data Pengguna/Admin
+window.saveUsersData = function() {
+    updateLocalBackup();
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/users').set(window.appState.users || [])
+            .then(function() { console.log("✓ Data Pengguna berhasil disimpan ke cabang terpisah."); })
+            .catch(function(err) { console.error("✕ Gagal simpan pengguna:", err); });
+    }
+};
+
+// Simpan KHUSUS Data Jurnal
+window.saveJournalsData = function() {
+    updateLocalBackup();
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/journals').set(window.appState.journals || [])
+            .then(function() { console.log("✓ Data Jurnal berhasil disimpan ke cabang terpisah."); })
+            .catch(function(err) { console.error("✕ Gagal simpan jurnal:", err); });
+    }
+};
+
+// Simpan KHUSUS Data Presensi
+window.savePresensiData = function() {
+    updateLocalBackup();
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/presensi').set(window.appState.presensi || [])
+            .then(function() { console.log("✓ Data Presensi berhasil disimpan ke cabang terpisah."); })
+            .catch(function(err) { console.error("✕ Gagal simpan presensi:", err); });
+    }
+};
+
+// Fungsi Simpan Master (menyimpan semua sekaligus - berguna untuk struktur awal)
+window.saveAppState = function() {
+    updateLocalBackup();
     if (typeof firebase === 'undefined' || !firebase.apps.length) {
         console.warn("Firebase offline. Data disimpan di LocalStorage.");
         return;
@@ -61,22 +116,20 @@ window.saveAppState = function() {
     };
 
     firebase.database().ref('simpatik_data').set(dataToSave)
-        .then(function() {
-            console.log("✓ Data SIMPATIK berhasil disinkronkan ke Firebase.");
-        })
-        .catch(function(err) {
-            console.error("✕ Gagal menyimpan ke Firebase:", err);
-        });
+        .then(function() { console.log("✓ Semua cabang data berhasil disinkronkan."); })
+        .catch(function(err) { console.error("✕ Gagal menyimpan semua data:", err); });
 };
 
-// 4. Fungsi Muat Data Saat Refresh (Mendukung Fallback LocalStorage)
+// ==========================================================================
+// 4. FUNGSI MUAT DATA SAAT REFRESH
+// ==========================================================================
 window.loadAppState = function(callback) {
     var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
         try { window.appState.currentUser = JSON.parse(savedSession); } catch(e) {}
     }
 
-    // Ambil dulu dari LocalStorage sebagai pertahanan pertama agar data instan muncul
+    // Ambil data instan dari LocalStorage dulu
     var localBackup = localStorage.getItem('simpatik_backup_state');
     if (localBackup) {
         try {
@@ -95,12 +148,11 @@ window.loadAppState = function(callback) {
         return;
     }
 
-    // Tarik data terbaru dari Firebase
+    // Tarik data terbaru dan timpa memori lama
     firebase.database().ref('simpatik_data').once('value')
         .then(function(snapshot) {
             var data = snapshot.val();
             if (data) {
-                // Langsung muat data dari Firebase secara aman
                 window.appState.students = data.students || [];
                 window.appState.journals = data.journals || [];
                 window.appState.classes = data.classes || [];
@@ -110,11 +162,10 @@ window.loadAppState = function(callback) {
                 window.appState.evaluations = data.evaluations || [];
                 window.appState.ketunaanList = data.ketunaanList || window.appState.ketunaanList;
                 
-                // Perbarui backup local storage dengan data firebase terbaru
-                localStorage.setItem('simpatik_backup_state', JSON.stringify(window.appState));
+                updateLocalBackup();
                 console.log("✓ Data Firebase berhasil dimuat sepenuhnya.");
             } else {
-                console.warn("! Database Firebase kosong. Menyimpan data default/lokal ke Firebase.");
+                console.warn("! Database Firebase kosong. Menyimpan data awal.");
                 window.saveAppState();
             }
 
@@ -122,7 +173,7 @@ window.loadAppState = function(callback) {
             if (callback) callback();
         })
         .catch(function(err) {
-            console.error("✕ Gagal mengambil data Firebase. Menggunakan LocalStorage:", err);
+            console.error("✕ Gagal mengambil data Firebase:", err);
             triggerUIRender();
             if (callback) callback();
         });
@@ -137,3 +188,4 @@ function triggerUIRender() {
 document.addEventListener('DOMContentLoaded', function() {
     window.loadAppState();
 });
+        
