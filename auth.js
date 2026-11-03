@@ -116,7 +116,7 @@ function saveSessionAndEnterApp(userObj) {
     if (document.getElementById('jurnal-tanggal')) document.getElementById('jurnal-tanggal').value = todayStr;
     if (document.getElementById('jurnal-guru')) document.getElementById('jurnal-guru').value = userObj.nama || userObj.username;
 
-    // Terapkan Pembatasan Menu & Auto-Filter Dropdown
+    // TERAPKAN RBAC DAN AUTO-FILTER DROPDOWN SEKETIKA
     applyRoleAccessControl();
     if (typeof window.populateDropdowns === 'function') {
         window.populateDropdowns();
@@ -124,7 +124,7 @@ function saveSessionAndEnterApp(userObj) {
 
     // Auto-Landing Page berdasarkan Role
     var userRole = (userObj.role || '').toLowerCase();
-    if (userRole === 'kepsek') {
+    if (userRole === 'kepsek' || userRole === 'kepala sekolah') {
         if (typeof window.switchTab === 'function') window.switchTab(null, 'evaluasi');
     } else {
         if (typeof window.switchTab === 'function') window.switchTab(null, 'presensi');
@@ -133,7 +133,6 @@ function saveSessionAndEnterApp(userObj) {
     if (typeof renderAllMasterData === 'function') renderAllMasterData();
     if (typeof renderJurnalList === 'function') renderJurnalList();
     if (typeof renderPresensiForm === 'function') renderPresensiForm();
-    if (typeof showToast === 'function') showToast("Selamat datang, " + (userObj.nama || userObj.username) + "!");
 }
 
 // ==========================================================================
