@@ -2,7 +2,7 @@
 // CONFIGURATIONS & HYBRID STORAGE CONNECTOR - SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
-// 1. Inisialisasi State Aplikasi Global
+// 1. Inisialisasi State Aplikasi Global (Sertakan Admin Default)
 window.appState = {
     currentUser: null,
     users: [
@@ -38,36 +38,49 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 }
 
 // ==========================================================================
-// 3. FUNGSI PENANGANAN SESI LOGIN & TAMPILAN (COCOK DENGAN INDEX.HTML)
+// 3. FUNGSI PENANGANAN SESI LOGIN & MEMUNCULKAN NAVBAR & DASHBOARD
 // ==========================================================================
 window.checkUserSession = function() {
-    // Tangkap elemen layar sesuai ID yang ada di index.html
     var loginSection = document.getElementById('screen-login') || document.getElementById('loginSection');
     var mainDashboard = document.getElementById('screen-app') || document.getElementById('mainDashboard');
+    var sidebarNav = document.getElementById('sidebar-nav');
 
-    // Tangkap elemen profil pengguna di sidebar
     var nameElem = document.getElementById('user-display-name');
     var roleElem = document.getElementById('user-display-role');
 
     if (window.appState && window.appState.currentUser) {
-        // Sesi Aktif: Sembunyikan Layar Login, Tampilkan Dashboard Utama
+        // Sesi Aktif: Sembunyikan Layar Login
         if (loginSection) {
             loginSection.style.setProperty('display', 'none', 'important');
             loginSection.classList.add('hidden');
         }
+        
+        // Tampilkan Dashboard Utama
         if (mainDashboard) {
             mainDashboard.style.setProperty('display', 'flex', 'important');
             mainDashboard.classList.remove('hidden');
             mainDashboard.classList.add('flex');
         }
 
-        // Tampilkan Nama & Role Pengguna di Sidebar
+        // PAKSA NAVBAR / SIDEBAR MUNCUL DI LAYAR
+        if (sidebarNav) {
+            sidebarNav.classList.remove('hidden');
+            sidebarNav.classList.add('flex');
+            sidebarNav.style.setProperty('display', 'flex', 'important');
+        }
+
+        // Perbarui Nama & Role User di Sidebar
         if (nameElem) nameElem.textContent = window.appState.currentUser.nama || window.appState.currentUser.username;
         if (roleElem) roleElem.textContent = (window.appState.currentUser.role || 'ADMIN').toUpperCase();
         
+        // Aktifkan Tab Presensi Otomatis
+        if (typeof window.switchTab === 'function') {
+            window.switchTab(null, window.currentActiveTab || 'presensi');
+        }
+
         console.log("✓ Sesi login aktif untuk:", window.appState.currentUser.username || window.appState.currentUser.nama);
     } else {
-        // Sesi Belum Ada: Tampilkan Layar Login, Sembunyikan Dashboard
+        // Sesi Belum Ada: Tampilkan Layar Login, Sembunyikan Dashboard & Sidebar
         if (loginSection) {
             loginSection.style.setProperty('display', 'flex', 'important');
             loginSection.classList.remove('hidden');
@@ -75,6 +88,10 @@ window.checkUserSession = function() {
         if (mainDashboard) {
             mainDashboard.style.setProperty('display', 'none', 'important');
             mainDashboard.classList.add('hidden');
+        }
+        if (sidebarNav) {
+            sidebarNav.style.setProperty('display', 'none', 'important');
+            sidebarNav.classList.add('hidden');
         }
     }
 };
