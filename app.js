@@ -26,6 +26,11 @@ window.switchTab = function(e, tabName) {
     if (!tabName) tabName = 'presensi';
     window.currentActiveTab = tabName;
 
+    // PASTIKAN HAK AKSES ROLE SELALU TERSINKRON SAAT BERPINDAH TAB
+    if (typeof applyRoleAccessControl === 'function') {
+        applyRoleAccessControl();
+    }
+
     const modules = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
     
     modules.forEach(function(mod) {
@@ -35,10 +40,10 @@ window.switchTab = function(e, tabName) {
         if (section) {
             if (mod === tabName) {
                 section.classList.remove('hidden');
-                section.style.display = 'block';
+                section.style.setProperty('display', 'block', 'important');
             } else {
                 section.classList.add('hidden');
-                section.style.display = 'none';
+                section.style.setProperty('display', 'none', 'important');
             }
         }
 
@@ -51,17 +56,20 @@ window.switchTab = function(e, tabName) {
         }
     });
 
-    // Render ulang data UI tab terpilih
-    if (typeof window.refreshCurrentTabUI === 'function') {
-        window.refreshCurrentTabUI();
-    }
-
-    // Jika pada tampilan seluler/tablet, tutup sidebar secara otomatis setelah menu diklik
+    // Tutup sidebar mobile jika sedang terbuka
     const sidebar = document.getElementById('sidebar-nav');
     const backdrop = document.getElementById('sidebar-backdrop');
     if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('hidden')) {
         sidebar.classList.add('hidden');
         if (backdrop) backdrop.classList.add('hidden');
+    }
+
+    try {
+        if (typeof window.refreshCurrentTabUI === 'function') {
+            window.refreshCurrentTabUI();
+        }
+    } catch (err) {
+        console.warn("Peringatan saat render data modul:", err);
     }
 };
 
