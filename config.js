@@ -38,35 +38,37 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 }
 
 // ==========================================================================
-// 3. FUNGSI PENANGANAN SESI LOGIN & TAMPILAN (AUTO-LOGIN SAAT REFRESH)
+// 3. FUNGSI PENANGANAN SESI LOGIN & TAMPILAN (DENGAN ID SCREEN-LOGIN & SCREEN-APP)
 // ==========================================================================
 window.checkUserSession = function() {
-    var loginSection = document.getElementById('loginSection') || document.getElementById('loginPage') || document.getElementById('loginCard') || document.querySelector('.login-container');
-    var mainDashboard = document.getElementById('mainDashboard') || document.getElementById('dashboardSection') || document.getElementById('appDashboard') || document.querySelector('.dashboard-container');
+    // Tangkap elemen sesuai ID utama di index.html (screen-login & screen-app)
+    var loginSection = document.getElementById('screen-login') || document.getElementById('loginSection');
+    var mainDashboard = document.getElementById('screen-app') || document.getElementById('mainDashboard');
 
     if (window.appState && window.appState.currentUser) {
-        // Sesi Aktif: Sembunyikan Form Login, Tampilkan Dashboard
+        // Sesi Aktif: Sembunyikan Layar Login, Tampilkan Layar Aplikasi Utama
         if (loginSection) {
-            loginSection.style.display = 'none';
+            loginSection.style.setProperty('display', 'none', 'important');
             loginSection.classList.add('hidden');
         }
         if (mainDashboard) {
-            mainDashboard.style.display = 'block';
+            mainDashboard.style.setProperty('display', 'flex', 'important');
             mainDashboard.classList.remove('hidden');
         }
-        console.log("✓ Sesi login aktif untuk:", window.appState.currentUser.username || window.appState.currentUser.nama || window.appState.currentUser.name);
+        console.log("✓ Sesi login aktif untuk:", window.appState.currentUser.username || window.appState.currentUser.nama);
     } else {
-        // Sesi Belum Ada: Tampilkan Form Login, Sembunyikan Dashboard
+        // Sesi Belum Ada: Tampilkan Layar Login, Sembunyikan Layar Aplikasi Utama
         if (loginSection) {
-            loginSection.style.display = 'block';
+            loginSection.style.setProperty('display', 'flex', 'important');
             loginSection.classList.remove('hidden');
         }
         if (mainDashboard) {
-            mainDashboard.style.display = 'none';
+            mainDashboard.style.setProperty('display', 'none', 'important');
             mainDashboard.classList.add('hidden');
         }
     }
 };
+
 
 // ==========================================================================
 // 4. FUNGSI SIMPAN TERPISAH (PER CABANG DATA)
