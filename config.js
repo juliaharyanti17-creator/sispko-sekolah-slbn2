@@ -39,18 +39,30 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 // 3. FUNGSI PENANGANAN SESI LOGIN & TAMPILAN (AUTO-LOGIN SAAT REFRESH)
 // ==========================================================================
 window.checkUserSession = function() {
-    var loginSection = document.getElementById('loginSection') || document.getElementById('loginPage') || document.getElementById('login-form');
-    var mainDashboard = document.getElementById('mainDashboard') || document.getElementById('dashboardSection') || document.getElementById('app-content');
+    var loginSection = document.getElementById('loginSection') || document.getElementById('loginPage') || document.getElementById('loginCard') || document.querySelector('.login-container');
+    var mainDashboard = document.getElementById('mainDashboard') || document.getElementById('dashboardSection') || document.getElementById('appDashboard') || document.querySelector('.dashboard-container');
 
     if (window.appState && window.appState.currentUser) {
-        // Jika akun terdeteksi sudah login, sembunyikan form login & tampilkan dashboard
-        if (loginSection) loginSection.style.display = 'none';
-        if (mainDashboard) mainDashboard.style.display = 'block';
+        // Sesi Aktif: Sembunyikan Form Login, Tampilkan Dashboard
+        if (loginSection) {
+            loginSection.style.display = 'none';
+            loginSection.classList.add('hidden');
+        }
+        if (mainDashboard) {
+            mainDashboard.style.display = 'block';
+            mainDashboard.classList.remove('hidden');
+        }
         console.log("✓ Sesi login aktif untuk:", window.appState.currentUser.username || window.appState.currentUser.nama || window.appState.currentUser.name);
     } else {
-        // Jika belum login, tampilkan form login & sembunyikan dashboard
-        if (loginSection) loginSection.style.display = 'block';
-        if (mainDashboard) mainDashboard.style.display = 'none';
+        // Sesi Belum Ada: Tampilkan Form Login, Sembunyikan Dashboard
+        if (loginSection) {
+            loginSection.style.display = 'block';
+            loginSection.classList.remove('hidden');
+        }
+        if (mainDashboard) {
+            mainDashboard.style.display = 'none';
+            mainDashboard.classList.add('hidden');
+        }
     }
 };
 
@@ -113,7 +125,7 @@ window.savePresensiData = function() {
     }
 };
 
-// Fungsi Simpan Master (menyimpan semua sekaligus - untuk sinkronisasi menyeluruh)
+// Fungsi Simpan Master (menyimpan semua sekaligus)
 window.saveAppState = function() {
     updateLocalBackup();
     if (typeof firebase === 'undefined' || !firebase.apps.length) {
