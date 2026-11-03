@@ -1,4 +1,7 @@
-// Logika Modul Rekapitulasi & Cetak PDF
+// ==========================================================================
+// Modul Rekapitulasi & Cetak Laporan SIMPATIK SLBN 2 PELAIHARI
+// ==========================================================================
+
 function setPresetRekapRange(e, type) {
     if (e) e.preventDefault();
     const today = new Date();
@@ -49,20 +52,20 @@ function renderRekapModule() {
         const activeStudentIds = (appState.students || []).map(s => s.id);
         const classesToRender = filterKelas === 'ALL' 
             ? (appState.classes || []) 
-            : (appState.classes || []).filter(c => c.id === filterKelas);
+            : (appState.classes || []).filter(c => c.id === filterKelas || c.name === filterKelas || c.nama === filterKelas);
 
         if (classesToRender.length === 0) {
             tbodyPresensi.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400 font-medium">Tidak ada kelas yang terdaftar.</td></tr>`;
         } else {
             classesToRender.forEach((c, idx) => {
-                const totalSiswaKelas = (appState.students || []).filter(s => s.classId === c.id).length;
+                const totalSiswaKelas = (appState.students || []).filter(s => s.classId === c.id || s.kelas === c.id || s.classId === c.name).length;
                 let hadir = 0, izin = 0, sakit = 0, alpa = 0, totalRecords = 0;
 
                 Object.keys(appState.presensiRecords || {}).forEach(key => {
                     const parts = key.split('_');
                     const tgl = parts[0], classId = parts[1];
 
-                    if (classId === c.id && tgl >= startDate && tgl <= endDate) {
+                    if ((classId === c.id || classId === c.name || classId === c.nama) && tgl >= startDate && tgl <= endDate) {
                         const recMap = appState.presensiRecords[key] || {};
                         Object.keys(recMap).forEach(sId => {
                             if (activeStudentIds.includes(sId)) {
@@ -83,7 +86,7 @@ function renderRekapModule() {
                 tr.className = "hover:bg-slate-50 transition";
                 tr.innerHTML = `
                     <td class="p-3 text-center text-slate-400 font-bold">${idx + 1}</td>
-                    <td class="p-3 font-extrabold text-slate-800">${c.name}</td>
+                    <td class="p-3 font-extrabold text-slate-800">${c.name || c.nama}</td>
                     <td class="p-3 text-center font-bold text-slate-600">${totalSiswaKelas} Murid</td>
                     <td class="p-3 text-center font-bold text-emerald-700">${hadir}</td>
                     <td class="p-3 text-center font-bold text-blue-700">${izin}</td>
@@ -120,7 +123,7 @@ function renderRekapModule() {
                     <td class="p-3 text-center text-slate-400 font-bold">${idx + 1}</td>
                     <td class="p-3 font-semibold text-slate-600 shrink-0">${j.tanggal}</td>
                     <td class="p-3 font-extrabold text-indigo-900">${j.guru}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-[10px]">${getClassName(j.classId)}</span><br><span class="text-slate-500 font-medium">${j.mapel}</span></td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-[10px]">${typeof getClassName === 'function' ? getClassName(j.classId) : j.classId}</span><br><span class="text-slate-500 font-medium">${j.mapel}</span></td>
                     <td class="p-3"><strong class="text-slate-800 font-bold block">${j.materi}</strong></td>
                 `;
                 tbodyJurnal.appendChild(tr);
