@@ -70,12 +70,33 @@ window.saveAppState = function() {
         });
 };
 
-// 4. Fungsi Muat Data Saat Refresh (Mendukung Fallback LocalStorage)
-window.loadAppState = function(callback) {
-    var savedSession = localStorage.getItem('sispko_session_user');
-    if (savedSession) {
-        try { window.appState.currentUser = JSON.parse(savedSession); } catch(e) {}
-    }
+// Tarik data terbaru dari Firebase
+firebase.database().ref('simpatik_data').once('value')
+    .then(function(snapshot) {
+        var data = snapshot.val();
+        if (data) {
+            // Timpa appState langsung dengan data dari Firebase (jika ada)
+            window.appState.students = data.students || [];
+            window.appState.classes = data.classes || [];
+            window.appState.subjects = data.subjects || [];
+            window.appState.users = data.users || [];
+            window.appState.journals = data.journals || [];
+            window.appState.presensi = data.presensi || [];
+            window.appState.evaluations = data.evaluations || [];
+            window.appState.ketunaanList = data.ketunaanList || window.appState.ketunaanList;
+
+            // Perbarui backup local storage dengan data firebase terbaru
+            localStorage.setItem('simpatik_backup_state', JSON.stringify(window.appState));
+            console.log("✓ Data Firebase berhasil dimuat sepenuhnya.");
+        } else {
+            console.warn("! Database Firebase kosong. Menyimpan data default/lokal ke Firebase.");
+            window.saveAppState();
+        }
+
+        triggerUIRender();
+        if (callback) callback();
+    })
+
 
     // Ambil dulu dari LocalStorage sebagai pertahanan pertama agar data instan muncul
     var localBackup = localStorage.getItem('simpatik_backup_state');
