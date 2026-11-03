@@ -23,7 +23,7 @@ function loadPresensiTable() {
         return;
     }
 
-    // Ambil daftar siswa berdasarkan kelas yang dipilih
+    // Ambil daftar siswa berdasarkan kelas terpilih
     var studentsInClass = (appState.students || []).filter(function(s) {
         return s && (s.classId === selectedClass || s.kelas === selectedClass);
     });
@@ -34,7 +34,6 @@ function loadPresensiTable() {
         return;
     }
 
-    // Key rekam presensi: YYYY-MM-DD_CLASSID
     var recordKey = selectedTgl + '_' + selectedClass;
     var currentRecord = (appState.presensiRecords && appState.presensiRecords[recordKey]) ? appState.presensiRecords[recordKey] : {};
 
@@ -93,6 +92,7 @@ function updatePresensiSummary(h, s, i, a, total) {
 
 function handleSavePresensi(e) {
     if (e) e.preventDefault();
-    saveAppState();
-    if (typeof showToast === 'function') showToast("Presensi berhasil disimpan ke database!");
+    if (typeof saveAppState === 'function') saveAppState();
+    if (typeof savePresensiData === 'function') savePresensiData();
+    if (typeof showToast === 'function') showToast("Presensi berhasil disimpan!");
 }
