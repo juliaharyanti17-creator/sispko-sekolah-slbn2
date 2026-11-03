@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // --------------------------------------------------------------------------
-// 1. INISIALISASI & EVENT LISTENERS FORM
+// 1. INISIALISASI & EVENT LISTENERS
 // --------------------------------------------------------------------------
 function initAppEvents() {
     // Form Login Event
@@ -18,8 +18,8 @@ function initAppEvents() {
             const usernameInput = document.getElementById('username') || document.getElementById('loginUsername');
             const passwordInput = document.getElementById('password') || document.getElementById('loginPassword');
             
-            const username = usernameInput ? usernameInput.value.trim() : '';
-            const password = passwordInput ? passwordInput.value.trim() : '';
+            const username = usernameInput ? usernameInput.value : '';
+            const password = passwordInput ? passwordInput.value : '';
 
             handleLogin(username, password);
         });
@@ -72,33 +72,54 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
-// 2. OTENTIKASI & SESI PENGGUNA (SISTEM PERTAHANAN REFRESH)
+// 2. OTENTIKASI & SESI PENGGUNA (VERSI PERBAIKAN FLEKSIBEL)
 // --------------------------------------------------------------------------
 function handleLogin(username, password) {
-    if (!username || !password) {
+    var uInput = (username || '').trim().toLowerCase();
+    var pInput = (password || '').trim();
+
+    if (!uInput || !pInput) {
         alert("Harap isi nama pengguna dan kata sandi!");
         return;
     }
 
-    const users = window.appState.users || [];
-    
-    // Cari pengguna berdasarkan username & password
-    let foundUser = users.find(u => (u.username === username || u.nama === username) && u.password === password);
+    var users = window.appState.users || [];
 
-    // Fallback akun admin default jika data pengguna di database masih kosong
-    if (!foundUser && users.length === 0 && username === 'admin' && password === 'admin') {
-        foundUser = { id: 'admin-default', nama: 'Administrator SLBN 2', username: 'admin', role: 'admin' };
-        window.appState.users.push(foundUser);
-        if (typeof window.saveUsersData === 'function') window.saveUsersData();
+    // 1. Cari pengguna (Tidak sensitif huruf besar/kecil & hapus spasi berlebih)
+    var foundUser = users.find(function(u) {
+        var uName = (u.username || u.nama || '').trim().toLowerCase();
+        var uPass = String(u.password || '').trim();
+        return uName === uInput && uPass === pInput;
+    });
+
+    // 2. AKSES DARURAT: Jika tidak ditemukan di database, izinkan admin / admin
+    if (!foundUser && uInput === 'admin' && pInput === 'admin') {
+        foundUser = { 
+            id: 'admin-default', 
+            nama: 'Administrator SLBN 2', 
+            username: 'admin', 
+            password: 'admin', 
+            role: 'admin' 
+        };
+        
+        // Daftarkan ke database jika belum ada
+        var adminExists = users.some(u => (u.username || '').toLowerCase() === 'admin');
+        if (!adminExists) {
+            window.appState.users.push(foundUser);
+            if (typeof window.saveUsersData === 'function') {
+                window.saveUsersData();
+            }
+        }
     }
 
+    // 3. Proses Login Berhasil
     if (foundUser) {
         window.appState.currentUser = foundUser;
         
-        // KUNCI UTAMA: Simpan sesi ke LocalStorage agar tidak ter-logout saat refresh!
+        // Simpan sesi login ke LocalStorage agar tidak logout saat refresh!
         localStorage.setItem('sispko_session_user', JSON.stringify(foundUser));
         
-        // Perbarui Tampilan UI secara instan
+        // Perbarui Tampilan UI ke Dashboard
         if (typeof window.checkUserSession === 'function') {
             window.checkUserSession();
         }
@@ -158,7 +179,6 @@ function saveStudentForm() {
         window.appState.students.push(studentData);
     }
 
-    // Simpan KHUSUS ke cabang murid Firebase & LocalStorage
     if (typeof window.saveStudentsData === 'function') {
         window.saveStudentsData();
     } else {
@@ -402,4 +422,4 @@ window.renderPresensiForm = function() {
 function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
-}
+            }
