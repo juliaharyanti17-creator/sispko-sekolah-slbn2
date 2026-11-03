@@ -118,7 +118,9 @@ function saveSessionAndEnterApp(userObj) {
 
     // Terapkan Pembatasan Menu & Auto-Filter Dropdown
     applyRoleAccessControl();
-    window.populateDropdowns();
+    if (typeof window.populateDropdowns === 'function') {
+        window.populateDropdowns();
+    }
 
     // Auto-Landing Page berdasarkan Role
     var userRole = (userObj.role || '').toLowerCase();
@@ -147,23 +149,28 @@ function applyRoleAccessControl() {
     var btnEvaluasi = document.getElementById('tab-btn-evaluasi');
     var btnMaster = document.getElementById('tab-btn-master');
 
-    // Reset Tampilan Menu
+    // Reset Tampilan Menu (Tampilkan semua dulu)
     [btnPresensi, btnJurnal, btnRekap, btnEvaluasi, btnMaster].forEach(function(btn) {
-        if (btn) btn.parentElement.style.display = '';
+        if (btn && btn.parentElement) {
+            btn.parentElement.style.display = '';
+        }
     });
 
+    // Terapkan Sembunyikan Menu Berdasarkan Role
     if (role === 'admin') {
         // Admin: Semua menu terbuka
         return;
-    } else if (role === 'kepsek') {
-        // Kepala Sekolah: Hanya Rekap Laporan & Dashboard Evaluasi Kepsek
-        if (btnPresensi) btnPresensi.parentElement.style.display = 'none';
-        if (btnJurnal) btnJurnal.parentElement.style.display = 'none';
-        if (btnMaster) btnMaster.parentElement.style.display = 'none';
-    } else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru') {
+    } 
+    else if (role === 'kepsek') {
+        // Kepala Sekolah: Hanya Rekap Laporan & Panel Evaluasi Kepsek
+        if (btnPresensi && btnPresensi.parentElement) btnPresensi.parentElement.style.display = 'none';
+        if (btnJurnal && btnJurnal.parentElement) btnJurnal.parentElement.style.display = 'none';
+        if (btnMaster && btnMaster.parentElement) btnMaster.parentElement.style.display = 'none';
+    } 
+    else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
         // Guru & Wali Kelas: Hanya Presensi, Jurnal, & Rekap Laporan
-        if (btnEvaluasi) btnEvaluasi.parentElement.style.display = 'none';
-        if (btnMaster) btnMaster.parentElement.style.display = 'none';
+        if (btnEvaluasi && btnEvaluasi.parentElement) btnEvaluasi.parentElement.style.display = 'none';
+        if (btnMaster && btnMaster.parentElement) btnMaster.parentElement.style.display = 'none';
     }
 }
 
@@ -466,7 +473,9 @@ document.addEventListener('DOMContentLoaded', function() {
             window.appState.currentUser = JSON.parse(savedSession);
             setTimeout(function() {
                 applyRoleAccessControl();
-                window.populateDropdowns();
+                if (typeof window.populateDropdowns === 'function') {
+                    window.populateDropdowns();
+                }
             }, 300);
         } catch(e) {}
     }
