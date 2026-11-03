@@ -143,37 +143,46 @@ function applyRoleAccessControl() {
 
     var role = (currentUser.role || '').toLowerCase();
 
-    var btnPresensi = document.getElementById('tab-btn-presensi');
-    var btnJurnal = document.getElementById('tab-btn-jurnal');
-    var btnRekap = document.getElementById('tab-btn-rekap');
-    var btnEvaluasi = document.getElementById('tab-btn-evaluasi');
-    var btnMaster = document.getElementById('tab-btn-master');
+    // Ambil semua tombol navigasi di dalam tag aside/sidebar
+    var sidebarNav = document.getElementById('sidebar-nav') || document.querySelector('aside');
+    if (!sidebarNav) return;
 
-    // Reset Tampilan Menu (Tampilkan semua dulu)
-    [btnPresensi, btnJurnal, btnRekap, btnEvaluasi, btnMaster].forEach(function(btn) {
-        if (btn && btn.parentElement) {
-            btn.parentElement.style.display = '';
+    var navButtons = sidebarNav.querySelectorAll('nav button, nav div');
+
+    navButtons.forEach(function(el) {
+        var text = (el.innerText || '').toLowerCase();
+        var onclickAttr = (el.getAttribute('onclick') || '').toLowerCase();
+
+        var isPresensi = onclickAttr.includes('presensi') || text.includes('presensi');
+        var isJurnal = onclickAttr.includes('jurnal') || text.includes('jurnal');
+        var isRekap = onclickAttr.includes('rekap') || text.includes('rekap');
+        var isEvaluasi = onclickAttr.includes('evaluasi') || text.includes('evaluasi');
+        var isMaster = onclickAttr.includes('master') || text.includes('data master');
+
+        // Jika ini adalah tombol menu utama
+        if (isPresensi || isJurnal || isRekap || isEvaluasi || isMaster) {
+            // Tampilkan kembali secara default
+            el.style.display = '';
+
+            if (role === 'admin') {
+                // Admin: Buka semua
+                el.style.display = '';
+            } 
+            else if (role === 'kepsek') {
+                // Kepala Sekolah: Sembunyikan Presensi, Jurnal, & Data Master
+                if (isPresensi || isJurnal || isMaster) {
+                    el.style.display = 'none';
+                }
+            } 
+            else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
+                // Guru & Wali Kelas: Sembunyikan Evaluasi Kepsek & Data Master
+                if (isEvaluasi || isMaster) {
+                    el.style.display = 'none';
+                }
+            }
         }
     });
-
-    // Terapkan Sembunyikan Menu Berdasarkan Role
-    if (role === 'admin') {
-        // Admin: Semua menu terbuka
-        return;
-    } 
-    else if (role === 'kepsek') {
-        // Kepala Sekolah: Hanya Rekap Laporan & Panel Evaluasi Kepsek
-        if (btnPresensi && btnPresensi.parentElement) btnPresensi.parentElement.style.display = 'none';
-        if (btnJurnal && btnJurnal.parentElement) btnJurnal.parentElement.style.display = 'none';
-        if (btnMaster && btnMaster.parentElement) btnMaster.parentElement.style.display = 'none';
-    } 
-    else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
-        // Guru & Wali Kelas: Hanya Presensi, Jurnal, & Rekap Laporan
-        if (btnEvaluasi && btnEvaluasi.parentElement) btnEvaluasi.parentElement.style.display = 'none';
-        if (btnMaster && btnMaster.parentElement) btnMaster.parentElement.style.display = 'none';
-    }
 }
-
 // --- 4. HELPER DROPDOWN AUTO-FILTER BERDASARKAN AMPUAN ---
 window.populateDropdowns = function() {
     var user = (window.appState && window.appState.currentUser) ? window.appState.currentUser : { role: 'admin' };
