@@ -30,11 +30,11 @@ function renderEvaluasiSupervisiDashboard() {
             : '<span class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold rounded-full text-[10px]"><i class="fa-solid fa-clock mr-1"></i>Belum Disupervisi</span>';
 
         var catatanSup = j.supervisi 
-            ? '<div class="mt-2 p-2.5 bg-white border border-emerald-200 rounded-xl text-emerald-900 font-medium"><strong>Catatan Kepsek:</strong> "' + j.supervisi.catatanKepsek + '"</div>' 
+            ? '<div class="mt-2 p-2.5 bg-white border border-emerald-200 rounded-xl text-emerald-900 font-medium"><strong>Catatan & Ulasan Kepsek:</strong> "' + j.supervisi.catatanKepsek + '"</div>' 
             : '';
 
         var btnSupervisiKepsek = '';
-        var currentUserRole = appState.currentUser ? appState.currentUser.role : '';
+        var currentUserRole = appState.currentUser ? (appState.currentUser.role || '').toLowerCase() : '';
         if (currentUserRole === 'kepsek' || currentUserRole === 'admin') {
             btnSupervisiKepsek = `
                 <button type="button" onclick="openModalSupervisi(${realIndex})" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer flex items-center gap-1.5">
