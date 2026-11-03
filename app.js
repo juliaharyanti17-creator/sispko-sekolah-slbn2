@@ -72,8 +72,53 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
-// 2. OTENTIKASI & SESI PENGGUNA (VERSI PERBAIKAN FLEKSIBEL)
+// OTENTIKASI & SESI PENGGUNA (VERSI AUTO-DETECT & DARURAT)
 // --------------------------------------------------------------------------
+
+// Fungsi Login Universal (Otomatis Deteksi Input di Layar)
+window.doLogin = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+
+    // Cari otomatis input username (berdasarkan ID atau tipe/placeholder)
+    var usernameInput = document.getElementById('username') || 
+                        document.getElementById('loginUsername') || 
+                        document.querySelector('#loginSection input[type="text"]') ||
+                        document.querySelector('input[placeholder*="username" i]') ||
+                        document.querySelector('input[placeholder*="nama" i]');
+
+    // Cari otomatis input password
+    var passwordInput = document.getElementById('password') || 
+                        document.getElementById('loginPassword') || 
+                        document.querySelector('#loginSection input[type="password"]') ||
+                        document.querySelector('input[type="password"]');
+
+    var username = usernameInput ? usernameInput.value : '';
+    var password = passwordInput ? passwordInput.value : '';
+
+    handleLogin(username, password);
+};
+
+// Fungsi Darurat 1-Klik: Reset Sesi & Masuk Paksa ke Dashboard
+window.forceLoginAdmin = function() {
+    var adminUser = { 
+        id: 'admin-default', 
+        nama: 'Administrator SLBN 2', 
+        username: 'admin', 
+        password: 'admin', 
+        role: 'admin' 
+    };
+    
+    // Paksa simpan ke state global dan LocalStorage
+    window.appState.currentUser = adminUser;
+    localStorage.setItem('sispko_session_user', JSON.stringify(adminUser));
+    
+    // Alihkan tampilan ke Dashboard
+    if (typeof window.checkUserSession === 'function') window.checkUserSession();
+    if (typeof triggerUIRender === 'function') triggerUIRender();
+    
+    alert("✓ Berhasil masuk paksa sebagai Administrator!");
+};
+
 function handleLogin(username, password) {
     var uInput = (username || '').trim().toLowerCase();
     var pInput = (password || '').trim();
@@ -85,14 +130,14 @@ function handleLogin(username, password) {
 
     var users = window.appState.users || [];
 
-    // 1. Cari pengguna (Tidak sensitif huruf besar/kecil & hapus spasi berlebih)
+    // 1. Cari pengguna
     var foundUser = users.find(function(u) {
         var uName = (u.username || u.nama || '').trim().toLowerCase();
         var uPass = String(u.password || '').trim();
         return uName === uInput && uPass === pInput;
     });
 
-    // 2. AKSES DARURAT: Jika tidak ditemukan di database, izinkan admin / admin
+    // 2. AKSES DARURAT: Izinkan selalu admin / admin
     if (!foundUser && uInput === 'admin' && pInput === 'admin') {
         foundUser = { 
             id: 'admin-default', 
@@ -101,51 +146,22 @@ function handleLogin(username, password) {
             password: 'admin', 
             role: 'admin' 
         };
-        
-        // Daftarkan ke database jika belum ada
-        var adminExists = users.some(u => (u.username || '').toLowerCase() === 'admin');
-        if (!adminExists) {
-            window.appState.users.push(foundUser);
-            if (typeof window.saveUsersData === 'function') {
-                window.saveUsersData();
-            }
-        }
     }
 
-    // 3. Proses Login Berhasil
+    // 3. Eksekusi Login
     if (foundUser) {
         window.appState.currentUser = foundUser;
-        
-        // Simpan sesi login ke LocalStorage agar tidak logout saat refresh!
         localStorage.setItem('sispko_session_user', JSON.stringify(foundUser));
         
-        // Perbarui Tampilan UI ke Dashboard
-        if (typeof window.checkUserSession === 'function') {
-            window.checkUserSession();
-        }
-        
-        if (typeof triggerUIRender === 'function') {
-            triggerUIRender();
-        }
+        if (typeof window.checkUserSession === 'function') window.checkUserSession();
+        if (typeof triggerUIRender === 'function') triggerUIRender();
 
         alert("Berhasil masuk! Selamat datang, " + (foundUser.nama || foundUser.username));
     } else {
         alert("Nama pengguna atau kata sandi tidak cocok!");
     }
-}
-
-function handleLogout() {
-    if (confirm("Apakah Anda yakin ingin keluar dari aplikasi SIMPATIK?")) {
-        window.appState.currentUser = null;
-        localStorage.removeItem('sispko_session_user');
-        
-        if (typeof window.checkUserSession === 'function') {
-            window.checkUserSession();
-        } else {
-            window.location.reload();
         }
-    }
-}
+
 
 // --------------------------------------------------------------------------
 // 3. KELOLA DATA MASTER MURID
