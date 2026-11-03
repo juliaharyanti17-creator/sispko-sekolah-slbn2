@@ -19,10 +19,11 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
-// 1. SISTEM NAVIGASI TAB & SIDEBAR (MENGAKTIFKAN NAVBAR)
+// 1. SISTEM NAVIGASI TAB & SIDEBAR NAVBAR
 // --------------------------------------------------------------------------
 window.switchTab = function(e, tabName) {
     if (e && e.preventDefault) e.preventDefault();
+    if (!tabName) tabName = 'presensi';
     window.currentActiveTab = tabName;
 
     // Modul yang ada di index.html
@@ -35,10 +36,10 @@ window.switchTab = function(e, tabName) {
         if (section) {
             if (mod === tabName) {
                 section.classList.remove('hidden');
-                section.style.display = 'block';
+                section.style.setProperty('display', 'block', 'important');
             } else {
                 section.classList.add('hidden');
-                section.style.display = 'none';
+                section.style.setProperty('display', 'none', 'important');
             }
         }
 
@@ -81,7 +82,17 @@ window.toggleMobileSidebar = function(e) {
     const sidebar = document.getElementById('sidebar-nav');
     const backdrop = document.getElementById('sidebar-backdrop');
     
-    if (sidebar) sidebar.classList.toggle('hidden');
+    if (sidebar) {
+        if (sidebar.classList.contains('hidden') || sidebar.style.display === 'none') {
+            sidebar.classList.remove('hidden');
+            sidebar.classList.add('flex');
+            sidebar.style.setProperty('display', 'flex', 'important');
+        } else {
+            sidebar.classList.add('hidden');
+            sidebar.classList.remove('flex');
+            sidebar.style.setProperty('display', 'none', 'important');
+        }
+    }
     if (backdrop) backdrop.classList.toggle('hidden');
 };
 
@@ -320,4 +331,4 @@ window.renderPresensiForm = function() {
 function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
-        }
+}
