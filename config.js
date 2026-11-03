@@ -36,10 +36,27 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 }
 
 // ==========================================================================
-// 3. FUNGSI SIMPAN TERPISAH (PER CABANG DATA)
+// 3. FUNGSI PENANGANAN SESI LOGIN & TAMPILAN (AUTO-LOGIN SAAT REFRESH)
 // ==========================================================================
+window.checkUserSession = function() {
+    var loginSection = document.getElementById('loginSection') || document.getElementById('loginPage') || document.getElementById('login-form');
+    var mainDashboard = document.getElementById('mainDashboard') || document.getElementById('dashboardSection') || document.getElementById('app-content');
 
-// Fungsi utilitas untuk pencadangan lokal
+    if (window.appState && window.appState.currentUser) {
+        // Jika akun terdeteksi sudah login, sembunyikan form login & tampilkan dashboard
+        if (loginSection) loginSection.style.display = 'none';
+        if (mainDashboard) mainDashboard.style.display = 'block';
+        console.log("✓ Sesi login aktif untuk:", window.appState.currentUser.username || window.appState.currentUser.nama || window.appState.currentUser.name);
+    } else {
+        // Jika belum login, tampilkan form login & sembunyikan dashboard
+        if (loginSection) loginSection.style.display = 'block';
+        if (mainDashboard) mainDashboard.style.display = 'none';
+    }
+};
+
+// ==========================================================================
+// 4. FUNGSI SIMPAN TERPISAH (PER CABANG DATA)
+// ==========================================================================
 function updateLocalBackup() {
     try {
         localStorage.setItem('simpatik_backup_state', JSON.stringify(window.appState));
@@ -96,7 +113,7 @@ window.savePresensiData = function() {
     }
 };
 
-// Fungsi Simpan Master (menyimpan semua sekaligus - berguna untuk struktur awal)
+// Fungsi Simpan Master (menyimpan semua sekaligus - untuk sinkronisasi menyeluruh)
 window.saveAppState = function() {
     updateLocalBackup();
     if (typeof firebase === 'undefined' || !firebase.apps.length) {
@@ -121,15 +138,20 @@ window.saveAppState = function() {
 };
 
 // ==========================================================================
-// 4. FUNGSI MUAT DATA SAAT REFRESH
+// 5. FUNGSI MUAT DATA SAAT REFRESH
 // ==========================================================================
 window.loadAppState = function(callback) {
+    // 1. Muat Sesi Login Pengguna dari LocalStorage
     var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
-        try { window.appState.currentUser = JSON.parse(savedSession); } catch(e) {}
+        try { 
+            window.appState.currentUser = JSON.parse(savedSession); 
+        } catch(e) {
+            console.error("Gagal membaca sesi pengguna:", e);
+        }
     }
 
-    // Ambil data instan dari LocalStorage dulu
+    // 2. Ambil data instan dari LocalStorage dulu sebagai pertahanan awal
     var localBackup = localStorage.getItem('simpatik_backup_state');
     if (localBackup) {
         try {
@@ -138,6 +160,9 @@ window.loadAppState = function(callback) {
             if (parsedLocal.classes) window.appState.classes = parsedLocal.classes;
             if (parsedLocal.subjects) window.appState.subjects = parsedLocal.subjects;
             if (parsedLocal.users) window.appState.users = parsedLocal.users;
+            if (parsedLocal.journals) window.appState.journals = parsedLocal.journals;
+            if (parsedLocal.presensi) window.appState.presensi = parsedLocal.presensi;
+            if (parsedLocal.evaluations) window.appState.evaluations = parsedLocal.evaluations;
             if (parsedLocal.ketunaanList) window.appState.ketunaanList = parsedLocal.ketunaanList;
         } catch(e) {}
     }
@@ -148,7 +173,7 @@ window.loadAppState = function(callback) {
         return;
     }
 
-    // Tarik data terbaru dan timpa memori lama
+    // 3. Tarik data terbaru dari Firebase dan perbarui State
     firebase.database().ref('simpatik_data').once('value')
         .then(function(snapshot) {
             var data = snapshot.val();
@@ -180,6 +205,7 @@ window.loadAppState = function(callback) {
 };
 
 function triggerUIRender() {
+    window.checkUserSession(); // Auto-login / pertahankan sesi aktif saat refresh
     if (typeof renderAllMasterData === 'function') renderAllMasterData();
     if (typeof renderJurnalList === 'function') renderJurnalList();
     if (typeof renderPresensiForm === 'function') renderPresensiForm();
@@ -188,4 +214,3 @@ function triggerUIRender() {
 document.addEventListener('DOMContentLoaded', function() {
     window.loadAppState();
 });
-        
