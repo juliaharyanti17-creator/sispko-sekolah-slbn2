@@ -2,10 +2,12 @@
 // CONFIGURATIONS & HYBRID STORAGE CONNECTOR - SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
-// 1. Inisialisasi State Aplikasi Global (Default)
+// 1. Inisialisasi State Aplikasi Global (Sertakan Admin Default)
 window.appState = {
     currentUser: null,
-    users: [],
+    users: [
+        { id: 'admin-default', nama: 'Administrator SLBN 2', username: 'admin', password: 'admin', role: 'admin' }
+    ],
     classes: [],
     subjects: [],
     students: [],
@@ -171,7 +173,7 @@ window.loadAppState = function(callback) {
             if (parsedLocal.students) window.appState.students = parsedLocal.students;
             if (parsedLocal.classes) window.appState.classes = parsedLocal.classes;
             if (parsedLocal.subjects) window.appState.subjects = parsedLocal.subjects;
-            if (parsedLocal.users) window.appState.users = parsedLocal.users;
+            if (parsedLocal.users && parsedLocal.users.length > 0) window.appState.users = parsedLocal.users;
             if (parsedLocal.journals) window.appState.journals = parsedLocal.journals;
             if (parsedLocal.presensi) window.appState.presensi = parsedLocal.presensi;
             if (parsedLocal.evaluations) window.appState.evaluations = parsedLocal.evaluations;
@@ -194,7 +196,7 @@ window.loadAppState = function(callback) {
                 window.appState.journals = data.journals || [];
                 window.appState.classes = data.classes || [];
                 window.appState.subjects = data.subjects || [];
-                window.appState.users = data.users || [];
+                window.appState.users = (data.users && data.users.length > 0) ? data.users : window.appState.users;
                 window.appState.presensi = data.presensi || [];
                 window.appState.evaluations = data.evaluations || [];
                 window.appState.ketunaanList = data.ketunaanList || window.appState.ketunaanList;
