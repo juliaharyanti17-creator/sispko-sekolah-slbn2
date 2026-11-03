@@ -2,7 +2,7 @@
 // SIMPATIK SLBN 2 PELAIHARI - MAIN APPLICATION LOGIC (app.js)
 // ==========================================================================
 
-window.currentActiveTab = 'presensi'; // Tab default setelah login
+window.currentActiveTab = 'presensi';
 
 document.addEventListener('DOMContentLoaded', function() {
     initAppEvents();
@@ -19,14 +19,13 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
-// 1. SISTEM NAVIGASI TAB & SIDEBAR NAVBAR
+// 1. SISTEM PERUBAHAN TAB & KONTEN HALAMAN
 // --------------------------------------------------------------------------
 window.switchTab = function(e, tabName) {
     if (e && e.preventDefault) e.preventDefault();
     if (!tabName) tabName = 'presensi';
     window.currentActiveTab = tabName;
 
-    // Modul yang ada di index.html
     const modules = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
     
     modules.forEach(function(mod) {
@@ -36,14 +35,13 @@ window.switchTab = function(e, tabName) {
         if (section) {
             if (mod === tabName) {
                 section.classList.remove('hidden');
-                section.style.setProperty('display', 'block', 'important');
+                section.style.display = 'block';
             } else {
                 section.classList.add('hidden');
-                section.style.setProperty('display', 'none', 'important');
+                section.style.display = 'none';
             }
         }
 
-        // Highlight tombol tab aktif di Sidebar
         if (btn) {
             if (mod === tabName) {
                 btn.className = "tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all cursor-pointer";
@@ -53,27 +51,35 @@ window.switchTab = function(e, tabName) {
         }
     });
 
-    // Render ulang data khusus untuk modul yang dipilih
-    window.refreshCurrentTabUI();
-    
-    // Tutup sidebar mobile jika sedang terbuka
+    // Render ulang data UI tab terpilih
+    if (typeof window.refreshCurrentTabUI === 'function') {
+        window.refreshCurrentTabUI();
+    }
+
+    // Jika pada tampilan seluler/tablet, tutup sidebar secara otomatis setelah menu diklik
+    const sidebar = document.getElementById('sidebar-nav');
     const backdrop = document.getElementById('sidebar-backdrop');
-    if (backdrop && !backdrop.classList.contains('hidden')) {
-        window.toggleMobileSidebar();
+    if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('hidden')) {
+        sidebar.classList.add('hidden');
+        if (backdrop) backdrop.classList.add('hidden');
     }
 };
 
 window.refreshCurrentTabUI = function() {
-    if (window.currentActiveTab === 'presensi' && typeof renderPresensiForm === 'function') {
-        renderPresensiForm();
-    } else if (window.currentActiveTab === 'jurnal' && typeof renderJurnalList === 'function') {
-        renderJurnalList();
-    } else if (window.currentActiveTab === 'master' && typeof renderAllMasterData === 'function') {
-        renderAllMasterData();
-    } else if (window.currentActiveTab === 'rekap' && typeof renderRekapModule === 'function') {
-        renderRekapModule();
-    } else if (window.currentActiveTab === 'evaluasi' && typeof updateEvaluasiDashboard === 'function') {
-        updateEvaluasiDashboard();
+    try {
+        if (window.currentActiveTab === 'presensi' && typeof renderPresensiForm === 'function') {
+            renderPresensiForm();
+        } else if (window.currentActiveTab === 'jurnal' && typeof renderJurnalList === 'function') {
+            renderJurnalList();
+        } else if (window.currentActiveTab === 'master' && typeof renderAllMasterData === 'function') {
+            renderAllMasterData();
+        } else if (window.currentActiveTab === 'rekap' && typeof renderRekapModule === 'function') {
+            renderRekapModule();
+        } else if (window.currentActiveTab === 'evaluasi' && typeof updateEvaluasiDashboard === 'function') {
+            updateEvaluasiDashboard();
+        }
+    } catch(err) {
+        console.error("Gagal memperbarui UI Tab:", err);
     }
 };
 
@@ -82,17 +88,7 @@ window.toggleMobileSidebar = function(e) {
     const sidebar = document.getElementById('sidebar-nav');
     const backdrop = document.getElementById('sidebar-backdrop');
     
-    if (sidebar) {
-        if (sidebar.classList.contains('hidden') || sidebar.style.display === 'none') {
-            sidebar.classList.remove('hidden');
-            sidebar.classList.add('flex');
-            sidebar.style.setProperty('display', 'flex', 'important');
-        } else {
-            sidebar.classList.add('hidden');
-            sidebar.classList.remove('flex');
-            sidebar.style.setProperty('display', 'none', 'important');
-        }
-    }
+    if (sidebar) sidebar.classList.toggle('hidden');
     if (backdrop) backdrop.classList.toggle('hidden');
 };
 
@@ -116,13 +112,13 @@ window.scrollToSubSection = function(e, tabName, sectionId) {
 };
 
 // --------------------------------------------------------------------------
-// 2. OTENTIKASI & SESI PENGGUNA
+// 2. OTENTIKASI PENGGUNA
 // --------------------------------------------------------------------------
 window.doLogin = function(e) {
     if (e && e.preventDefault) e.preventDefault();
 
-    var usernameInput = document.getElementById('login-nama') || document.getElementById('username') || document.getElementById('loginUsername');
-    var passwordInput = document.getElementById('login-password') || document.getElementById('password') || document.getElementById('loginPassword');
+    var usernameInput = document.getElementById('login-nama') || document.getElementById('username');
+    var passwordInput = document.getElementById('login-password') || document.getElementById('password');
 
     var username = usernameInput ? usernameInput.value : '';
     var password = passwordInput ? passwordInput.value : '';
@@ -193,9 +189,7 @@ function handleLogin(username, password) {
             triggerUIRender();
         }
 
-        // Buka tab pertama (Presensi) otomatis
         window.switchTab(null, 'presensi');
-
         alert("Berhasil masuk! Selamat datang, " + (foundUser.nama || foundUser.username));
     } else {
         alert("Nama pengguna atau kata sandi tidak cocok!");
