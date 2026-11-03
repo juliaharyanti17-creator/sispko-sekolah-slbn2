@@ -118,9 +118,61 @@ function saveSessionAndEnterApp(userObj) {
 
     // TERAPKAN RBAC DAN AUTO-FILTER DROPDOWN SEKETIKA
     applyRoleAccessControl();
-    if (typeof window.populateDropdowns === 'function') {
-        window.populateDropdowns();
+    if (typeof window.populateDropdowns === 'function') 
+        window.populateDropdowns = function() {
+    var user = (window.appState && window.appState.currentUser) ? window.appState.currentUser : { role: 'admin' };
+    var role = (user.role || '').toLowerCase();
+    var classes = (window.appState && window.appState.classes) ? window.appState.classes : [];
+    var subjects = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
+
+    // 1. Bersihkan & Normalisasi Ampuan Kelas User (ubah ke array string lowercase)
+    var userKelasArr = [];
+    if (user.kelasAmpuan && user.kelasAmpuan !== 'ALL') {
+        userKelasArr = user.kelasAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
     }
+
+    // 2. Bersihkan & Normalisasi Ampuan Mapel User
+    var userMapelArr = [];
+    if (user.mapelAmpuan && user.mapelAmpuan !== 'ALL') {
+        userMapelArr = user.mapelAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
+    }
+
+    // 3. Filter Kelas yang diizinkan untuk User ini
+    var allowedClasses = classes.filter(function(c) {
+        if (role === 'admin' || role === 'kepsek' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL' || user.kelasAmpuan === '') {
+            return true;
+        }
+        var cId = (c.id || '').toLowerCase();
+        var cName = (c.name || c.nama || '').toLowerCase();
+        
+        // Cek apakah ID kelas atau Nama kelas cocok dengan ampuan guru
+        return userKelasArr.some(function(uk) {
+            return cId === uk || cName === uk || cName.includes(uk) || uk.includes(cName);
+        });
+    });
+
+    // 4. Filter Mapel yang diizinkan untuk User ini
+    var allowedSubjects = subjects.filter(function(s) {
+        if (role === 'admin' || role === 'kepsek' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL' || user.mapelAmpuan === '') {
+            return true;
+        }
+        var sId = (s.id || '').toLowerCase();
+        var sName = (s.name || s.nama || '').toLowerCase();
+        
+        return userMapelArr.some(function(um) {
+            return sId === um || sName === um || sName.includes(um) || um.includes(sName);
+        });
+    });
+
+    // 5. Terapkan ke semua elemen dropdown di aplikasi
+    fillSelectOptions('presensi-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
+    fillSelectOptions('presensi-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
+    fillSelectOptions('jurnal-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
+    fillSelectOptions('jurnal-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
+    fillSelectOptions('filter-rekap-kelas', allowedClasses, 'Semua Kelas', true);
+    fillSelectOptions('filter-eval-kelas', allowedClasses, 'Semua Kelas', true);
+    fillSelectOptions('master-siswa-filter-kelas', classes, 'Semua Kelas', true);
+};
 
     // Auto-Landing Page berdasarkan Role
     var userRole = (userObj.role || '').toLowerCase();
