@@ -2,7 +2,7 @@
 // CONFIGURATIONS & HYBRID STORAGE CONNECTOR - SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
-// 1. Inisialisasi State Aplikasi Global (Sertakan Admin Default)
+// 1. Inisialisasi State Aplikasi Global
 window.appState = {
     currentUser: null,
     users: [
@@ -38,66 +38,52 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 }
 
 // ==========================================================================
-// 3. FUNGSI PENANGANAN SESI LOGIN & MEMUNCULKAN NAVBAR & DASHBOARD
+// 3. FUNGSI PENANGANAN SESI LOGIN & MEMUNCULKAN DASHBOARD
 // ==========================================================================
 window.checkUserSession = function() {
     var loginSection = document.getElementById('screen-login') || document.getElementById('loginSection');
     var mainDashboard = document.getElementById('screen-app') || document.getElementById('mainDashboard');
-    var sidebarNav = document.getElementById('sidebar-nav');
 
     var nameElem = document.getElementById('user-display-name');
     var roleElem = document.getElementById('user-display-role');
 
     if (window.appState && window.appState.currentUser) {
-        // Sesi Aktif: Sembunyikan Layar Login
+        // Sesi Aktif: Sembunyikan Layar Login, Tampilkan Layar Utama
         if (loginSection) {
-            loginSection.style.setProperty('display', 'none', 'important');
+            loginSection.style.display = 'none';
             loginSection.classList.add('hidden');
         }
         
-        // Tampilkan Dashboard Utama
         if (mainDashboard) {
-            mainDashboard.style.setProperty('display', 'flex', 'important');
+            mainDashboard.style.display = 'flex';
             mainDashboard.classList.remove('hidden');
-            mainDashboard.classList.add('flex');
-        }
-
-        // PAKSA NAVBAR / SIDEBAR MUNCUL DI LAYAR
-        if (sidebarNav) {
-            sidebarNav.classList.remove('hidden');
-            sidebarNav.classList.add('flex');
-            sidebarNav.style.setProperty('display', 'flex', 'important');
         }
 
         // Perbarui Nama & Role User di Sidebar
         if (nameElem) nameElem.textContent = window.appState.currentUser.nama || window.appState.currentUser.username;
         if (roleElem) roleElem.textContent = (window.appState.currentUser.role || 'ADMIN').toUpperCase();
         
-        // Aktifkan Tab Presensi Otomatis
+        // Buka Modul Presensi
         if (typeof window.switchTab === 'function') {
             window.switchTab(null, window.currentActiveTab || 'presensi');
         }
 
         console.log("✓ Sesi login aktif untuk:", window.appState.currentUser.username || window.appState.currentUser.nama);
     } else {
-        // Sesi Belum Ada: Tampilkan Layar Login, Sembunyikan Dashboard & Sidebar
+        // Sesi Belum Ada: Tampilkan Layar Login
         if (loginSection) {
-            loginSection.style.setProperty('display', 'flex', 'important');
+            loginSection.style.display = 'flex';
             loginSection.classList.remove('hidden');
         }
         if (mainDashboard) {
-            mainDashboard.style.setProperty('display', 'none', 'important');
+            mainDashboard.style.display = 'none';
             mainDashboard.classList.add('hidden');
-        }
-        if (sidebarNav) {
-            sidebarNav.style.setProperty('display', 'none', 'important');
-            sidebarNav.classList.add('hidden');
         }
     }
 };
 
 // ==========================================================================
-// 4. FUNGSI SIMPAN TERPISAH (PER CABANG DATA)
+// 4. FUNGSI SIMPAN DATA LOKAL & FIREBASE
 // ==========================================================================
 function updateLocalBackup() {
     try {
