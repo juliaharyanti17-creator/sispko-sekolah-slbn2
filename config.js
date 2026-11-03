@@ -2,7 +2,7 @@
 // CONFIGURATIONS & HYBRID STORAGE CONNECTOR - SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
-// 1. Inisialisasi State Aplikasi Global (Sertakan Admin Default)
+// 1. Inisialisasi State Aplikasi Global
 window.appState = {
     currentUser: null,
     users: [
@@ -38,15 +38,19 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 }
 
 // ==========================================================================
-// 3. FUNGSI PENANGANAN SESI LOGIN & TAMPILAN (DENGAN ID SCREEN-LOGIN & SCREEN-APP)
+// 3. FUNGSI PENANGANAN SESI LOGIN & TAMPILAN (COCOK DENGAN INDEX.HTML)
 // ==========================================================================
 window.checkUserSession = function() {
-    // Tangkap elemen sesuai ID utama di index.html (screen-login & screen-app)
+    // Tangkap elemen layar sesuai ID yang ada di index.html
     var loginSection = document.getElementById('screen-login') || document.getElementById('loginSection');
     var mainDashboard = document.getElementById('screen-app') || document.getElementById('mainDashboard');
 
+    // Tangkap elemen profil pengguna di sidebar
+    var nameElem = document.getElementById('user-display-name');
+    var roleElem = document.getElementById('user-display-role');
+
     if (window.appState && window.appState.currentUser) {
-        // Sesi Aktif: Sembunyikan Layar Login, Tampilkan Layar Aplikasi Utama
+        // Sesi Aktif: Sembunyikan Layar Login, Tampilkan Dashboard Utama
         if (loginSection) {
             loginSection.style.setProperty('display', 'none', 'important');
             loginSection.classList.add('hidden');
@@ -54,10 +58,16 @@ window.checkUserSession = function() {
         if (mainDashboard) {
             mainDashboard.style.setProperty('display', 'flex', 'important');
             mainDashboard.classList.remove('hidden');
+            mainDashboard.classList.add('flex');
         }
+
+        // Tampilkan Nama & Role Pengguna di Sidebar
+        if (nameElem) nameElem.textContent = window.appState.currentUser.nama || window.appState.currentUser.username;
+        if (roleElem) roleElem.textContent = (window.appState.currentUser.role || 'ADMIN').toUpperCase();
+        
         console.log("✓ Sesi login aktif untuk:", window.appState.currentUser.username || window.appState.currentUser.nama);
     } else {
-        // Sesi Belum Ada: Tampilkan Layar Login, Sembunyikan Layar Aplikasi Utama
+        // Sesi Belum Ada: Tampilkan Layar Login, Sembunyikan Dashboard
         if (loginSection) {
             loginSection.style.setProperty('display', 'flex', 'important');
             loginSection.classList.remove('hidden');
@@ -69,7 +79,6 @@ window.checkUserSession = function() {
     }
 };
 
-
 // ==========================================================================
 // 4. FUNGSI SIMPAN TERPISAH (PER CABANG DATA)
 // ==========================================================================
@@ -79,63 +88,44 @@ function updateLocalBackup() {
     } catch(e) { console.error("Gagal backup lokal:", e); }
 }
 
-// Simpan KHUSUS Data Murid
 window.saveStudentsData = function() {
     updateLocalBackup();
     if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/students').set(window.appState.students || [])
-            .then(function() { console.log("✓ Data Murid berhasil disimpan ke cabang terpisah."); })
-            .catch(function(err) { console.error("✕ Gagal simpan murid:", err); });
+        firebase.database().ref('simpatik_data/students').set(window.appState.students || []);
     }
 };
 
-// Simpan KHUSUS Data Kelas
 window.saveClassesData = function() {
     updateLocalBackup();
     if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/classes').set(window.appState.classes || [])
-            .then(function() { console.log("✓ Data Kelas berhasil disimpan ke cabang terpisah."); })
-            .catch(function(err) { console.error("✕ Gagal simpan kelas:", err); });
+        firebase.database().ref('simpatik_data/classes').set(window.appState.classes || []);
     }
 };
 
-// Simpan KHUSUS Data Pengguna/Admin
 window.saveUsersData = function() {
     updateLocalBackup();
     if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/users').set(window.appState.users || [])
-            .then(function() { console.log("✓ Data Pengguna berhasil disimpan ke cabang terpisah."); })
-            .catch(function(err) { console.error("✕ Gagal simpan pengguna:", err); });
+        firebase.database().ref('simpatik_data/users').set(window.appState.users || []);
     }
 };
 
-// Simpan KHUSUS Data Jurnal
 window.saveJournalsData = function() {
     updateLocalBackup();
     if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/journals').set(window.appState.journals || [])
-            .then(function() { console.log("✓ Data Jurnal berhasil disimpan ke cabang terpisah."); })
-            .catch(function(err) { console.error("✕ Gagal simpan jurnal:", err); });
+        firebase.database().ref('simpatik_data/journals').set(window.appState.journals || []);
     }
 };
 
-// Simpan KHUSUS Data Presensi
 window.savePresensiData = function() {
     updateLocalBackup();
     if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/presensi').set(window.appState.presensi || [])
-            .then(function() { console.log("✓ Data Presensi berhasil disimpan ke cabang terpisah."); })
-            .catch(function(err) { console.error("✕ Gagal simpan presensi:", err); });
+        firebase.database().ref('simpatik_data/presensi').set(window.appState.presensi || []);
     }
 };
 
-// Fungsi Simpan Master (menyimpan semua sekaligus)
 window.saveAppState = function() {
     updateLocalBackup();
-    if (typeof firebase === 'undefined' || !firebase.apps.length) {
-        console.warn("Firebase offline. Data disimpan di LocalStorage.");
-        return;
-    }
+    if (typeof firebase === 'undefined' || !firebase.apps.length) return;
 
     var dataToSave = {
         users: window.appState.users || [],
@@ -148,26 +138,18 @@ window.saveAppState = function() {
         ketunaanList: window.appState.ketunaanList || []
     };
 
-    firebase.database().ref('simpatik_data').set(dataToSave)
-        .then(function() { console.log("✓ Semua cabang data berhasil disinkronkan."); })
-        .catch(function(err) { console.error("✕ Gagal menyimpan semua data:", err); });
+    firebase.database().ref('simpatik_data').set(dataToSave);
 };
 
 // ==========================================================================
 // 5. FUNGSI MUAT DATA SAAT REFRESH
 // ==========================================================================
 window.loadAppState = function(callback) {
-    // 1. Muat Sesi Login Pengguna dari LocalStorage
     var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
-        try { 
-            window.appState.currentUser = JSON.parse(savedSession); 
-        } catch(e) {
-            console.error("Gagal membaca sesi pengguna:", e);
-        }
+        try { window.appState.currentUser = JSON.parse(savedSession); } catch(e) {}
     }
 
-    // 2. Ambil data instan dari LocalStorage dulu sebagai pertahanan awal
     var localBackup = localStorage.getItem('simpatik_backup_state');
     if (localBackup) {
         try {
@@ -189,7 +171,6 @@ window.loadAppState = function(callback) {
         return;
     }
 
-    // 3. Tarik data terbaru dari Firebase dan perbarui State
     firebase.database().ref('simpatik_data').once('value')
         .then(function(snapshot) {
             var data = snapshot.val();
@@ -204,9 +185,7 @@ window.loadAppState = function(callback) {
                 window.appState.ketunaanList = data.ketunaanList || window.appState.ketunaanList;
                 
                 updateLocalBackup();
-                console.log("✓ Data Firebase berhasil dimuat sepenuhnya.");
             } else {
-                console.warn("! Database Firebase kosong. Menyimpan data awal.");
                 window.saveAppState();
             }
 
@@ -214,14 +193,13 @@ window.loadAppState = function(callback) {
             if (callback) callback();
         })
         .catch(function(err) {
-            console.error("✕ Gagal mengambil data Firebase:", err);
             triggerUIRender();
             if (callback) callback();
         });
 };
 
 function triggerUIRender() {
-    window.checkUserSession(); // Auto-login / pertahankan sesi aktif saat refresh
+    window.checkUserSession();
     if (typeof renderAllMasterData === 'function') renderAllMasterData();
     if (typeof renderJurnalList === 'function') renderJurnalList();
     if (typeof renderPresensiForm === 'function') renderPresensiForm();
