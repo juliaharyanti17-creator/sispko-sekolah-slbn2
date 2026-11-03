@@ -1,6 +1,5 @@
 // ==========================================================================
 // Modul Jurnal Mengajar & Supervisi Guru SLBN 2 PELAIHARI
-// Version: Role-Based Access Control (RBAC) & Dynamic Supervision Handler
 // ==========================================================================
 
 function renderJurnalList() {
@@ -14,24 +13,20 @@ function renderJurnalList() {
         return;
     }
 
-    // Ambil data user aktif saat ini
     var currentUser = appState.currentUser || { role: 'admin', nama: '' };
-    var currentRole = currentUser.role || 'admin';
+    var currentRole = (currentUser.role || 'admin').toLowerCase();
     var currentNama = (currentUser.nama || currentUser.username || '').toLowerCase();
 
-    // FILTER HAK AKSES: Jika Guru/WaliKelas, HANYA tampilkan jurnal milik akunnya sendiri
+    // FILTER HAK AKSES: Guru hanya melihat jurnal buatannya sendiri, Kepsek/Admin melihat semuanya
     var filteredJournals = journals.filter(function(j) {
         if (!j) return false;
-        if (currentRole === 'admin' || currentRole === 'kepsek') {
-            return true; // Admin & Kepsek dapat melihat SELURUH jurnal guru
-        }
-        // Guru hanya dapat melihat jurnal miliknya sendiri
+        if (currentRole === 'admin' || currentRole === 'kepsek') return true;
         var namaGuruJurnal = (j.guru || '').toLowerCase();
         return namaGuruJurnal.includes(currentNama) || currentNama.includes(namaGuruJurnal);
     });
 
     if (filteredJournals.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400 font-medium">Anda belum memiliki riwayat jurnal mengajar terdaftar.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400 font-medium">Anda belum memiliki riwayat jurnal mengajar.</td></tr>';
         return;
     }
 
@@ -49,7 +44,6 @@ function renderJurnalList() {
             if (p.length === 3) tglFormatted = p[2] + '/' + p[1] + '/' + p[0];
         }
 
-        // Render Tombol PDF Modul Ajar & Link Video Drive
         var btnPdf = j.lampiranFile 
             ? '<a href="' + j.lampiranFile + '" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg font-bold text-[10px] hover:bg-rose-100 transition" title="Buka PDF"><i class="fa-solid fa-file-pdf"></i> PDF</a>' 
             : '<span class="text-slate-300">-</span>';
@@ -58,20 +52,15 @@ function renderJurnalList() {
             ? '<a href="' + j.linkVideo + '" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-[10px] hover:bg-emerald-100 transition" title="Buka Video Drive"><i class="fa-brands fa-google-drive"></i> Video</a>' 
             : '<span class="text-slate-300">-</span>';
 
-        // Render Status Supervisi Kepsek
         var statusSupervisi = j.supervisi 
             ? '<button type="button" onclick="showHasilSupervisi(' + realIndex + ')" class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px] cursor-pointer" title="Lihat Catatan Kepsek"><i class="fa-solid fa-circle-check"></i> Sudah Disupervisi</button>' 
             : '<span class="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-semibold text-[10px]">Belum Disupervisi</span>';
 
-        // --- HAK AKSES TOMBOL AKSI ---
         var actionButtons = '';
-
-        // 1. Aksi Supervisi: HANYA untuk Kepsek & Admin
         if (currentRole === 'kepsek' || currentRole === 'admin') {
             actionButtons += '<button type="button" onclick="openModalSupervisi(' + realIndex + ')" class="text-indigo-600 hover:text-indigo-800 p-1.5 rounded-lg hover:bg-indigo-50 transition cursor-pointer" title="Beri Supervisi"><i class="fa-solid fa-clipboard-check"></i> Supervisi</button> ';
         }
 
-        // 2. Aksi Hapus: HANYA untuk Admin
         if (currentRole === 'admin') {
             actionButtons += '<button type="button" onclick="handleDeleteJurnal(' + realIndex + ')" class="text-rose-600 hover:text-rose-800 p-1.5 rounded-lg hover:bg-rose-50 transition cursor-pointer" title="Hapus Jurnal"><i class="fa-solid fa-trash"></i></button>';
         }
@@ -149,6 +138,7 @@ async function handleSaveJurnal(e) {
     appState.journals.push(newJurnal);
 
     if (typeof saveAppState === 'function') saveAppState();
+    if (typeof saveJournalsData === 'function') saveJournalsData();
 
     if (materiInput) materiInput.value = '';
     if (filePdfInput) filePdfInput.value = '';
@@ -160,26 +150,23 @@ async function handleSaveJurnal(e) {
 }
 
 function handleDeleteJurnal(index) {
-    if (typeof index !== 'number' || index < 0 || !appState.journals || !appState.journals[index]) {
-        alert("Gagal menghapus: Data jurnal tidak ditemukan.");
-        return;
-    }
+    if (typeof index !== 'number' || index < 0 || !appState.journals || !appState.journals[index]) return;
 
-    // PERIKSA ROLE AKUN LOGIN: HANYA ADMIN YANG DAPAT MENGHAPUS
-    var currentRole = appState.currentUser ? appState.currentUser.role : '';
+    var currentRole = appState.currentUser ? (appState.currentUser.role || '').toLowerCase() : '';
     if (currentRole !== 'admin') {
-        alert("Akses Ditolak: Hanya Administrator yang berhak menghapus data jurnal mengajar.");
+        alert("Akses Ditolak: Hanya Administrator yang berhak menghapus jurnal.");
         return;
     }
 
-    if (!confirm("Apakah Anda yakin ingin menghapus catatan jurnal ini secara permanen?")) return;
+    if (!confirm("Apakah Anda yakin ingin menghapus catatan jurnal ini?")) return;
 
     appState.journals.splice(index, 1);
     if (typeof saveAppState === 'function') saveAppState();
+    if (typeof saveJournalsData === 'function') saveJournalsData();
     
     renderJurnalList();
     if (typeof renderEvaluasiSupervisiDashboard === 'function') renderEvaluasiSupervisiDashboard();
-    if (typeof showToast === 'function') showToast("Catatan jurnal berhasil dihapus oleh Admin!");
+    if (typeof showToast === 'function') showToast("Jurnal berhasil dihapus.");
 }
 
 function openModalSupervisi(index) {
@@ -230,11 +217,12 @@ function handleSaveSupervisi(e) {
     };
 
     if (typeof saveAppState === 'function') saveAppState();
+    if (typeof saveJournalsData === 'function') saveJournalsData();
     closeModalSupervisi();
     
     renderJurnalList();
     if (typeof renderEvaluasiSupervisiDashboard === 'function') renderEvaluasiSupervisiDashboard();
-    if (typeof showToast === 'function') showToast("Hasil supervisi Kepala Sekolah berhasil disimpan!");
+    if (typeof showToast === 'function') showToast("Supervisi Kepala Sekolah berhasil disimpan!");
 }
 
 function showHasilSupervisi(index) {
@@ -246,8 +234,8 @@ function showHasilSupervisi(index) {
         "--- HASIL SUPERVISI AKADEMIK ---\n" +
         "Evaluator: " + sup.evaluator + "\n" +
         "Tanggal: " + sup.tanggalSupervisi + "\n" +
-        "Penilaian Pendekatan Media: " + sup.penilaianMedia + "\n\n" +
-        "Catatan & Pembinaan Kepala Sekolah:\n\"" + sup.catatanKepsek + "\""
+        "Penilaian Media: " + sup.penilaianMedia + "\n\n" +
+        "Catatan Pembinaan Ibu Kepsek:\n\"" + sup.catatanKepsek + "\""
     );
 }
 
