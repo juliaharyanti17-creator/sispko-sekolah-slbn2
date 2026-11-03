@@ -117,13 +117,11 @@ function forceResetSession() {
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-200 transition duration-200 cursor-pointer flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i> Masuk Aplikasi
-                </button>
+                <button type="button" onclick="doLogin(event)">➔] Masuk Aplikasi</button>
 
-                <button type="button" onclick="forceResetSession()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer mt-2">
-                    <i class="fa-solid fa-rotate-right"></i> Reset Sesi & Masuk Paksa
-                </button>
+
+                <button type="button" onclick="forceLoginAdmin()">🔄 Reset Sesi & Masuk Paksa</button>
+
             </form>
         </div>
     </div>
