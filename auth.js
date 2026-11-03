@@ -136,54 +136,53 @@ function saveSessionAndEnterApp(userObj) {
     if (typeof showToast === 'function') showToast("Selamat datang, " + (userObj.nama || userObj.username) + "!");
 }
 
-// --- 3. LOGIKA HAK AKSES ROLE MENU (RBAC) ---
+// ==========================================================================
+// LOGIKA HAK AKSES ROLE MENU (RBAC FINAL - SIMPATIK SLBN 2 PELAIHARI)
+// ==========================================================================
 function applyRoleAccessControl() {
     var currentUser = window.appState && window.appState.currentUser ? window.appState.currentUser : null;
     if (!currentUser) return;
 
     var role = (currentUser.role || '').toLowerCase();
 
-    // Ambil semua tombol navigasi di dalam tag aside/sidebar
-    var sidebarNav = document.getElementById('sidebar-nav') || document.querySelector('aside');
-    if (!sidebarNav) return;
+    var btnPresensi = document.getElementById('tab-btn-presensi');
+    var btnJurnal = document.getElementById('tab-btn-jurnal');
+    var btnRekap = document.getElementById('tab-btn-rekap');
+    var btnEvaluasi = document.getElementById('tab-btn-evaluasi');
+    var btnMaster = document.getElementById('tab-btn-master');
 
-    var navButtons = sidebarNav.querySelectorAll('nav button, nav div');
+    // Helper untuk menampilkan/menyembunyikan elemen menu beserta pembungkusnya
+    function setVisibility(elem, isVisible) {
+        if (!elem) return;
+        // Jika elemen evaluasi (dropdown), targetkan elemen pembungkusnya agar submenu ikut tersembunyi
+        var target = (elem.id === 'tab-btn-evaluasi' && elem.parentElement) ? elem.parentElement : elem;
+        target.style.display = isVisible ? '' : 'none';
+    }
 
-    navButtons.forEach(function(el) {
-        var text = (el.innerText || '').toLowerCase();
-        var onclickAttr = (el.getAttribute('onclick') || '').toLowerCase();
+    // 1. Reset: Tampilkan semua menu terlebih dahulu
+    setVisibility(btnPresensi, true);
+    setVisibility(btnJurnal, true);
+    setVisibility(btnRekap, true);
+    setVisibility(btnEvaluasi, true);
+    setVisibility(btnMaster, true);
 
-        var isPresensi = onclickAttr.includes('presensi') || text.includes('presensi');
-        var isJurnal = onclickAttr.includes('jurnal') || text.includes('jurnal');
-        var isRekap = onclickAttr.includes('rekap') || text.includes('rekap');
-        var isEvaluasi = onclickAttr.includes('evaluasi') || text.includes('evaluasi');
-        var isMaster = onclickAttr.includes('master') || text.includes('data master');
-
-        // Jika ini adalah tombol menu utama
-        if (isPresensi || isJurnal || isRekap || isEvaluasi || isMaster) {
-            // Tampilkan kembali secara default
-            el.style.display = '';
-
-            if (role === 'admin') {
-                // Admin: Buka semua
-                el.style.display = '';
-            } 
-            else if (role === 'kepsek') {
-                // Kepala Sekolah: Sembunyikan Presensi, Jurnal, & Data Master
-                if (isPresensi || isJurnal || isMaster) {
-                    el.style.display = 'none';
-                }
-            } 
-            else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
-                // Guru & Wali Kelas: Sembunyikan Evaluasi Kepsek & Data Master
-                if (isEvaluasi || isMaster) {
-                    el.style.display = 'none';
-                }
-            }
-        }
-    });
-}
-// --- 4. HELPER DROPDOWN AUTO-FILTER BERDASARKAN AMPUAN ---
+    // 2. Terapkan Pembatasan Berdasarkan Role
+    if (role === 'admin') {
+        // Administrator: Akses penuh ke seluruh menu (Tidak ada yang disembunyikan)
+        return;
+    } 
+    else if (role === 'kepsek' || role === 'kepala sekolah') {
+        // Kepala Sekolah: Hanya Rekap Laporan & Evaluasi Kepsek
+        setVisibility(btnPresensi, false);
+        setVisibility(btnJurnal, false);
+        setVisibility(btnMaster, false);
+    } 
+    else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
+        // Wali Kelas & Guru Mapel: Presensi, Jurnal, & Rekap Laporan
+        setVisibility(btnEvaluasi, false);
+        setVisibility(btnMaster, false);
+    }
+}// --- 4. HELPER DROPDOWN AUTO-FILTER BERDASARKAN AMPUAN ---
 window.populateDropdowns = function() {
     var user = (window.appState && window.appState.currentUser) ? window.appState.currentUser : { role: 'admin' };
     var role = (user.role || '').toLowerCase();
