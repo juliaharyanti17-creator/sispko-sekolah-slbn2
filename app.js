@@ -273,45 +273,32 @@ function resetForm(formId) {
     if (form) form.reset();
 }
 
-// ==========================================================================
-// GLOBAL CLEANER AGRESIF UNTUK KELAS (C_...) & MAPEL (M_...)
-// ==========================================================================
-document.addEventListener("DOMContentLoaded", function() {
-    setInterval(function() {
-        if (!window.appState) return;
-        
-        // Targetkan semua elemen teks yang mungkin menampilkan ID mentah
-        var elements = document.querySelectorAll('td, span, div, p, th, strong, b, small');
-        
-        elements.forEach(function(el) {
-            // Periksa teks langsung atau jika elemen tidak memiliki struktur yang terlalu rumit
-            var text = el.innerText ? el.innerText.trim() : '';
-            
-            if (!text) return;
+window.getClassName = function(classIdOrName) {
+    if (!classIdOrName) return '-';
+    
+    var valStr = String(classIdOrName).trim();
+    var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
+    
+    // Cari berdasarkan kecocokan ID atau nama
+    var found = classesList.find(function(c) {
+        var cId = String(c.id || '').trim();
+        var cName = String(c.name || c.nama || c.namaKelas || '').trim();
+        return cId === valStr || cName.toLowerCase() === valStr.toLowerCase();
+    });
 
-            // 1. Tangani ID Kelas yang berawalan 'c_'
-            if (text.startsWith('c_') && text.length > 5) {
-                if (typeof getClassName === 'function') {
-                    var namaKelas = getClassName(text);
-                    if (namaKelas && namaKelas !== text) {
-                        el.innerText = namaKelas;
-                        el.style.fontWeight = 'bold';
-                        el.style.color = '#4338ca';
-                    }
-                }
-            }
-            
-            // 2. Tangani ID Mata Pelajaran yang berawalan 'm_'
-            if (text.startsWith('m_') && text.length > 5) {
-                if (typeof getSubjectName === 'function') {
-                    var namaMapel = getSubjectName(text);
-                    if (namaMapel && namaMapel !== text) {
-                        el.innerText = namaMapel;
-                        el.style.fontWeight = 'bold';
-                        el.style.color = '#0d9488';
-                    }
-                }
-            }
-        });
-    }, 500); // Berjalan lebih cepat setiap 0.5 detik
-});
+    if (found) {
+        // Prioritaskan properti 'name' sesuai struktur data Anda
+        return found.name || found.nama || found.namaKelas || valStr;
+    }
+
+    // Jika berbentuk kode c_... tapi tidak ketemu di array, kembalikan string aslinya atau fallback
+    if (valStr.startsWith('c_') && classesList.length > 0) {
+        // Coba cari apakah ada kelas yang ID-nya mirip
+        var partial = classesList.find(function(c) { return String(c.id).includes(valStr) || valStr.includes(String(c.id)); });
+        if (partial) {
+            return partial.name || partial.nama || partial.namaKelas;
+        }
+    }
+
+    return valStr;
+};
