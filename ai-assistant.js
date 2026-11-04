@@ -143,7 +143,7 @@ window.handleSendAIPrompt = async function(e) {
     var loadingId = appendChatMessage('ai', '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menjawab...');
 
     try {
-        var isDataRequired = /murid|siswa|absen|presensi|alpa|sakit|izin|laporan|rekapan|cetak|jumlah|total|guru|kelas|rombel|rombongan/i.test(userPrompt);
+        var isDataRequired = /murid|siswa|absen|presensi|alpa|sakit|izin|laporan|rekapan|cetak|jumlah|total|guru|kelas|rombel|rombongan|kepala sekolah|kepsek/i.test(userPrompt);
         var promptText = "";
 
         if (isDataRequired) {
@@ -160,6 +160,8 @@ window.handleSendAIPrompt = async function(e) {
                 : [];
 
             var contextData = {
+                nama_kepala_sekolah: "Maisyanti Disi Fatimah, S.Pd.I., M.Pd",
+                nip_kepala_sekolah: "198305142006042018",
                 jumlah_murid_terdaftar: validStudents.length,
                 jumlah_guru_terdaftar: validUsers.length,
                 jumlah_kelas_rombel: validClasses.length,
@@ -170,15 +172,16 @@ window.handleSendAIPrompt = async function(e) {
             };
 
             promptText = "ATURAN MUTLAK SIMPATIK AI (SLBN 2 Pelaihari):\n" +
-                "1. ABAIKAN semua ingatan, cache, atau riwayat angka masa lalu (seperti 12 rombel, 108/118/84 murid/siswa).\n" +
-                "2. Gunakan HANYA Data Realtime berikut ini untuk menjawab pertanyaannya:\n\n" +
+                "1. ABAIKAN semua ingatan, cache, atau riwayat nama kepala sekolah lama.\n" +
+                "2. Nama Kepala Sekolah SLBN 2 Pelaihari yang SAH dan TERBARU adalah: Maisyanti Disi Fatimah, S.Pd.I., M.Pd (NIP. 198305142006042018)[span_1](start_span)[span_1](end_span).\n" +
+                "3. Gunakan HANYA Data Realtime berikut ini untuk menjawab pertanyaannya:\n\n" +
                 "DATA REALTIME SAAT INI:\n" + JSON.stringify(contextData) + "\n\n" +
                 "PENTING:\n" +
                 "- Jika jumlah_kelas_rombel bernilai 0, Anda WAJIB menjawab bahwa saat ini BELUM ADA kelas/rombongan belajar yang terdaftar di database.\n" +
                 "- Jika jumlah_murid_terdaftar bernilai 0, Anda WAJIB menjawab bahwa saat ini BELUM ADA data murid yang terdaftar di database.\n\n" +
                 "Pertanyaan Pengguna: " + userPrompt;
         } else {
-            promptText = "Anda SIMPATIK AI (SLBN 2 Pelaihari). Jawab ramah dan sangat singkat (1-2 kalimat).\nTanya: " + userPrompt;
+            promptText = "Anda SIMPATIK AI (SLBN 2 Pelaihari). Kepala Sekolah saat ini adalah Maisyanti Disi Fatimah, S.Pd.I., M.Pd[span_2](start_span)[span_2](end_span). Jawab ramah dan sangat singkat (1-2 kalimat).\nTanya: " + userPrompt;
         }
 
         var response = await fetch(VERCEL_BACKEND_URL, {
