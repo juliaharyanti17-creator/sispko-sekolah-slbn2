@@ -273,28 +273,38 @@ function resetForm(formId) {
     if (form) form.reset();
 }
 
-
 // ==========================================================================
-// PENGAMAT MENYELURUH (GLOBAL CLEANER) UNTUK SEMUA KODE KELAS C_...
+// PENGAMAT MENYELURUH (GLOBAL CLEANER) UNTUK KELAS (C_...) & MAPEL (M_...)
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", function() {
     setInterval(function() {
-        if (!window.appState || !window.appState.classes) return;
+        if (!window.appState) return;
         
-        // Memindai seluruh elemen teks di dokumen (td, span, div, p, dll)
         var allElements = document.querySelectorAll('td, span, div, p, th');
         allElements.forEach(function(el) {
-            // Pastikan hanya elemen yang tidak punya anak elemen kompleks (leaf node) agar aman
             if (el.children.length === 0) {
                 var text = el.innerText.trim();
-                // Jika teks berawalan 'c_' diikuti angka (ID kelas)
+                
+                // 1. Cek dan ubah jika berupa ID Kelas (berawalan 'c_')
                 if (text.startsWith('c_') && text.length > 10) {
                     if (typeof getClassName === 'function') {
-                        var namaAsli = getClassName(text);
-                        if (namaAsli && namaAsli !== text) {
-                            el.innerText = namaAsli;
+                        var namaKelas = getClassName(text);
+                        if (namaKelas && namaKelas !== text) {
+                            el.innerText = namaKelas;
                             el.style.fontWeight = 'bold';
-                            el.style.color = '#4338ca'; // Memberikan warna agar elegan
+                            el.style.color = '#4338ca'; // Warna indigo
+                        }
+                    }
+                }
+                
+                // 2. Cek dan ubah jika berupa ID Mata Pelajaran (berawalan 'm_')
+                if (text.startsWith('m_') && text.length > 10) {
+                    if (typeof getSubjectName === 'function') {
+                        var namaMapel = getSubjectName(text);
+                        if (namaMapel && namaMapel !== text) {
+                            el.innerText = namaMapel;
+                            el.style.fontWeight = 'semibold';
+                            el.style.color = '#0d9488'; // Warna teal untuk mapel
                         }
                     }
                 }
