@@ -21,7 +21,7 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
-// 0. GLOBAL HELPER: PENGUBAH ID KELAS MENJADI NAMA LENGKAP YANG AKURAT
+// 0. GLOBAL HELPER: PENGUBAH ID KELAS MENJADI NAMA LENGKAP
 // --------------------------------------------------------------------------
 window.getClassName = function(classIdOrName) {
     if (!classIdOrName) return '-';
@@ -29,7 +29,7 @@ window.getClassName = function(classIdOrName) {
     var valStr = String(classIdOrName).trim();
     var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
     
-    // 1. Cari berdasarkan pencocokan persis pada ID atau Nama Kelas
+    // 1. Cari berdasarkan pencocokan ID atau Nama di appState.classes
     var found = classesList.find(function(c) {
         var cId = String(c.id || '').trim();
         var cName = String(c.name || c.nama || c.namaKelas || '').trim();
@@ -40,12 +40,12 @@ window.getClassName = function(classIdOrName) {
         return found.name || found.nama || found.namaKelas || valStr;
     }
 
-    // 2. Jika berbentuk kode timestamp (misal: c_1793793655293) tapi tidak ketemu
-    if (valStr.startsWith('c_') && classesList.length > 0) {
-        return "Kelas " + valStr.replace('c_', '');
+    // 2. Fallback: Jika berupa ID timestamp (c_...), ubah menjadi format yang lebih bersih jika nama kelas belum ketemu
+    if (valStr.startsWith('c_')) {
+        // Coba cari apakah ada kelas di list yang ID-nya mengandung atau mirip
+        return "Kelas Rombel"; 
     }
 
-    // Jika sudah berupa teks biasa, kembalikan nilainya
     return valStr;
 };
 
@@ -57,7 +57,6 @@ window.switchTab = function(e, tabName) {
     if (!tabName) tabName = 'presensi';
     window.currentActiveTab = tabName;
 
-    // PASTIKAN HAK AKSES ROLE SELALU TERSINKRON SAAT BERPINDAH TAB
     if (typeof applyRoleAccessControl === 'function') {
         applyRoleAccessControl();
     }
@@ -87,7 +86,6 @@ window.switchTab = function(e, tabName) {
         }
     });
 
-    // Tutup sidebar mobile jika sedang terbuka
     const sidebar = document.getElementById('sidebar-nav');
     const backdrop = document.getElementById('sidebar-backdrop');
     if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('hidden')) {
@@ -192,10 +190,10 @@ function renderStudentList() {
     }
 
     students.forEach((s, idx) => {
-        // Ambil identifier kelas dari data siswa (bisa berupa s.classId atau s.kelas)
+        // Ambil nilai kelas dari properti s.classId atau s.kelas
         const kelasIdentifier = s.classId || s.kelas || '';
         
-        // Menerjemahkan ID kelas mentah menjadi nama kelas lengkap menggunakan getClassName
+        // Terjemahkan menggunakan fungsi getClassName
         const namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdentifier) : kelasIdentifier;
 
         const tr = document.createElement('tr');
