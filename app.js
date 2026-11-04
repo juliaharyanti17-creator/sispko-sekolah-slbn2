@@ -21,7 +21,7 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
-// 0. GLOBAL HELPER: PENGUBAH ID KELAS MENJADI NAMA LENGKAP
+// 0. GLOBAL HELPER: PENGUBAH ID KELAS & MAPEL MENJADI NAMA LENGKAP
 // --------------------------------------------------------------------------
 window.getClassName = function(classIdOrName) {
     if (!classIdOrName) return '-';
@@ -29,28 +29,45 @@ window.getClassName = function(classIdOrName) {
     var valStr = String(classIdOrName).trim();
     var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
     
-    // Cari kelas yang ID-nya sama ATAU mengandung teks yang sama
     var found = classesList.find(function(c) {
         var cId = String(c.id || '').trim();
         var cName = String(c.name || c.nama || c.namaKelas || '').trim();
-        return cId === valStr || cName.toLowerCase() === valStr.toLowerCase() || valStr.includes(cId);
+        return cId === valStr || cName.toLowerCase() === valStr.toLowerCase();
     });
 
     if (found) {
-        return found.name || found.nama || found.namaKelas;
+        return found.name || found.nama || found.namaKelas || valStr;
     }
 
-    // Jika masih berupa kode c_... dan tidak ketemu di array, cek apakah ada kelas pertama yang bisa dijadikan label
-    if (valStr.startsWith('c_')) {
-        if (classesList.length > 0) {
-            // Ambil nama dari kelas pertama yang tersedia sebagai fallback agar tidak tampil kode angka
-            return classesList[0].name || classesList[0].nama || classesList[0].namaKelas || "Kelas Utama";
+    if (valStr.startsWith('c_') && classesList.length > 0) {
+        var partial = classesList.find(function(c) { return String(c.id).includes(valStr) || valStr.includes(String(c.id)); });
+        if (partial) {
+            return partial.name || partial.nama || partial.namaKelas;
         }
-        return "Kelas Terdaftar";
     }
 
     return valStr;
 };
+
+window.getSubjectName = function(subjectIdOrName) {
+    if (!subjectIdOrName) return '-';
+    
+    var valStr = String(subjectIdOrName).trim();
+    var subjectsList = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
+    
+    var found = subjectsList.find(function(s) {
+        var sId = String(s.id || '').trim();
+        var sName = String(s.name || s.nama || '').trim();
+        return sId === valStr || sName.toLowerCase() === valStr.toLowerCase();
+    });
+
+    if (found) {
+        return found.name || found.nama || valStr;
+    }
+
+    return valStr;
+};
+
 // --------------------------------------------------------------------------
 // 1. SISTEM PERUBAHAN TAB & KONTEN HALAMAN
 // --------------------------------------------------------------------------
@@ -192,10 +209,7 @@ function renderStudentList() {
     }
 
     students.forEach((s, idx) => {
-        // Ambil nilai kelas dari properti s.classId atau s.kelas
         const kelasIdentifier = s.classId || s.kelas || '';
-        
-        // Terjemahkan menggunakan fungsi getClassName
         const namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdentifier) : kelasIdentifier;
 
         const tr = document.createElement('tr');
@@ -273,32 +287,42 @@ function resetForm(formId) {
     if (form) form.reset();
 }
 
-window.getClassName = function(classIdOrName) {
-    if (!classIdOrName) return '-';
-    
-    var valStr = String(classIdOrName).trim();
-    var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
-    
-    // Cari berdasarkan kecocokan ID atau nama
-    var found = classesList.find(function(c) {
-        var cId = String(c.id || '').trim();
-        var cName = String(c.name || c.nama || c.namaKelas || '').trim();
-        return cId === valStr || cName.toLowerCase() === valStr.toLowerCase();
-    });
+// --------------------------------------------------------------------------
+// 4. GLOBAL CLEANER AGGRESSIVE (PEMBERSIH OTOMATIS C_... & M_...)
+// --------------------------------------------------------------------------
+document.addEventListener("DOMContentLoaded", function() {
+    setInterval(function() {
+        if (!window.appState) return;
+        
+        var elements = document.querySelectorAll('td, span, div, p, th, strong, b, small');
+        
+        elements.forEach(function(el) {
+            var text = el.innerText ? el.innerText.trim() : '';
+            if (!text) return;
 
-    if (found) {
-        // Prioritaskan properti 'name' sesuai struktur data Anda
-        return found.name || found.nama || found.namaKelas || valStr;
-    }
-
-    // Jika berbentuk kode c_... tapi tidak ketemu di array, kembalikan string aslinya atau fallback
-    if (valStr.startsWith('c_') && classesList.length > 0) {
-        // Coba cari apakah ada kelas yang ID-nya mirip
-        var partial = classesList.find(function(c) { return String(c.id).includes(valStr) || valStr.includes(String(c.id)); });
-        if (partial) {
-            return partial.name || partial.nama || partial.namaKelas;
-        }
-    }
-
-    return valStr;
-};
+            // Terjemahkan ID Kelas (c_...)
+            if (text.startsWith('c_') && text.length > 5) {
+                if (typeof getClassName === 'function') {
+                    var namaKelas = getClassName(text);
+                    if (namaKelas && namaKelas !== text) {
+                        el.innerText = namaKelas;
+                        el.style.fontWeight = 'bold';
+                        el.style.color = '#4338ca';
+                    }
+                }
+            }
+            
+            // Terjemahkan ID Mata Pelajaran (m_...)
+            if (text.startsWith('m_') && text.length > 5) {
+                if (typeof getSubjectName === 'function') {
+                    var namaMapel = getSubjectName(text);
+                    if (namaMapel && namaMapel !== text) {
+                        el.innerText = namaMapel;
+                        el.style.fontWeight = 'bold';
+                        el.style.color = '#0d9488';
+                    }
+                }
+            }
+        });
+    }, 500);
+});
