@@ -163,9 +163,9 @@ function renderStudentList() {
     }
 
     students.forEach((s, idx) => {
-        // Menerjemahkan kode/ID kelas menjadi nama kelas lengkap menggunakan getClassName
-        const kelasIdOrName = s.classId || s.kelas || '';
-        const namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdOrName) : kelasIdOrName;
+        // Menerjemahkan kode/ID kelas menjadi nama kelas lengkap menggunakan fungsi getClassName()
+        const kelasIdentifier = s.classId || s.kelas || '';
+        const namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdentifier) : kelasIdentifier;
 
         const tr = document.createElement('tr');
         tr.className = "border-b hover:bg-slate-50";
@@ -199,8 +199,8 @@ function renderClassList() {
         const div = document.createElement('div');
         div.className = "flex items-center justify-between p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs";
         div.innerHTML = `
-            <span class="font-bold text-slate-700">${c.namaKelas || c.nama || '-'}</span>
-            <button onclick="deleteClass('${c.id}')" class="text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-trash"></i></button>
+            <span class="font-bold text-slate-700">${c.name || c.nama || c.namaKelas || '-'}</span>
+            <button onclick="deleteClass('${c.id}')" class="text-rose-500 hover:text-rose-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
         `;
         container.appendChild(div);
     });
@@ -229,10 +229,15 @@ function renderUserList() {
 }
 
 window.renderPresensiForm = function() {
-    console.log("✓ Modul Presensi siap.");
+    if (typeof window.populateDropdowns === 'function') {
+        window.populateDropdowns();
+    }
+    if (typeof loadPresensiTable === 'function') {
+        loadPresensiTable();
+    }
 };
 
 function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
-        }
+}
