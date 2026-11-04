@@ -2,6 +2,15 @@
 // Modul Jurnal Mengajar & Supervisi Guru SLBN 2 PELAIHARI
 // ==========================================================================
 
+// Helper untuk menerjemahkan ID mapel menjadi nama lengkap mapel
+function getSubjectName(subjectId) {
+    if (!subjectId) return '-';
+    var found = (window.appState && window.appState.subjects) 
+        ? window.appState.subjects.find(function(s) { return s.id === subjectId || s.name === subjectId || s.nama === subjectId; }) 
+        : null;
+    return found ? (found.name || found.nama) : subjectId;
+}
+
 function renderJurnalList() {
     var tbody = document.getElementById('jurnal-table-body');
     if (!tbody) return;
@@ -67,12 +76,15 @@ function renderJurnalList() {
 
         if (!actionButtons) actionButtons = '<span class="text-slate-400 font-medium text-[10px]">Akses Terbatas</span>';
 
+        // Konversi mapel ID ke nama lengkap menggunakan getSubjectName
+        var namaMapelLengkap = getSubjectName(j.mapel);
+
         tr.innerHTML = 
             '<td class="p-3 text-center text-slate-500 font-bold">' + (filteredJournals.length - idx) + '</td>' +
             '<td class="p-3 font-semibold text-slate-700 whitespace-nowrap">' + tglFormatted + '</td>' +
             '<td class="p-3 font-bold text-slate-800 whitespace-nowrap">' + (j.guru || '-') + '</td>' +
             '<td class="p-3 text-slate-600 font-medium whitespace-nowrap">' + (typeof getClassName === 'function' ? getClassName(j.classId) : j.classId) + '</td>' +
-            '<td class="p-3 text-indigo-700 font-semibold whitespace-nowrap">' + (j.mapel || '-') + '</td>' +
+            '<td class="p-3 text-indigo-700 font-semibold whitespace-nowrap">' + namaMapelLengkap + '</td>' +
             '<td class="p-3 text-slate-700 min-w-[180px] max-w-[260px] break-words">' + (j.materi || '-') + '</td>' +
             '<td class="p-3 text-center space-x-1 whitespace-nowrap">' + btnPdf + ' ' + btnVideo + '</td>' +
             '<td class="p-3 text-center whitespace-nowrap">' + statusSupervisi + '</td>' +
@@ -178,7 +190,7 @@ function openModalSupervisi(index) {
     var infoBox = document.getElementById('supervisi-target-info');
     infoBox.innerHTML = 
         '<div><strong>Guru:</strong> ' + (j.guru || '-') + '</div>' +
-        '<div><strong>Kelas / Mapel:</strong> ' + (typeof getClassName === 'function' ? getClassName(j.classId) : j.classId) + ' | ' + (j.mapel || '-') + '</div>' +
+        '<div><strong>Kelas / Mapel:</strong> ' + (typeof getClassName === 'function' ? getClassName(j.classId) : j.classId) + ' | ' + getSubjectName(j.mapel) + '</div>' +
         '<div><strong>Materi:</strong> ' + (j.materi || '-') + '</div>';
 
     if (j.supervisi) {
