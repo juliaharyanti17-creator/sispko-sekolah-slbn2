@@ -100,7 +100,7 @@ function populateKetunaanCheckboxes(selectedValues) {
     });
 }
 
-// --- 2. MANAJEMEN DATA KELAS ---
+// --- 2. MANAJEMEN DATA KELAS (DILENGKAPI EDIT & MOVE URUTAN) ---
 function renderMasterKelasList() {
     var container = document.getElementById('master-kelas-list-container');
     if (!container) return;
@@ -115,9 +115,17 @@ function renderMasterKelasList() {
     classList.forEach(function(c, idx) {
         var div = document.createElement('div');
         div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold";
+        var className = c.name || c.nama || c.namaKelas || '';
+        var classId = c.id || '';
+
         div.innerHTML = 
-            '<span><i class="fa-solid fa-door-open text-indigo-600 mr-2"></i>' + (c.name || c.nama) + '</span>' +
-            '<button type="button" onclick="handleDeleteKelas(' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>';
+            '<span><i class="fa-solid fa-door-open text-indigo-600 mr-2"></i>' + (idx + 1) + '. ' + className + '</span>' +
+            '<div class="flex items-center gap-1">' +
+                '<button type="button" onclick="moveClassOrder(' + idx + ', \'up\')" class="text-slate-500 hover:text-slate-800 p-1 cursor-pointer" title="Pindah ke Atas"><i class="fa-solid fa-arrow-up"></i></button>' +
+                '<button type="button" onclick="moveClassOrder(' + idx + ', \'down\')" class="text-slate-500 hover:text-slate-800 p-1 cursor-pointer" title="Pindah ke Bawah"><i class="fa-solid fa-arrow-down"></i></button>' +
+                '<button type="button" onclick="openModalEditKelas(\'' + classId + '\', ' + idx + ')" class="text-indigo-600 hover:text-indigo-800 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
+                '<button type="button" onclick="handleDeleteKelas(\'' + classId + '\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>';
         container.appendChild(div);
     });
 }
@@ -131,19 +139,63 @@ function handleAddKelas(e) {
     if (!val) return alert("Nama kelas tidak boleh kosong!");
     if (!window.appState.classes) window.appState.classes = [];
     
-    var exists = window.appState.classes.some(c => (c.name || c.nama).toLowerCase() === val.toLowerCase());
+    var exists = window.appState.classes.some(c => (c.name || c.nama || c.namaKelas || '').toLowerCase() === val.toLowerCase());
     if (exists) return alert("Kelas tersebut sudah ada!");
 
-    window.appState.classes.push({ id: "c_" + Date.now(), name: val });
+    window.appState.classes.push({ id: "c_" + Date.now(), name: val, nama: val, namaKelas: val });
     if (typeof saveAppState === 'function') saveAppState();
     input.value = '';
     renderMasterKelasList();
     if (typeof showToast === 'function') showToast("Kelas baru berhasil ditambahkan!");
 }
 
-function handleDeleteKelas(idx) {
+function openModalEditKelas(classId, idx) {
+    var classList = window.appState.classes || [];
+    var target = classList.find(function(c) { return c.id === classId; }) || classList[idx];
+    if (!target) return;
+
+    var currentName = target.name || target.nama || target.namaKelas || '';
+    var newName = prompt("Edit Nama Kelas:", currentName);
+    if (newName === null) return;
+    newName = newName.trim();
+    if (!newName) return alert("Nama kelas tidak boleh kosong!");
+
+    target.name = newName;
+    target.nama = newName;
+    target.namaKelas = newName;
+
+    if (typeof saveAppState === 'function') saveAppState();
+    renderMasterKelasList();
+    if (typeof showToast === 'function') showToast("Nama kelas berhasil diperbarui!");
+}
+
+function moveClassOrder(index, direction) {
+    if (!window.appState || !window.appState.classes) return;
+    var classes = window.appState.classes;
+
+    if (direction === 'up' && index > 0) {
+        var temp = classes[index];
+        classes[index] = classes[index - 1];
+        classes[index - 1] = temp;
+    } else if (direction === 'down' && index < classes.length - 1) {
+        var temp = classes[index];
+        classes[index] = classes[index + 1];
+        classes[index + 1] = temp;
+    } else {
+        return;
+    }
+
+    if (typeof saveAppState === 'function') saveAppState();
+    renderMasterKelasList();
+}
+
+function handleDeleteKelas(classId, idx) {
     if (!confirm("Hapus kelas ini?")) return;
-    window.appState.classes.splice(idx, 1);
+    if (classId) {
+        window.appState.classes = (window.appState.classes || []).filter(function(c) { return c.id !== classId; });
+    } else {
+        window.appState.classes.splice(idx, 1);
+    }
     if (typeof saveAppState === 'function') saveAppState();
     renderMasterKelasList();
     if (typeof showToast === 'function') showToast("Kelas berhasil dihapus.");
@@ -164,9 +216,15 @@ function renderMasterMapelList() {
     subjectList.forEach(function(m, idx) {
         var div = document.createElement('div');
         div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold";
+        var mapelName = m.name || m.nama || '';
+        var mapelId = m.id || '';
+
         div.innerHTML = 
-            '<span><i class="fa-solid fa-book text-indigo-600 mr-2"></i>' + (m.name || m.nama) + '</span>' +
-            '<button type="button" onclick="handleDeleteMapel(' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>';
+            '<span><i class="fa-solid fa-book text-indigo-600 mr-2"></i>' + mapelName + '</span>' +
+            '<div class="flex items-center gap-1">' +
+                '<button type="button" onclick="openModalEditMapel(\'' + mapelId + '\', ' + idx + ')" class="text-indigo-600 hover:text-indigo-800 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
+                '<button type="button" onclick="handleDeleteMapel(\'' + mapelId + '\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>';
         container.appendChild(div);
     });
 }
@@ -180,19 +238,42 @@ function handleAddMapel(e) {
     if (!val) return alert("Nama mata pelajaran tidak boleh kosong!");
     if (!window.appState.subjects) window.appState.subjects = [];
 
-    var exists = window.appState.subjects.some(m => (m.name || m.nama).toLowerCase() === val.toLowerCase());
+    var exists = window.appState.subjects.some(m => (m.name || m.nama || '').toLowerCase() === val.toLowerCase());
     if (exists) return alert("Mata pelajaran tersebut sudah ada!");
 
-    window.appState.subjects.push({ id: "m_" + Date.now(), name: val });
+    window.appState.subjects.push({ id: "m_" + Date.now(), name: val, nama: val });
     if (typeof saveAppState === 'function') saveAppState();
     input.value = '';
     renderMasterMapelList();
     if (typeof showToast === 'function') showToast("Mata pelajaran berhasil ditambahkan!");
 }
 
-function handleDeleteMapel(idx) {
+function openModalEditMapel(mapelId, idx) {
+    var subjectList = window.appState.subjects || [];
+    var target = subjectList.find(function(s) { return s.id === mapelId; }) || subjectList[idx];
+    if (!target) return;
+
+    var currentName = target.name || target.nama || '';
+    var newName = prompt("Edit Nama Mata Pelajaran:", currentName);
+    if (newName === null) return;
+    newName = newName.trim();
+    if (!newName) return alert("Nama mata pelajaran tidak boleh kosong!");
+
+    target.name = newName;
+    target.nama = newName;
+
+    if (typeof saveAppState === 'function') saveAppState();
+    renderMasterMapelList();
+    if (typeof showToast === 'function') showToast("Mata pelajaran berhasil diperbarui!");
+}
+
+function handleDeleteMapel(mapelId, idx) {
     if (!confirm("Hapus mata pelajaran ini?")) return;
-    window.appState.subjects.splice(idx, 1);
+    if (mapelId) {
+        window.appState.subjects = (window.appState.subjects || []).filter(function(m) { return m.id !== mapelId; });
+    } else {
+        window.appState.subjects.splice(idx, 1);
+    }
     if (typeof saveAppState === 'function') saveAppState();
     renderMasterMapelList();
     if (typeof showToast === 'function') showToast("Mata pelajaran berhasil dihapus.");
@@ -241,6 +322,9 @@ function renderMasterSiswaTable() {
 
     pagedStudents.forEach(function(s, idx) {
         var realNumber = startIndex + idx + 1;
+        var kelasIdentifier = s.classId || s.kelas || '';
+        var namaKelasLengkap = (typeof getClassName === 'function') ? getClassName(kelasIdentifier) : kelasIdentifier;
+
         var tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100 text-xs";
         tr.innerHTML = 
@@ -248,7 +332,7 @@ function renderMasterSiswaTable() {
             '<td class="p-3 font-semibold text-slate-700">' + (s.nisn || '-') + '</td>' +
             '<td class="p-3 font-bold text-slate-800">' + (s.nama || s.name || '-') + '</td>' +
             '<td class="p-3 text-center"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-indigo-200">' + (s.ketunaan || '-') + '</span></td>' +
-            '<td class="p-3 text-slate-600 font-medium">' + (s.classId || s.kelas || 'Belum diatur') + '</td>' +
+            '<td class="p-3 text-slate-600 font-medium">' + namaKelasLengkap + '</td>' +
             '<td class="p-3 text-center space-x-1">' +
                 '<button type="button" onclick="openModalSiswa(event, \'' + (s.id || idx) + '\')" class="text-indigo-600 hover:text-indigo-800 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>' +
                 '<button type="button" onclick="handleDeleteSiswa(\'' + (s.id || idx) + '\')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
@@ -312,7 +396,7 @@ function openModalSiswa(e, siswaId) {
         (window.appState.classes || []).forEach(function(c) {
             var opt = document.createElement('option');
             opt.value = c.id || c.name;
-            opt.innerText = c.name || c.nama;
+            opt.innerText = c.name || c.nama || c.namaKelas;
             formKelas.appendChild(opt);
         });
     }
@@ -368,6 +452,7 @@ function handleSaveSiswa(e) {
             s.nama = nama;
             s.ketunaan = ketunaanStr;
             s.classId = classId;
+            s.kelas = classId;
         }
     } else {
         var newMurid = {
@@ -375,7 +460,8 @@ function handleSaveSiswa(e) {
             nisn: nisn,
             nama: nama,
             ketunaan: ketunaanStr,
-            classId: classId
+            classId: classId,
+            kelas: classId
         };
         if (!window.appState.students) window.appState.students = [];
         window.appState.students.push(newMurid);
@@ -408,50 +494,3 @@ window.renderAllMasterData = function() {
 document.addEventListener('DOMContentLoaded', function() {
     window.renderAllMasterData();
 });
-// ==========================================================================
-// Fungsi Render Master Data Kelas dengan Filter Limit (10, 25, 50, All)
-// ==========================================================================
-window.renderMasterKelasTable = function() {
-    var container = document.getElementById('master-kelas-list-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    var classList = (window.appState && window.appState.classes) ? window.appState.classes : [];
-
-    if (classList.length === 0) {
-        container.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">Belum ada data kelas.</div>';
-        return;
-    }
-
-    // 1. Ambil nilai dari dropdown filter limit di HTML
-    var limitSelect = document.getElementById('filter-limit-kelas');
-    var limitValue = limitSelect ? limitSelect.value : '10';
-
-    // 2. Batasi jumlah data yang akan dirender sesuai pilihan filter
-    var displayedList = classList;
-    if (limitValue !== 'ALL') {
-        var limit = parseInt(limitValue) || 10;
-        displayedList = classList.slice(0, limit);
-    }
-
-    // 3. Render data kelas ke dalam container
-    displayedList.forEach(function(cls, idx) {
-        var itemDiv = document.createElement('div');
-        itemDiv.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium";
-        
-        var className = cls.name || cls.nama || '';
-        var classId = cls.id || '';
-
-        itemDiv.innerHTML = 
-            '<div class="flex items-center gap-2">' +
-                '<span class="text-slate-400 font-bold">' + (idx + 1) + '.</span>' +
-                '<span class="text-slate-800 font-bold">' + className + '</span>' +
-            '</div>' +
-            '<div class="flex items-center gap-1">' +
-                '<button type="button" onclick="openModalEditKelas(\'' + classId + '\')" class="text-indigo-600 hover:text-indigo-800 p-1" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
-                '<button type="button" onclick="handleDeleteKelas(\'' + classId + '\')" class="text-rose-600 hover:text-rose-800 p-1" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
-            '</div>';
-        
-        container.appendChild(itemDiv);
-    });
-};
