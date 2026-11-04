@@ -21,14 +21,32 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
-// 0. GLOBAL HELPER: PENGUBAH ID KELAS MENJADI NAMA LENGKAP
+// 0. GLOBAL HELPER: PENGUBAH ID KELAS MENJADI NAMA LENGKAP YANG AKURAT
 // --------------------------------------------------------------------------
-window.getClassName = function(classId) {
-    if (!classId) return '-';
-    var found = (window.appState && window.appState.classes) 
-        ? window.appState.classes.find(function(c) { return c.id === classId || c.name === classId || c.nama === classId || c.namaKelas === classId; }) 
-        : null;
-    return found ? (found.name || found.nama || found.namaKelas) : classId;
+window.getClassName = function(classIdOrName) {
+    if (!classIdOrName) return '-';
+    
+    var valStr = String(classIdOrName).trim();
+    var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
+    
+    // 1. Cari berdasarkan pencocokan persis pada ID atau Nama Kelas
+    var found = classesList.find(function(c) {
+        var cId = String(c.id || '').trim();
+        var cName = String(c.name || c.nama || c.namaKelas || '').trim();
+        return cId === valStr || cName.toLowerCase() === valStr.toLowerCase();
+    });
+
+    if (found) {
+        return found.name || found.nama || found.namaKelas || valStr;
+    }
+
+    // 2. Jika berbentuk kode timestamp (misal: c_1793793655293) tapi tidak ketemu
+    if (valStr.startsWith('c_') && classesList.length > 0) {
+        return "Kelas " + valStr.replace('c_', '');
+    }
+
+    // Jika sudah berupa teks biasa, kembalikan nilainya
+    return valStr;
 };
 
 // --------------------------------------------------------------------------
@@ -177,7 +195,7 @@ function renderStudentList() {
         // Ambil identifier kelas dari data siswa (bisa berupa s.classId atau s.kelas)
         const kelasIdentifier = s.classId || s.kelas || '';
         
-        // Menerjemahkan ID kelas mentah (seperti c_1793...) menjadi nama kelas lengkap
+        // Menerjemahkan ID kelas mentah menjadi nama kelas lengkap menggunakan getClassName
         const namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdentifier) : kelasIdentifier;
 
         const tr = document.createElement('tr');
@@ -187,7 +205,7 @@ function renderStudentList() {
             <td class="p-2">${s.nisn || '-'}</td>
             <td class="p-2 font-semibold">${s.nama || '-'}</td>
             <td class="p-2 text-center"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold">${s.ketunaan || '-'}</span></td>
-            <td class="p-2 font-bold text-slate-700">${namaKelasLengkap}</td>
+            <td class="p-2 font-bold text-indigo-700">${namaKelasLengkap}</td>
             <td class="p-2 text-center">
                 <button onclick="deleteStudent('${s.id}')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
             </td>
