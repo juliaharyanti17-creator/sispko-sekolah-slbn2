@@ -163,6 +163,10 @@ function renderStudentList() {
     }
 
     students.forEach((s, idx) => {
+        // Menerjemahkan kode/ID kelas menjadi nama kelas lengkap menggunakan getClassName
+        const kelasIdOrName = s.classId || s.kelas || '';
+        const namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdOrName) : kelasIdOrName;
+
         const tr = document.createElement('tr');
         tr.className = "border-b hover:bg-slate-50";
         tr.innerHTML = `
@@ -170,9 +174,9 @@ function renderStudentList() {
             <td class="p-2">${s.nisn || '-'}</td>
             <td class="p-2 font-semibold">${s.nama || '-'}</td>
             <td class="p-2 text-center">${s.ketunaan || '-'}</td>
-            <td class="p-2">${s.kelas || '-'}</td>
+            <td class="p-2 font-bold text-indigo-700">${namaKelasLengkap}</td>
             <td class="p-2 text-center">
-                <button onclick="deleteStudent('${s.id}')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600">Hapus</button>
+                <button onclick="deleteStudent('${s.id}')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
             </td>
         `;
         tableBody.appendChild(tr);
@@ -231,4 +235,4 @@ window.renderPresensiForm = function() {
 function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
-}
+        }
