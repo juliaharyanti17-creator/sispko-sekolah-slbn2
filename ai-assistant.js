@@ -11,6 +11,15 @@ window.toggleAIChatModal = function(e) {
         e.stopPropagation();
     }
 
+    // Validasi ketat role pengguna: Hanya Admin dan Kepsek yang diizinkan mengakses AI
+    var currentUser = (window.appState && window.appState.currentUser) ? window.appState.currentUser : null;
+    var role = currentUser ? (currentUser.role || '').toLowerCase() : '';
+
+    if (role !== 'admin' && role !== 'kepsek' && role !== 'kepala sekolah') {
+        alert("Mohon maaf, fitur AI Assistant SIMPATIK hanya dapat diakses oleh Administrator dan Kepala Sekolah.");
+        return;
+    }
+
     var modal = document.getElementById('ai-chat-modal');
     if (!modal) {
         alert("Error: Elemen modal 'ai-chat-modal' tidak ditemukan!");
