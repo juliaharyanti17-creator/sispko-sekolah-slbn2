@@ -294,3 +294,42 @@ function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
 }
+// ==========================================================================
+// PENGAMAT OTOMATIS (GLOBAL OBSERVER) UNTUK KELAS & MAPEL
+// ==========================================================================
+document.addEventListener("DOMContentLoaded", function() {
+    setInterval(function() {
+        if (!window.appState) return;
+        
+        // Memindai sel tabel dan elemen teks di seluruh halaman
+        var cells = document.querySelectorAll('td, span, div, p, th');
+        cells.forEach(function(td) {
+            var text = td.innerText ? td.innerText.trim() : '';
+            if (!text) return;
+
+            // 1. Jika teks berupa ID Kelas (berawalan 'c_')
+            if (text.startsWith('c_') && text.length > 5) {
+                if (typeof getClassName === 'function') {
+                    var namaAsli = getClassName(text);
+                    if (namaAsli && namaAsli !== text) {
+                        td.innerText = namaAsli;
+                        td.style.fontWeight = 'bold';
+                        td.style.color = '#4338ca'; // Warna teks indigo agar rapi
+                    }
+                }
+            }
+
+            // 2. Jika teks berupa ID Mata Pelajaran (berawalan 'm_')
+            if (text.startsWith('m_') && text.length > 5) {
+                if (typeof getSubjectName === 'function') {
+                    var namaMapel = getSubjectName(text);
+                    if (namaMapel && namaMapel !== text) {
+                        td.innerText = namaMapel;
+                        td.style.fontWeight = 'bold';
+                        td.style.color = '#0d9488'; // Warna teks teal
+                    }
+                }
+            }
+        });
+    }, 800); // Berjalan otomatis setiap 0.8 detik
+});
