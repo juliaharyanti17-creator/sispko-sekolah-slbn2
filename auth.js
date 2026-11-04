@@ -148,6 +148,9 @@ function applyRoleAccessControl() {
     var btnRekap = document.getElementById('tab-btn-rekap');
     var btnEvaluasi = document.getElementById('tab-btn-evaluasi');
     var btnMaster = document.getElementById('tab-btn-master');
+    
+    // Cari tombol AI Assistant di sidebar berdasarkan fungsi onclick-nya
+    var btnAiAssistant = document.querySelector('button[onclick*="toggleAIChatModal"]');
 
     function setVisibility(elem, isVisible) {
         if (!elem) return;
@@ -161,6 +164,7 @@ function applyRoleAccessControl() {
     setVisibility(btnRekap, true);
     setVisibility(btnEvaluasi, true);
     setVisibility(btnMaster, true);
+    if (btnAiAssistant) btnAiAssistant.style.display = '';
 
     if (role === 'admin') {
         return;
@@ -169,10 +173,13 @@ function applyRoleAccessControl() {
         setVisibility(btnPresensi, false);
         setVisibility(btnJurnal, false);
         setVisibility(btnMaster, false);
+        // AI Assistant tetap tampil untuk Kepsek
     } 
     else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
         setVisibility(btnEvaluasi, false);
         setVisibility(btnMaster, false);
+        // Sembunyikan tombol AI Assistant untuk Guru & Wali Kelas
+        if (btnAiAssistant) btnAiAssistant.style.display = 'none';
     }
 }
 
