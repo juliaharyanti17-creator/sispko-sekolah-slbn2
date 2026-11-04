@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMPATIK SLBN 2 PELAIHARI</title>
+    <title>SIMPATIK - SLBN 2 PELAIHARI</title>
+
+    <!-- Favicon / Logo Tab Browser -->
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1i1u9MVsdA6gzUlRtlepiKLnHdXd6bkY4">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -78,11 +81,12 @@ function forceLoginDirect(e) {
     <div id="screen-login" class="min-h-screen flex items-center justify-center bg-slate-900 p-4">
         <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 md:p-8 border border-slate-100">
             <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white text-3xl font-black shadow-lg mb-3">
-                    <i class="fa-solid fa-graduation-cap"></i>
+                <div class="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-3 overflow-hidden p-1 border border-slate-100">
+                    <img src="https://lh3.googleusercontent.com/d/1i1u9MVsdA6gzUlRtlepiKLnHdXd6bkY4" alt="Logo SIMPATIK" class="w-full h-full object-contain">
                 </div>
-                <h1 class="text-xl font-black text-slate-800 tracking-tight">SIMPATIK SLBN 2 PELAIHARI</h1>
-                <p class="text-xs text-slate-500 font-medium mt-1">Sistem Informasi Monitoring Presensi, Aktivitas dan Evaluasi Kinerja</p>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight">SIMPATIK</h1>
+                <p class="text-xs font-extrabold text-indigo-600 tracking-wider uppercase mt-0.5">SLBN 2 PELAIHARI</p>
+                <p class="text-[11px] text-slate-500 font-medium mt-1">Sistem Informasi Monitoring Presensi, Aktivitas dan Evaluasi Kinerja</p>
             </div>
 
             <form onsubmit="executeFormLogin(event)" class="space-y-4">
@@ -128,10 +132,13 @@ function forceLoginDirect(e) {
         <!-- Mobile Header Bar -->
         <div class="md:hidden bg-indigo-950 text-white p-4 flex items-center justify-between shadow-md sticky top-0 z-30 no-print">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-black text-sm text-white shadow">
-                    <i class="fa-solid fa-graduation-cap"></i>
+                <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow overflow-hidden p-0.5">
+                    <img src="https://lh3.googleusercontent.com/d/1i1u9MVsdA6gzUlRtlepiKLnHdXd6bkY4" alt="Logo SIMPATIK" class="w-full h-full object-contain">
                 </div>
-                <span class="font-bold text-sm tracking-tight">SIMPATIK SLBN 2</span>
+                <div class="flex flex-col">
+                    <span class="font-black text-xs tracking-tight text-white leading-tight">SIMPATIK</span>
+                    <span class="text-[9px] text-indigo-300 font-bold tracking-wider">SLBN 2 PELAIHARI</span>
+                </div>
             </div>
             <button onclick="toggleMobileSidebar(event)" class="text-xl p-1 focus:outline-none text-indigo-200 hover:text-white">
                 <i id="mobile-hamburger-icon" class="fa-solid fa-bars"></i>
@@ -143,12 +150,12 @@ function forceLoginDirect(e) {
         <!-- Sidebar Navigation -->
         <aside id="sidebar-nav" class="hidden md:flex flex-col w-full md:w-64 bg-indigo-950 text-white p-4 shrink-0 fixed md:sticky top-0 h-screen z-40 transition-all no-print">
             <div class="hidden md:flex items-center gap-3 p-2 mb-6 border-b border-indigo-900/60 pb-4">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-lg text-white shadow-lg shrink-0">
-                    <i class="fa-solid fa-graduation-cap"></i>
+                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shrink-0 overflow-hidden p-1">
+                    <img src="https://lh3.googleusercontent.com/d/1i1u9MVsdA6gzUlRtlepiKLnHdXd6bkY4" alt="Logo SIMPATIK" class="w-full h-full object-contain">
                 </div>
                 <div class="overflow-hidden">
                     <h2 class="font-black text-sm tracking-tight text-white leading-tight">SIMPATIK</h2>
-                    <p class="text-[10px] text-indigo-300 font-semibold">SLBN 2 PELAIHARI</p>
+                    <p class="text-[10px] text-indigo-300 font-bold tracking-wider">SLBN 2 PELAIHARI</p>
                 </div>
             </div>
 
@@ -863,30 +870,19 @@ function forceLoginDirect(e) {
     </div>
 
     <!-- SCRIPT LOADING ORDER -->
-    <script src="config.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js"></script>
-    <script src="master.js"></script>
-    <script src="presensi.js"></script>
-    <script src="jurnal.js"></script>
-    <script src="evaluasi.js"></script>
-    <script src="rekap.js"></script>
-    <script src="ai-assistant.js"></script>
+    <script src="config.js?v=2"></script>
+    <script src="auth.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+    <script src="master.js?v=2"></script>
+    <script src="presensi.js?v=2"></script>
+    <script src="jurnal.js?v=2"></script>
+    <script src="evaluasi.js?v=2"></script>
+    <script src="rekap.js?v=2"></script>
+    <script src="ai-assistant.js?v=2"></script>
     
     <!-- Debugger Eruda untuk Tablet -->
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
-
-    <!-- SCRIPT LOADING ORDER -->
-<script src="config.js?v=2"></script>
-<script src="auth.js?v=2"></script>
-<script src="app.js?v=2"></script>
-<script src="master.js?v=2"></script>
-<script src="presensi.js?v=2"></script>
-<script src="jurnal.js?v=2"></script>
-<script src="evaluasi.js?v=2"></script>
-<script src="rekap.js?v=2"></script>
-<script src="ai-assistant.js?v=2"></script>
     
 </body>
 </html>
