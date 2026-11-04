@@ -116,91 +116,11 @@ function saveSessionAndEnterApp(userObj) {
     if (document.getElementById('jurnal-tanggal')) document.getElementById('jurnal-tanggal').value = todayStr;
     if (document.getElementById('jurnal-guru')) document.getElementById('jurnal-guru').value = userObj.nama || userObj.username;
 
-    // TERAPKAN RBAC DAN AUTO-FILTER DROPDOWN SEKETIKA
+    // Terapkan Pembatasan Menu & Auto-Filter Dropdown
     applyRoleAccessControl();
-    if (typeof window.populateDropdowns === 'function') 
-        window.populateDropdowns = function() {
-    var 
-        window.populateDropdowns = function() {
-    var user = (window.appState && window.appState.currentUser) ? window.appState.currentUser : { role: 'admin' };
-    var role = (user.role || '').toLowerCase();
-    var classes = (window.appState && window.appState.classes) ? window.appState.classes : [];
-    var subjects = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
-
-    // 1. Normalisasi ampuan kelas user menjadi array bersih (lowercase)
-    var userKelasArr = [];
-    if (user.kelasAmpuan && user.kelasAmpuan !== 'ALL') {
-        userKelasArr = user.kelasAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
+    if (typeof window.populateDropdowns === 'function') {
+        window.populateDropdowns();
     }
-
-    // 2. Normalisasi ampuan mapel user menjadi array bersih (lowercase)
-    var userMapelArr = [];
-    if (user.mapelAmpuan && user.mapelAmpuan !== 'ALL') {
-        userMapelArr = user.mapelAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
-    }
-
-    // 3. Filter Kelas
-    var allowedClasses = classes.filter(function(c) {
-        // Jika Admin, Kepsek, atau ampuan ALL, izinkan semua kelas
-        if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL' || user.kelasAmpuan === '') {
-            return true;
-        }
-        
-        var cId = (c.id || '').toLowerCase();
-        var cName = (c.name || c.nama || '').toLowerCase();
-        
-        // Cek apakah ID atau Nama Kelas cocok dengan salah satu ampuan user
-        return userKelasArr.some(function(uk) {
-            return cId === uk || cName === uk;
-        });
-    });
-
-    // 4. Filter Mapel
-    var allowedSubjects = subjects.filter(function(s) {
-        if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL' || user.mapelAmpuan === '') {
-            return true;
-        }
-        
-        var sId = (s.id || '').toLowerCase();
-        var sName = (s.name || s.nama || '').toLowerCase();
-        
-        return userMapelArr.some(function(um) {
-            return sId === um || sName === um;
-        });
-    });
-
-    // 5. Terapkan ke elemen dropdown
-    fillSelectOptions('presensi-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
-    fillSelectOptions('presensi-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
-    fillSelectOptions('jurnal-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
-    fillSelectOptions('jurnal-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
-    fillSelectOptions('filter-rekap-kelas', allowedClasses, 'Semua Kelas', true);
-    fillSelectOptions('filter-eval-kelas', allowedClasses, 'Semua Kelas', true);
-    fillSelectOptions('master-siswa-filter-kelas', classes, 'Semua Kelas', true);
-};
-
-    // 4. Filter Mapel yang diizinkan untuk User ini
-    var allowedSubjects = subjects.filter(function(s) {
-        if (role === 'admin' || role === 'kepsek' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL' || user.mapelAmpuan === '') {
-            return true;
-        }
-        var sId = (s.id || '').toLowerCase();
-        var sName = (s.name || s.nama || '').toLowerCase();
-        
-        return userMapelArr.some(function(um) {
-            return sId === um || sName === um || sName.includes(um) || um.includes(sName);
-        });
-    });
-
-    // 5. Terapkan ke semua elemen dropdown di aplikasi
-    fillSelectOptions('presensi-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
-    fillSelectOptions('presensi-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
-    fillSelectOptions('jurnal-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
-    fillSelectOptions('jurnal-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
-    fillSelectOptions('filter-rekap-kelas', allowedClasses, 'Semua Kelas', true);
-    fillSelectOptions('filter-eval-kelas', allowedClasses, 'Semua Kelas', true);
-    fillSelectOptions('master-siswa-filter-kelas', classes, 'Semua Kelas', true);
-};
 
     // Auto-Landing Page berdasarkan Role
     var userRole = (userObj.role || '').toLowerCase();
@@ -213,11 +133,10 @@ function saveSessionAndEnterApp(userObj) {
     if (typeof renderAllMasterData === 'function') renderAllMasterData();
     if (typeof renderJurnalList === 'function') renderJurnalList();
     if (typeof renderPresensiForm === 'function') renderPresensiForm();
+    if (typeof showToast === 'function') showToast("Selamat datang, " + (userObj.nama || userObj.username) + "!");
 }
 
-// ==========================================================================
-// LOGIKA HAK AKSES ROLE MENU (RBAC FINAL - SIMPATIK SLBN 2 PELAIHARI)
-// ==========================================================================
+// --- 3. LOGIKA HAK AKSES ROLE MENU (RBAC FINAL) ---
 function applyRoleAccessControl() {
     var currentUser = window.appState && window.appState.currentUser ? window.appState.currentUser : null;
     if (!currentUser) return;
@@ -230,73 +149,72 @@ function applyRoleAccessControl() {
     var btnEvaluasi = document.getElementById('tab-btn-evaluasi');
     var btnMaster = document.getElementById('tab-btn-master');
 
-    // Helper untuk menampilkan/menyembunyikan elemen menu beserta pembungkusnya
     function setVisibility(elem, isVisible) {
         if (!elem) return;
-        // Jika elemen evaluasi (dropdown), targetkan elemen pembungkusnya agar submenu ikut tersembunyi
         var target = (elem.id === 'tab-btn-evaluasi' && elem.parentElement) ? elem.parentElement : elem;
         target.style.display = isVisible ? '' : 'none';
     }
 
-    // 1. Reset: Tampilkan semua menu terlebih dahulu
+    // Reset tampilkan semua
     setVisibility(btnPresensi, true);
     setVisibility(btnJurnal, true);
     setVisibility(btnRekap, true);
     setVisibility(btnEvaluasi, true);
     setVisibility(btnMaster, true);
 
-    // 2. Terapkan Pembatasan Berdasarkan Role
     if (role === 'admin') {
-        // Administrator: Akses penuh ke seluruh menu (Tidak ada yang disembunyikan)
         return;
     } 
     else if (role === 'kepsek' || role === 'kepala sekolah') {
-        // Kepala Sekolah: Hanya Rekap Laporan & Evaluasi Kepsek
         setVisibility(btnPresensi, false);
         setVisibility(btnJurnal, false);
         setVisibility(btnMaster, false);
     } 
     else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
-        // Wali Kelas & Guru Mapel: Presensi, Jurnal, & Rekap Laporan
         setVisibility(btnEvaluasi, false);
         setVisibility(btnMaster, false);
     }
-}// --- 4. HELPER DROPDOWN AUTO-FILTER BERDASARKAN AMPUAN ---
+}
+
+// --- 4. HELPER DROPDOWN AUTO-FILTER BERDASARKAN AMPUAN ---
 window.populateDropdowns = function() {
     var user = (window.appState && window.appState.currentUser) ? window.appState.currentUser : { role: 'admin' };
     var role = (user.role || '').toLowerCase();
     var classes = (window.appState && window.appState.classes) ? window.appState.classes : [];
     var subjects = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
 
-    // Parse Ampuan Kelas User
     var userKelasArr = [];
     if (user.kelasAmpuan && user.kelasAmpuan !== 'ALL') {
         userKelasArr = user.kelasAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
     }
 
-    // Parse Ampuan Mapel User
     var userMapelArr = [];
     if (user.mapelAmpuan && user.mapelAmpuan !== 'ALL') {
         userMapelArr = user.mapelAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
     }
 
-    // Filter Kelas Terizin
     var allowedClasses = classes.filter(function(c) {
-        if (role === 'admin' || role === 'kepsek' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL') return true;
+        if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL' || user.kelasAmpuan === '') {
+            return true;
+        }
         var cId = (c.id || '').toLowerCase();
         var cName = (c.name || c.nama || '').toLowerCase();
-        return userKelasArr.includes(cId) || userKelasArr.includes(cName);
+        return userKelasArr.some(function(uk) {
+            return cId === uk || cName === uk;
+        });
     });
 
-    // Filter Mapel Terizin
     var allowedSubjects = subjects.filter(function(s) {
-        if (role === 'admin' || role === 'kepsek' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL') return true;
+        if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL' || user.mapelAmpuan === '') {
+            return true;
+        }
         var sId = (s.id || '').toLowerCase();
         var sName = (s.name || s.nama || '').toLowerCase();
-        return userMapelArr.includes(sId) || userMapelArr.includes(sName);
+        return userMapelArr.some(function(um) {
+            return sId === um || sName === um;
+        });
     });
 
-    // Isi Dropdown secara Otomatis
     fillSelectOptions('presensi-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
     fillSelectOptions('presensi-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
     fillSelectOptions('jurnal-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
@@ -331,7 +249,6 @@ function fillSelectOptions(elemId, items, defaultText, includeAllOption) {
     }
 }
 
-// Helper Nama Kelas
 window.getClassName = function(classId) {
     if (!classId) return '-';
     var found = (window.appState && window.appState.classes) 
@@ -436,17 +353,14 @@ window.renderMasterUsersTable = function() {
             '<td class="p-2.5 text-center">' + roleBadge + '</td>' +
             '<td class="p-2.5 text-slate-600 font-medium text-[11px] truncate max-w-[140px]" title="' + ampuanText + '">' + ampuanText + '</td>' +
             '<td class="p-2.5 text-center">' +
-                (u.role === 'admin' ? '<span class="text-slate-300 text-[10px] font-bold">Utama</span>' : '<button type="button" onclick="handleDeleteUser(' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>') +
+                (u.role === 'admin' ? '<span class="text-slate-300 text-[10px] font-bold">Utama</span>' : '<button type="button" onclick="window.handleDeleteUser(' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>') +
             '</td>';
         tbody.appendChild(tr);
     });
 };
 
 window.toggleUserClassSelect = function() {
-    var roleElem = document.getElementById('user-form-role');
-    if (!roleElem) return;
-    var role = roleElem.value;
-    
+    var role = document.getElementById('user-form-role')?.value;
     var groupKelas = document.getElementById('group-user-kelas');
     var groupMapel = document.getElementById('group-user-mapel');
 
@@ -469,7 +383,6 @@ window.openModalUser = function(e) {
     if (formPass) formPass.value = '';
     if (formRole) formRole.value = 'walikelas';
 
-    // Populate Checkbox Ampuan Kelas
     var kelasContainer = document.getElementById('user-form-kelas-checkboxes');
     if (kelasContainer) {
         kelasContainer.innerHTML = '';
@@ -488,7 +401,6 @@ window.openModalUser = function(e) {
         }
     }
 
-    // Populate Checkbox Ampuan Mapel
     var mapelContainer = document.getElementById('user-form-mapel-checkboxes');
     if (mapelContainer) {
         mapelContainer.innerHTML = '';
@@ -529,14 +441,9 @@ window.closeModalUser = function(e) {
 
 window.handleSaveUser = function(e) {
     if (e && e.preventDefault) e.preventDefault();
-    
-    var namaInput = document.getElementById('user-form-nama');
-    var passInput = document.getElementById('user-form-password');
-    var roleInput = document.getElementById('user-form-role');
-
-    var nama = namaInput ? namaInput.value.trim() : '';
-    var pass = passInput ? passInput.value.trim() : '';
-    var role = roleInput ? roleInput.value : 'walikelas';
+    var nama = document.getElementById('user-form-nama').value.trim();
+    var pass = document.getElementById('user-form-password').value.trim();
+    var role = document.getElementById('user-form-role').value;
 
     if (!nama || !pass) {
         alert("Nama lengkap dan password wajib diisi!");
@@ -569,62 +476,13 @@ window.handleSaveUser = function(e) {
     if (!window.appState.users) window.appState.users = [];
     window.appState.users.push(newUser);
 
-    if (typeof saveAppState === 'function') {
-        saveAppState();
-    }
-
-    closeModalUser();
-    
-    if (typeof renderMasterUsersTable === 'function') {
-        renderMasterUsersTable();
-    }
-    
-    if (typeof showToast === 'function') {
-        showToast("Pengguna/Guru baru berhasil ditambahkan!");
-    } else {
-        alert("Pengguna/Guru baru berhasil ditambahkan!");
-    }
-};
-
-window.handleSaveUser = function(e) {
-    if (e) e.preventDefault();
-    var nama = document.getElementById('user-form-nama').value.trim();
-    var pass = document.getElementById('user-form-password').value.trim();
-    var role = document.getElementById('user-form-role').value;
-
-    if (!nama || !pass) {
-        alert("Nama lengkap dan password wajib diisi!");
-        return;
-    }
-
-    var selectedKelas = [];
-    document.querySelectorAll('input[name="user_kelas_opt"]:checked').forEach(function(cb) {
-        selectedKelas.push(cb.value);
-    });
-
-    var selectedMapel = [];
-    document.querySelectorAll('input[name="user_mapel_opt"]:checked').forEach(function(cb) {
-        selectedMapel.push(cb.value);
-    });
-
-    var usernameClean = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-    var newUser = {
-        id: "u_" + Date.now(),
-        nama: nama,
-        username: usernameClean,
-        password: pass,
-        role: role,
-        kelasAmpuan: selectedKelas.length > 0 ? selectedKelas.join(', ') : 'ALL',
-        mapelAmpuan: selectedMapel.length > 0 ? selectedMapel.join(', ') : 'ALL'
-    };
-
-    if (!window.appState.users) window.appState.users = [];
-    window.appState.users.push(newUser);
-
     if (typeof saveAppState === 'function') saveAppState();
-    closeModalUser();
-    renderMasterUsersTable();
+    window.closeModalUser();
+    
+    if (typeof window.renderMasterUsersTable === 'function') {
+        window.renderMasterUsersTable();
+    }
+    
     if (typeof showToast === 'function') showToast("Pengguna/Guru baru berhasil ditambahkan!");
 };
 
@@ -632,7 +490,7 @@ window.handleDeleteUser = function(idx) {
     if (!confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) return;
     window.appState.users.splice(idx, 1);
     if (typeof saveAppState === 'function') saveAppState();
-    renderMasterUsersTable();
+    window.renderMasterUsersTable();
     if (typeof showToast === 'function') showToast("Pengguna berhasil dihapus.");
 };
 
@@ -646,6 +504,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 applyRoleAccessControl();
                 if (typeof window.populateDropdowns === 'function') {
                     window.populateDropdowns();
+                }
+                if (typeof window.renderMasterUsersTable === 'function') {
+                    window.renderMasterUsersTable();
                 }
             }, 300);
         } catch(e) {}
