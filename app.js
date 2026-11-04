@@ -258,13 +258,21 @@ function renderUserList() {
     tableBody.innerHTML = '';
     const users = window.appState.users || [];
 
+    if (users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada data user.</td></tr>';
+        return;
+    }
+
     users.forEach((u) => {
+        const userKelas = u.classId || u.kelas || '';
+        const namaKelasUser = userKelas.startsWith('c_') && typeof getClassName === 'function' ? getClassName(userKelas) : (userKelas || '-');
+
         const tr = document.createElement('tr');
         tr.className = "border-b hover:bg-slate-50 text-xs";
         tr.innerHTML = `
-            <td class="p-2 font-semibold">${u.nama || u.username}</td>
+            <td class="p-2 font-semibold">${u.nama || u.username || '-'}</td>
             <td class="p-2 text-center uppercase text-[10px] font-bold text-indigo-600">${u.role || 'Guru'}</td>
-            <td class="p-2">${u.kelas || '-'}</td>
+            <td class="p-2">${namaKelasUser}</td>
             <td class="p-2 text-center">
                 <span class="text-emerald-500 font-bold text-xs">Aktif</span>
             </td>
@@ -286,43 +294,3 @@ function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
 }
-
-// --------------------------------------------------------------------------
-// 4. GLOBAL CLEANER AGGRESSIVE (PEMBERSIH OTOMATIS C_... & M_...)
-// --------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", function() {
-    setInterval(function() {
-        if (!window.appState) return;
-        
-        var elements = document.querySelectorAll('td, span, div, p, th, strong, b, small');
-        
-        elements.forEach(function(el) {
-            var text = el.innerText ? el.innerText.trim() : '';
-            if (!text) return;
-
-            // Terjemahkan ID Kelas (c_...)
-            if (text.startsWith('c_') && text.length > 5) {
-                if (typeof getClassName === 'function') {
-                    var namaKelas = getClassName(text);
-                    if (namaKelas && namaKelas !== text) {
-                        el.innerText = namaKelas;
-                        el.style.fontWeight = 'bold';
-                        el.style.color = '#4338ca';
-                    }
-                }
-            }
-            
-            // Terjemahkan ID Mata Pelajaran (m_...)
-            if (text.startsWith('m_') && text.length > 5) {
-                if (typeof getSubjectName === 'function') {
-                    var namaMapel = getSubjectName(text);
-                    if (namaMapel && namaMapel !== text) {
-                        el.innerText = namaMapel;
-                        el.style.fontWeight = 'bold';
-                        el.style.color = '#0d9488';
-                    }
-                }
-            }
-        });
-    }, 500);
-});
