@@ -21,6 +21,17 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
+// 0. GLOBAL HELPER: PENGUBAH ID KELAS MENJADI NAMA LENGKAP
+// --------------------------------------------------------------------------
+window.getClassName = function(classId) {
+    if (!classId) return '-';
+    var found = (window.appState && window.appState.classes) 
+        ? window.appState.classes.find(function(c) { return c.id === classId || c.name === classId || c.nama === classId || c.namaKelas === classId; }) 
+        : null;
+    return found ? (found.name || found.nama || found.namaKelas) : classId;
+};
+
+// --------------------------------------------------------------------------
 // 1. SISTEM PERUBAHAN TAB & KONTEN HALAMAN
 // --------------------------------------------------------------------------
 window.switchTab = function(e, tabName) {
@@ -99,7 +110,7 @@ window.toggleMobileSidebar = function(e) {
     const backdrop = document.getElementById('sidebar-backdrop');
     
     if (sidebar) sidebar.classList.toggle('hidden');
-    if (backdrop) backdrop.classList.toggle('hidden');
+    if (backdrop) backdrop.classList.add('hidden');
 };
 
 window.toggleSubMenu = function(submenuId, iconId, tabName, e) {
@@ -122,7 +133,7 @@ window.scrollToSubSection = function(e, tabName, sectionId) {
 };
 
 // --------------------------------------------------------------------------
-// 2. OTENTIKASI PENGGUNA (Mengandalkan fungsi utama di auth.js)
+// 2. OTENTIKASI PENGGUNA
 // --------------------------------------------------------------------------
 window.forceLoginAdmin = function() {
     var adminUser = { 
@@ -163,18 +174,20 @@ function renderStudentList() {
     }
 
     students.forEach((s, idx) => {
-        // Menerjemahkan kode/ID kelas menjadi nama kelas lengkap menggunakan fungsi getClassName()
+        // Ambil identifier kelas dari data siswa (bisa berupa s.classId atau s.kelas)
         const kelasIdentifier = s.classId || s.kelas || '';
+        
+        // Menerjemahkan ID kelas mentah (seperti c_1793...) menjadi nama kelas lengkap
         const namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdentifier) : kelasIdentifier;
 
         const tr = document.createElement('tr');
-        tr.className = "border-b hover:bg-slate-50";
+        tr.className = "border-b hover:bg-slate-50 text-xs";
         tr.innerHTML = `
             <td class="p-2 text-center w-8">${idx + 1}</td>
             <td class="p-2">${s.nisn || '-'}</td>
             <td class="p-2 font-semibold">${s.nama || '-'}</td>
-            <td class="p-2 text-center">${s.ketunaan || '-'}</td>
-            <td class="p-2 font-bold text-indigo-700">${namaKelasLengkap}</td>
+            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold">${s.ketunaan || '-'}</span></td>
+            <td class="p-2 font-bold text-slate-700">${namaKelasLengkap}</td>
             <td class="p-2 text-center">
                 <button onclick="deleteStudent('${s.id}')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
             </td>
@@ -215,7 +228,7 @@ function renderUserList() {
 
     users.forEach((u) => {
         const tr = document.createElement('tr');
-        tr.className = "border-b hover:bg-slate-50";
+        tr.className = "border-b hover:bg-slate-50 text-xs";
         tr.innerHTML = `
             <td class="p-2 font-semibold">${u.nama || u.username}</td>
             <td class="p-2 text-center uppercase text-[10px] font-bold text-indigo-600">${u.role || 'Guru'}</td>
