@@ -272,3 +272,28 @@ function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
 }
+
+
+// PENGAMAT OTOMATIS: Memaksa teks kode c_... pada kolom tabel agar otomatis berubah menjadi nama kelas
+document.addEventListener("DOMContentLoaded", function() {
+    setInterval(function() {
+        if (!window.appState || !window.appState.classes) return;
+        
+        // Cari semua sel tabel di halaman yang teksnya berawalan 'c_' (kode ID kelas)
+        var cells = document.querySelectorAll('td');
+        cells.forEach(function(td) {
+            var text = td.innerText.trim();
+            if (text.startsWith('c_') && text.length > 10) {
+                // Terjemahkan menggunakan fungsi getClassName
+                if (typeof getClassName === 'function') {
+                    var namaAsli = getClassName(text);
+                    if (namaAsli && namaAsli !== text) {
+                        td.innerText = namaAsli;
+                        td.style.fontWeight = 'bold';
+                        td.style.color = '#4338ca'; // Warna indigo agar terlihat rapi
+                    }
+                }
+            }
+        });
+    }, 1000); // Mengecek setiap 1 detik untuk membersihkan kode kelas yang lolos render
+});
