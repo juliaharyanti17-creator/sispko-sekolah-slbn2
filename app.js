@@ -13,7 +13,9 @@ function initAppEvents() {
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            doLogin(e);
+            if (typeof window.handleLogin === 'function') {
+                window.handleLogin(e);
+            }
         });
     }
 }
@@ -120,20 +122,8 @@ window.scrollToSubSection = function(e, tabName, sectionId) {
 };
 
 // --------------------------------------------------------------------------
-// 2. OTENTIKASI PENGGUNA
+// 2. OTENTIKASI PENGGUNA (Mengandalkan fungsi utama di auth.js)
 // --------------------------------------------------------------------------
-window.doLogin = function(e) {
-    if (e && e.preventDefault) e.preventDefault();
-
-    var usernameInput = document.getElementById('login-nama') || document.getElementById('username');
-    var passwordInput = document.getElementById('login-password') || document.getElementById('password');
-
-    var username = usernameInput ? usernameInput.value : '';
-    var password = passwordInput ? passwordInput.value : '';
-
-    handleLogin(username, password);
-};
-
 window.forceLoginAdmin = function() {
     var adminUser = { 
         id: 'admin-default', 
@@ -146,77 +136,10 @@ window.forceLoginAdmin = function() {
     window.appState.currentUser = adminUser;
     localStorage.setItem('sispko_session_user', JSON.stringify(adminUser));
     
-    if (typeof window.checkUserSession === 'function') window.checkUserSession();
-    if (typeof triggerUIRender === 'function') triggerUIRender();
-    
+    if (typeof window.applyRoleAccessControl === 'function') window.applyRoleAccessControl();
     window.switchTab(null, 'presensi');
     alert("✓ Berhasil masuk paksa sebagai Administrator!");
 };
-
-function handleLogin(username, password) {
-    var uInput = (username || '').trim().toLowerCase();
-    var pInput = (password || '').trim();
-
-    if (!uInput || !pInput) {
-        alert("Harap isi nama pengguna dan kata sandi!");
-        return;
-    }
-
-    var users = window.appState.users || [];
-
-    var foundUser = users.find(function(u) {
-        var uName = (u.username || u.nama || '').trim().toLowerCase();
-        var uPass = String(u.password || '').trim();
-        return uName === uInput && uPass === pInput;
-    });
-
-    if (!foundUser && uInput === 'admin' && pInput === 'admin') {
-        foundUser = { 
-            id: 'admin-default', 
-            nama: 'Administrator SLBN 2', 
-            username: 'admin', 
-            password: 'admin', 
-            role: 'admin' 
-        };
-        
-        var adminExists = users.some(u => (u.username || '').toLowerCase() === 'admin');
-        if (!adminExists) {
-            window.appState.users.push(foundUser);
-            if (typeof window.saveUsersData === 'function') window.saveUsersData();
-        }
-    }
-
-    if (foundUser) {
-        window.appState.currentUser = foundUser;
-        localStorage.setItem('sispko_session_user', JSON.stringify(foundUser));
-        
-        if (typeof window.checkUserSession === 'function') {
-            window.checkUserSession();
-        }
-        if (typeof triggerUIRender === 'function') {
-            triggerUIRender();
-        }
-
-        window.switchTab(null, 'presensi');
-        alert("Berhasil masuk! Selamat datang, " + (foundUser.nama || foundUser.username));
-    } else {
-        alert("Nama pengguna atau kata sandi tidak cocok!");
-    }
-}
-
-function handleLogout(e) {
-    if (e && e.preventDefault) e.preventDefault();
-    if (confirm("Apakah Anda yakin ingin keluar dari aplikasi SIMPATIK?")) {
-        window.appState.currentUser = null;
-        localStorage.removeItem('sispko_session_user');
-        
-        if (typeof window.checkUserSession === 'function') {
-            window.checkUserSession();
-        } else {
-            window.location.reload();
-        }
-    }
-}
 
 // --------------------------------------------------------------------------
 // 3. RENDER DATA KE UI & TABEL MASTER
@@ -300,31 +223,6 @@ function renderUserList() {
         tableBody.appendChild(tr);
     });
 }
-
-window.renderJurnalList = function() {
-    const tableBody = document.getElementById('jurnal-table-body');
-    if (!tableBody) return;
-
-    const journals = window.appState.journals || [];
-    if (journals.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400 font-medium">Belum ada riwayat jurnal mengajar.</td></tr>';
-        return;
-    }
-
-    tableBody.innerHTML = journals.slice().reverse().map((j, idx) => `
-        <tr class="border-b hover:bg-slate-50">
-            <td class="p-3 text-center">${idx + 1}</td>
-            <td class="p-3 font-semibold">${j.tanggal || '-'}</td>
-            <td class="p-3">${j.guru || '-'}</td>
-            <td class="p-3">${j.kelas || '-'}</td>
-            <td class="p-3">${j.mapel || '-'}</td>
-            <td class="p-3">${j.materi || j.kegiatan || '-'}</td>
-            <td class="p-3 text-center">${j.filePdf ? '<i class="fa-solid fa-file-pdf text-rose-500"></i>' : '-'}</td>
-            <td class="p-3 text-center"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">Disetujui</span></td>
-            <td class="p-3 text-center"><button class="text-indigo-600 hover:underline">Detail</button></td>
-        </tr>
-    `).join('');
-};
 
 window.renderPresensiForm = function() {
     console.log("✓ Modul Presensi siap.");
