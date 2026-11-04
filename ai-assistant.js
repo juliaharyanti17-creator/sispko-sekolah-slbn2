@@ -160,8 +160,8 @@ window.handleSendAIPrompt = async function(e) {
                 : [];
 
             var contextData = {
-                nama_kepala_sekolah: "Maisyanti Disi Fatimah, S.Pd.I., M.Pd",
-                nip_kepala_sekolah: "198305142006042018",
+                nama_kepala_sekolah_sah: "Maisyanti Disi Fatimah, S.Pd.I., M.Pd", //[span_2](start_span)[span_2](end_span)
+                nip_kepala_sekolah_sah: "198305142006042018", //[span_3](start_span)[span_3](end_span)
                 jumlah_murid_terdaftar: validStudents.length,
                 jumlah_guru_terdaftar: validUsers.length,
                 jumlah_kelas_rombel: validClasses.length,
@@ -171,17 +171,16 @@ window.handleSendAIPrompt = async function(e) {
                 absensi_terbaru: typeof getOptimizedPresensiSummary === 'function' ? getOptimizedPresensiSummary() : []
             };
 
-            promptText = "ATURAN MUTLAK SIMPATIK AI (SLBN 2 Pelaihari):\n" +
-                "1. ABAIKAN semua ingatan, cache, atau riwayat nama kepala sekolah lama.\n" +
-                "2. Nama Kepala Sekolah SLBN 2 Pelaihari yang SAH dan TERBARU adalah: Maisyanti Disi Fatimah, S.Pd.I., M.Pd (NIP. 198305142006042018)[span_1](start_span)[span_1](end_span).\n" +
-                "3. Gunakan HANYA Data Realtime berikut ini untuk menjawab pertanyaannya:\n\n" +
+            promptText = "INSTRUKSI UTAMA & MUTLAK SIMPATIK AI (SLBN 2 Pelaihari):\n" +
+                "1. Kepala Sekolah SLBN 2 Pelaihari yang SAH dan RESMI saat ini adalah: Maisyanti Disi Fatimah, S.Pd.I., M.Pd (NIP. 198305142006042018)[span_4](start_span)[span_4](end_span). DILARANG KERAS menyebutkan nama lain (seperti Syahrani atau lainnya).\n" +
+                "2. Gunakan HANYA Data Realtime berikut ini untuk menjawab pertanyaan:\n\n" +
                 "DATA REALTIME SAAT INI:\n" + JSON.stringify(contextData) + "\n\n" +
                 "PENTING:\n" +
                 "- Jika jumlah_kelas_rombel bernilai 0, Anda WAJIB menjawab bahwa saat ini BELUM ADA kelas/rombongan belajar yang terdaftar di database.\n" +
                 "- Jika jumlah_murid_terdaftar bernilai 0, Anda WAJIB menjawab bahwa saat ini BELUM ADA data murid yang terdaftar di database.\n\n" +
                 "Pertanyaan Pengguna: " + userPrompt;
         } else {
-            promptText = "Anda SIMPATIK AI (SLBN 2 Pelaihari). Kepala Sekolah saat ini adalah Maisyanti Disi Fatimah, S.Pd.I., M.Pd[span_2](start_span)[span_2](end_span). Jawab ramah dan sangat singkat (1-2 kalimat).\nTanya: " + userPrompt;
+            promptText = "Anda adalah SIMPATIK AI untuk SLBN 2 Pelaihari. Kepala Sekolah resmi saat ini adalah Maisyanti Disi Fatimah, S.Pd.I., M.Pd[span_5](start_span)[span_5](end_span). Jawab dengan ramah dan singkat (1-2 kalimat).\nTanya: " + userPrompt;
         }
 
         var response = await fetch(VERCEL_BACKEND_URL, {
@@ -292,8 +291,8 @@ window.generateAndPrintReport = function(docId) {
             <div style="margin-top: 50px; float: right; text-align: left; width: 250px; font-size: 13px;">
                 <p style="margin:0;">Pelaihari, ${todayStr}</p>
                 <p style="margin:5px 0 60px 0;">Kepala Sekolah SLBN 2 Pelaihari,</p>
-                <p style="margin:0; font-weight: bold; text-decoration: underline;">MAISYANTI DISI FATIMAH, S.Pd.I., M.Pd</p>
-                <p style="margin:0;">NIP. 198305142006042018</p>
+                <p style="margin:0; font-weight: bold; text-decoration: underline;">MAISYANTI DISI FATIMAH, S.Pd.I., M.Pd</p> <!--[span_6](start_span)[span_6](end_span) -->
+                <p style="margin:0;">NIP. 198305142006042018</p> <!--[span_7](start_span)[span_7](end_span) -->
             </div>
         </div>
     `;
