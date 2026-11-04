@@ -469,13 +469,13 @@ window.openModalUser = function(e) {
     if (formPass) formPass.value = '';
     if (formRole) formRole.value = 'walikelas';
 
-    // Populate Checkbox Ampuan Kelas dengan aman
+    // Populate Checkbox Ampuan Kelas
     var kelasContainer = document.getElementById('user-form-kelas-checkboxes');
     if (kelasContainer) {
         kelasContainer.innerHTML = '';
         var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
         if (classesList.length === 0) {
-            kelasContainer.innerHTML = '<span class="text-slate-400 text-[11px]">Belum ada data kelas. Tambahkan kelas dulu di Data Kelas.</span>';
+            kelasContainer.innerHTML = '<span class="text-slate-400 text-[11px]">Belum ada data kelas.</span>';
         } else {
             classesList.forEach(function(c) {
                 var cVal = c.id || c.name || c.nama;
@@ -488,7 +488,7 @@ window.openModalUser = function(e) {
         }
     }
 
-    // Populate Checkbox Ampuan Mapel dengan aman
+    // Populate Checkbox Ampuan Mapel
     var mapelContainer = document.getElementById('user-form-mapel-checkboxes');
     if (mapelContainer) {
         mapelContainer.innerHTML = '';
@@ -507,8 +507,8 @@ window.openModalUser = function(e) {
         }
     }
 
-    if (typeof toggleUserClassSelect === 'function') {
-        toggleUserClassSelect();
+    if (typeof window.toggleUserClassSelect === 'function') {
+        window.toggleUserClassSelect();
     }
 
     var modal = document.getElementById('modal-user');
