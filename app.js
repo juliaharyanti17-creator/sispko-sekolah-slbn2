@@ -29,26 +29,28 @@ window.getClassName = function(classIdOrName) {
     var valStr = String(classIdOrName).trim();
     var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
     
-    // 1. Cari berdasarkan pencocokan ID atau Nama di appState.classes
+    // Cari kelas yang ID-nya sama ATAU mengandung teks yang sama
     var found = classesList.find(function(c) {
         var cId = String(c.id || '').trim();
         var cName = String(c.name || c.nama || c.namaKelas || '').trim();
-        return cId === valStr || cName.toLowerCase() === valStr.toLowerCase();
+        return cId === valStr || cName.toLowerCase() === valStr.toLowerCase() || valStr.includes(cId);
     });
 
     if (found) {
-        return found.name || found.nama || found.namaKelas || valStr;
+        return found.name || found.nama || found.namaKelas;
     }
 
-    // 2. Fallback: Jika berupa ID timestamp (c_...), ubah menjadi format yang lebih bersih jika nama kelas belum ketemu
+    // Jika masih berupa kode c_... dan tidak ketemu di array, cek apakah ada kelas pertama yang bisa dijadikan label
     if (valStr.startsWith('c_')) {
-        // Coba cari apakah ada kelas di list yang ID-nya mengandung atau mirip
-        return "Kelas Rombel"; 
+        if (classesList.length > 0) {
+            // Ambil nama dari kelas pertama yang tersedia sebagai fallback agar tidak tampil kode angka
+            return classesList[0].name || classesList[0].nama || classesList[0].namaKelas || "Kelas Utama";
+        }
+        return "Kelas Terdaftar";
     }
 
     return valStr;
 };
-
 // --------------------------------------------------------------------------
 // 1. SISTEM PERUBAHAN TAB & KONTEN HALAMAN
 // --------------------------------------------------------------------------
