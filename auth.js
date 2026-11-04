@@ -443,7 +443,10 @@ window.renderMasterUsersTable = function() {
 };
 
 window.toggleUserClassSelect = function() {
-    var role = document.getElementById('user-form-role')?.value;
+    var roleElem = document.getElementById('user-form-role');
+    if (!roleElem) return;
+    var role = roleElem.value;
+    
     var groupKelas = document.getElementById('group-user-kelas');
     var groupMapel = document.getElementById('group-user-mapel');
 
@@ -457,7 +460,7 @@ window.toggleUserClassSelect = function() {
 };
 
 window.openModalUser = function(e) {
-    if (e) e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     var formNama = document.getElementById('user-form-nama');
     var formPass = document.getElementById('user-form-password');
     var formRole = document.getElementById('user-form-role');
@@ -466,40 +469,121 @@ window.openModalUser = function(e) {
     if (formPass) formPass.value = '';
     if (formRole) formRole.value = 'walikelas';
 
-    // Populate Checkbox Ampuan Kelas
+    // Populate Checkbox Ampuan Kelas dengan aman
     var kelasContainer = document.getElementById('user-form-kelas-checkboxes');
     if (kelasContainer) {
         kelasContainer.innerHTML = '';
-        (window.appState.classes || []).forEach(function(c) {
-            var lbl = document.createElement('label');
-            lbl.className = 'flex items-center gap-1.5 font-medium text-slate-700 cursor-pointer text-xs';
-            lbl.innerHTML = '<input type="checkbox" name="user_kelas_opt" value="' + (c.id || c.name || c.nama) + '" class="rounded text-indigo-600"> ' + (c.name || c.nama);
-            kelasContainer.appendChild(lbl);
-        });
+        var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
+        if (classesList.length === 0) {
+            kelasContainer.innerHTML = '<span class="text-slate-400 text-[11px]">Belum ada data kelas. Tambahkan kelas dulu di Data Kelas.</span>';
+        } else {
+            classesList.forEach(function(c) {
+                var cVal = c.id || c.name || c.nama;
+                var cLabel = c.name || c.nama || c.id;
+                var lbl = document.createElement('label');
+                lbl.className = 'flex items-center gap-1.5 font-medium text-slate-700 cursor-pointer text-xs';
+                lbl.innerHTML = '<input type="checkbox" name="user_kelas_opt" value="' + cVal + '" class="rounded text-indigo-600"> ' + cLabel;
+                kelasContainer.appendChild(lbl);
+            });
+        }
     }
 
-    // Populate Checkbox Ampuan Mapel
+    // Populate Checkbox Ampuan Mapel dengan aman
     var mapelContainer = document.getElementById('user-form-mapel-checkboxes');
     if (mapelContainer) {
         mapelContainer.innerHTML = '';
-        (window.appState.subjects || []).forEach(function(m) {
-            var lbl = document.createElement('label');
-            lbl.className = 'flex items-center gap-1.5 font-medium text-slate-700 cursor-pointer text-xs';
-            lbl.innerHTML = '<input type="checkbox" name="user_mapel_opt" value="' + (m.id || m.name || m.nama) + '" class="rounded text-indigo-600"> ' + (m.name || m.nama);
-            mapelContainer.appendChild(lbl);
-        });
+        var subjectList = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
+        if (subjectList.length === 0) {
+            mapelContainer.innerHTML = '<span class="text-slate-400 text-[11px]">Belum ada mata pelajaran.</span>';
+        } else {
+            subjectList.forEach(function(m) {
+                var mVal = m.id || m.name || m.nama;
+                var mLabel = m.name || m.nama || m.id;
+                var lbl = document.createElement('label');
+                lbl.className = 'flex items-center gap-1.5 font-medium text-slate-700 cursor-pointer text-xs';
+                lbl.innerHTML = '<input type="checkbox" name="user_mapel_opt" value="' + mVal + '" class="rounded text-indigo-600"> ' + mLabel;
+                mapelContainer.appendChild(lbl);
+            });
+        }
     }
 
-    toggleUserClassSelect();
+    if (typeof toggleUserClassSelect === 'function') {
+        toggleUserClassSelect();
+    }
 
     var modal = document.getElementById('modal-user');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
 };
 
 window.closeModalUser = function(e) {
-    if (e) e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     var modal = document.getElementById('modal-user');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
+
+window.handleSaveUser = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    
+    var namaInput = document.getElementById('user-form-nama');
+    var passInput = document.getElementById('user-form-password');
+    var roleInput = document.getElementById('user-form-role');
+
+    var nama = namaInput ? namaInput.value.trim() : '';
+    var pass = passInput ? passInput.value.trim() : '';
+    var role = roleInput ? roleInput.value : 'walikelas';
+
+    if (!nama || !pass) {
+        alert("Nama lengkap dan password wajib diisi!");
+        return;
+    }
+
+    var selectedKelas = [];
+    document.querySelectorAll('input[name="user_kelas_opt"]:checked').forEach(function(cb) {
+        selectedKelas.push(cb.value);
+    });
+
+    var selectedMapel = [];
+    document.querySelectorAll('input[name="user_mapel_opt"]:checked').forEach(function(cb) {
+        selectedMapel.push(cb.value);
+    });
+
+    var usernameClean = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    var newUser = {
+        id: "u_" + Date.now(),
+        nama: nama,
+        username: usernameClean,
+        password: pass,
+        role: role,
+        kelasAmpuan: selectedKelas.length > 0 ? selectedKelas.join(', ') : 'ALL',
+        mapelAmpuan: selectedMapel.length > 0 ? selectedMapel.join(', ') : 'ALL'
+    };
+
+    if (!window.appState) window.appState = {};
+    if (!window.appState.users) window.appState.users = [];
+    window.appState.users.push(newUser);
+
+    if (typeof saveAppState === 'function') {
+        saveAppState();
+    }
+
+    closeModalUser();
+    
+    if (typeof renderMasterUsersTable === 'function') {
+        renderMasterUsersTable();
+    }
+    
+    if (typeof showToast === 'function') {
+        showToast("Pengguna/Guru baru berhasil ditambahkan!");
+    } else {
+        alert("Pengguna/Guru baru berhasil ditambahkan!");
+    }
 };
 
 window.handleSaveUser = function(e) {
