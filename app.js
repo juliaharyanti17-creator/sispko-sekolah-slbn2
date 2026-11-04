@@ -220,7 +220,8 @@ function renderStudentList() {
             <td class="p-2 font-semibold">${s.nama || '-'}</td>
             <td class="p-2 text-center"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold">${s.ketunaan || '-'}</span></td>
             <td class="p-2 font-bold text-indigo-700">${namaKelasLengkap}</td>
-            <td class="p-2 text-center">
+            <td class="p-2 text-center space-x-1">
+                <button onclick="editStudent('${s.id}')" class="bg-amber-500 text-white px-2 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>
                 <button onclick="deleteStudent('${s.id}')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
             </td>
         `;
@@ -240,12 +241,17 @@ function renderClassList() {
         return;
     }
 
-    classes.forEach((c) => {
+    classes.forEach((c, idx) => {
         const div = document.createElement('div');
-        div.className = "flex items-center justify-between p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs";
+        div.className = "flex items-center justify-between p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs mb-1";
         div.innerHTML = `
-            <span class="font-bold text-slate-700">${c.name || c.nama || c.namaKelas || '-'}</span>
-            <button onclick="deleteClass('${c.id}')" class="text-rose-500 hover:text-rose-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+            <span class="font-bold text-slate-700">${idx + 1}. ${c.name || c.nama || c.namaKelas || '-'}</span>
+            <div class="space-x-1">
+                <button onclick="moveClassOrder(${idx}, 'up')" title="Pindah Ke Atas" class="bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-arrow-up"></i></button>
+                <button onclick="moveClassOrder(${idx}, 'down')" title="Pindah Ke Bawah" class="bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-arrow-down"></i></button>
+                <button onclick="editClass('${c.id}')" class="bg-amber-500 text-white px-2.5 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>
+                <button onclick="deleteClass('${c.id}')" class="bg-rose-500 text-white px-2.5 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
+            </div>
         `;
         container.appendChild(div);
     });
@@ -259,7 +265,7 @@ function renderUserList() {
     const users = window.appState.users || [];
 
     if (users.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada data user.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400">Belum ada data user.</td></tr>';
         return;
     }
 
@@ -273,13 +279,100 @@ function renderUserList() {
             <td class="p-2 font-semibold">${u.nama || u.username || '-'}</td>
             <td class="p-2 text-center uppercase text-[10px] font-bold text-indigo-600">${u.role || 'Guru'}</td>
             <td class="p-2">${namaKelasUser}</td>
-            <td class="p-2 text-center">
-                <span class="text-emerald-500 font-bold text-xs">Aktif</span>
+            <td class="p-2 text-center"><span class="text-emerald-500 font-bold text-xs">Aktif</span></td>
+            <td class="p-2 text-center space-x-1">
+                <button onclick="editUser('${u.id || u.username}')" class="bg-amber-500 text-white px-2 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>
+                <button onclick="deleteUser('${u.id || u.username}')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
             </td>
         `;
         tableBody.appendChild(tr);
     });
 }
+
+// --------------------------------------------------------------------------
+// 4. FITUR EDIT & PINDAH URUTAN KELAS
+// --------------------------------------------------------------------------
+window.moveClassOrder = function(index, direction) {
+    if (!window.appState || !window.appState.classes) return;
+    var classes = window.appState.classes;
+
+    if (direction === 'up' && index > 0) {
+        var temp = classes[index];
+        classes[index] = classes[index - 1];
+        classes[index - 1] = temp;
+    } else if (direction === 'down' && index < classes.length - 1) {
+        var temp = classes[index];
+        classes[index] = classes[index + 1];
+        classes[index + 1] = temp;
+    } else {
+        return;
+    }
+
+    if (typeof saveAppState === 'function') saveAppState();
+    renderClassList();
+    if (typeof populateDropdowns === 'function') populateDropdowns();
+};
+
+window.editClass = function(classId) {
+    var classes = window.appState.classes || [];
+    var targetClass = classes.find(function(c) { return c.id === classId; });
+    if (!targetClass) return;
+
+    var currentName = targetClass.name || targetClass.nama || targetClass.namaKelas || '';
+    var newName = prompt("Ubah Nama Kelas:", currentName);
+    if (newName !== null && newName.trim() !== "") {
+        targetClass.name = newName.trim();
+        targetClass.nama = newName.trim();
+        targetClass.namaKelas = newName.trim();
+
+        if (typeof saveAppState === 'function') saveAppState();
+        renderAllMasterData();
+        if (typeof populateDropdowns === 'function') populateDropdowns();
+        alert("✓ Nama kelas berhasil diperbarui!");
+    }
+};
+
+window.editUser = function(userId) {
+    var users = window.appState.users || [];
+    var targetUser = users.find(function(u) { return (u.id === userId || u.username === userId); });
+    if (!targetUser) return;
+
+    var newNama = prompt("Ubah Nama Guru / Pengguna:", targetUser.nama || targetUser.username || '');
+    if (newNama === null) return;
+
+    var newRole = prompt("Ubah Role (admin / guru / kepsek):", targetUser.role || 'guru');
+    if (newRole === null) return;
+
+    targetUser.nama = newNama.trim();
+    targetUser.role = newRole.trim().toLowerCase();
+
+    if (typeof saveAppState === 'function') saveAppState();
+    renderAllMasterData();
+    alert("✓ Data pengguna/guru berhasil diperbarui!");
+};
+
+window.editStudent = function(studentId) {
+    var students = window.appState.students || [];
+    var targetStudent = students.find(function(s) { return s.id === studentId; });
+    if (!targetStudent) return;
+
+    var newNama = prompt("Ubah Nama Murid:", targetStudent.nama || '');
+    if (newNama === null) return;
+
+    var newNisn = prompt("Ubah NISN:", targetStudent.nisn || '');
+    if (newNisn === null) return;
+
+    var newKetunaan = prompt("Ubah Ketunaan:", targetStudent.ketunaan || '');
+    if (newKetunaan === null) return;
+
+    targetStudent.nama = newNama.trim();
+    targetStudent.nisn = newNisn.trim();
+    targetStudent.ketunaan = newKetunaan.trim();
+
+    if (typeof saveAppState === 'function') saveAppState();
+    renderStudentList();
+    alert("✓ Data murid berhasil diperbarui!");
+};
 
 window.renderPresensiForm = function() {
     if (typeof window.populateDropdowns === 'function') {
@@ -294,23 +387,20 @@ function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
 }
-// ==========================================================================
-// GLOBAL CLEANER AGRESIF UNTUK KELAS (C_...) & MAPEL (M_...)
-// ==========================================================================
+
+// --------------------------------------------------------------------------
+// 5. GLOBAL CLEANER AGGRESSIVE (PEMBERSIH OTOMATIS C_... & M_...)
+// --------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", function() {
     setInterval(function() {
         if (!window.appState) return;
         
-        // Targetkan semua elemen teks yang mungkin menampilkan ID mentah
         var elements = document.querySelectorAll('td, span, div, p, th, strong, b, small');
         
         elements.forEach(function(el) {
-            // Periksa teks langsung atau jika elemen tidak memiliki struktur yang terlalu rumit
             var text = el.innerText ? el.innerText.trim() : '';
-            
             if (!text) return;
 
-            // 1. Tangani ID Kelas yang berawalan 'c_'
             if (text.startsWith('c_') && text.length > 5) {
                 if (typeof getClassName === 'function') {
                     var namaKelas = getClassName(text);
@@ -322,7 +412,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
             
-            // 2. Tangani ID Mata Pelajaran yang berawalan 'm_'
             if (text.startsWith('m_') && text.length > 5) {
                 if (typeof getSubjectName === 'function') {
                     var namaMapel = getSubjectName(text);
@@ -334,6 +423,5 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
         });
-    }, 500); // Berjalan lebih cepat setiap 0.5 detik
+    }, 500);
 });
-
