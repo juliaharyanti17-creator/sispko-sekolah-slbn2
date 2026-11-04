@@ -122,7 +122,7 @@ function saveSessionAndEnterApp(userObj) {
         window.populateDropdowns();
     }
 
-    // Auto-Landing Page berdasarkan Role
+    // Auto-Landing Page berdasarkan Role (FIXED: Kepsek langsung ke evaluasi tanpa tertimpa)
     var userRole = (userObj.role || '').toLowerCase();
     if (userRole === 'kepsek' || userRole === 'kepala sekolah') {
         if (typeof window.switchTab === 'function') window.switchTab(null, 'evaluasi');
@@ -149,7 +149,6 @@ function applyRoleAccessControl() {
     var btnEvaluasi = document.getElementById('tab-btn-evaluasi');
     var btnMaster = document.getElementById('tab-btn-master');
     
-    // Cari tombol AI Assistant di sidebar berdasarkan fungsi onclick-nya
     var btnAiAssistant = document.querySelector('button[onclick*="toggleAIChatModal"]');
 
     function setVisibility(elem, isVisible) {
@@ -158,7 +157,6 @@ function applyRoleAccessControl() {
         target.style.display = isVisible ? '' : 'none';
     }
 
-    // Reset tampilkan semua
     setVisibility(btnPresensi, true);
     setVisibility(btnJurnal, true);
     setVisibility(btnRekap, true);
@@ -173,12 +171,10 @@ function applyRoleAccessControl() {
         setVisibility(btnPresensi, false);
         setVisibility(btnJurnal, false);
         setVisibility(btnMaster, false);
-        // AI Assistant tetap tampil untuk Kepsek
     } 
     else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
         setVisibility(btnEvaluasi, false);
         setVisibility(btnMaster, false);
-        // Sembunyikan tombol AI Assistant untuk Guru & Wali Kelas
         if (btnAiAssistant) btnAiAssistant.style.display = 'none';
     }
 }
