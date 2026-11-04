@@ -274,41 +274,44 @@ function resetForm(formId) {
 }
 
 // ==========================================================================
-// PENGAMAT MENYELURUH (GLOBAL CLEANER) UNTUK KELAS (C_...) & MAPEL (M_...)
+// GLOBAL CLEANER AGRESIF UNTUK KELAS (C_...) & MAPEL (M_...)
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", function() {
     setInterval(function() {
         if (!window.appState) return;
         
-        var allElements = document.querySelectorAll('td, span, div, p, th');
-        allElements.forEach(function(el) {
-            if (el.children.length === 0) {
-                var text = el.innerText.trim();
-                
-                // 1. Cek dan ubah jika berupa ID Kelas (berawalan 'c_')
-                if (text.startsWith('c_') && text.length > 10) {
-                    if (typeof getClassName === 'function') {
-                        var namaKelas = getClassName(text);
-                        if (namaKelas && namaKelas !== text) {
-                            el.innerText = namaKelas;
-                            el.style.fontWeight = 'bold';
-                            el.style.color = '#4338ca'; // Warna indigo
-                        }
+        // Targetkan semua elemen teks yang mungkin menampilkan ID mentah
+        var elements = document.querySelectorAll('td, span, div, p, th, strong, b, small');
+        
+        elements.forEach(function(el) {
+            // Periksa teks langsung atau jika elemen tidak memiliki struktur yang terlalu rumit
+            var text = el.innerText ? el.innerText.trim() : '';
+            
+            if (!text) return;
+
+            // 1. Tangani ID Kelas yang berawalan 'c_'
+            if (text.startsWith('c_') && text.length > 5) {
+                if (typeof getClassName === 'function') {
+                    var namaKelas = getClassName(text);
+                    if (namaKelas && namaKelas !== text) {
+                        el.innerText = namaKelas;
+                        el.style.fontWeight = 'bold';
+                        el.style.color = '#4338ca';
                     }
                 }
-                
-                // 2. Cek dan ubah jika berupa ID Mata Pelajaran (berawalan 'm_')
-                if (text.startsWith('m_') && text.length > 10) {
-                    if (typeof getSubjectName === 'function') {
-                        var namaMapel = getSubjectName(text);
-                        if (namaMapel && namaMapel !== text) {
-                            el.innerText = namaMapel;
-                            el.style.fontWeight = 'semibold';
-                            el.style.color = '#0d9488'; // Warna teal untuk mapel
-                        }
+            }
+            
+            // 2. Tangani ID Mata Pelajaran yang berawalan 'm_'
+            if (text.startsWith('m_') && text.length > 5) {
+                if (typeof getSubjectName === 'function') {
+                    var namaMapel = getSubjectName(text);
+                    if (namaMapel && namaMapel !== text) {
+                        el.innerText = namaMapel;
+                        el.style.fontWeight = 'bold';
+                        el.style.color = '#0d9488';
                     }
                 }
             }
         });
-    }, 800); // Berjalan otomatis setiap 0.8 detik
+    }, 500); // Berjalan lebih cepat setiap 0.5 detik
 });
