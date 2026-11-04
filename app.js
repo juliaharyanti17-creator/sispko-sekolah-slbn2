@@ -274,26 +274,31 @@ function resetForm(formId) {
 }
 
 
-// PENGAMAT OTOMATIS: Memaksa teks kode c_... pada kolom tabel agar otomatis berubah menjadi nama kelas
+// ==========================================================================
+// PENGAMAT MENYELURUH (GLOBAL CLEANER) UNTUK SEMUA KODE KELAS C_...
+// ==========================================================================
 document.addEventListener("DOMContentLoaded", function() {
     setInterval(function() {
         if (!window.appState || !window.appState.classes) return;
         
-        // Cari semua sel tabel di halaman yang teksnya berawalan 'c_' (kode ID kelas)
-        var cells = document.querySelectorAll('td');
-        cells.forEach(function(td) {
-            var text = td.innerText.trim();
-            if (text.startsWith('c_') && text.length > 10) {
-                // Terjemahkan menggunakan fungsi getClassName
-                if (typeof getClassName === 'function') {
-                    var namaAsli = getClassName(text);
-                    if (namaAsli && namaAsli !== text) {
-                        td.innerText = namaAsli;
-                        td.style.fontWeight = 'bold';
-                        td.style.color = '#4338ca'; // Warna indigo agar terlihat rapi
+        // Memindai seluruh elemen teks di dokumen (td, span, div, p, dll)
+        var allElements = document.querySelectorAll('td, span, div, p, th');
+        allElements.forEach(function(el) {
+            // Pastikan hanya elemen yang tidak punya anak elemen kompleks (leaf node) agar aman
+            if (el.children.length === 0) {
+                var text = el.innerText.trim();
+                // Jika teks berawalan 'c_' diikuti angka (ID kelas)
+                if (text.startsWith('c_') && text.length > 10) {
+                    if (typeof getClassName === 'function') {
+                        var namaAsli = getClassName(text);
+                        if (namaAsli && namaAsli !== text) {
+                            el.innerText = namaAsli;
+                            el.style.fontWeight = 'bold';
+                            el.style.color = '#4338ca'; // Memberikan warna agar elegan
+                        }
                     }
                 }
             }
         });
-    }, 1000); // Mengecek setiap 1 detik untuk membersihkan kode kelas yang lolos render
+    }, 800); // Berjalan otomatis setiap 0.8 detik
 });
