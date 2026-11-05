@@ -1,6 +1,6 @@
 // ==========================================================================
 // Modul Data Master SIMPATIK SLBN 2 PELAIHARI
-// Version: Full Complete Master Data (Guru, Murid 10/Page, Kelas, Mapel, Ketunaan) - Modern UI
+// Version: Full Complete Master Data (Guru, Murid 10/Page, Kelas, Mapel, Ketunaan) - Modern UI & Refined Badge
 // ==========================================================================
 
 // --- GLOBAL PAGINATION STATE UNTUK DATA MURID ---
@@ -279,7 +279,7 @@ function handleDeleteMapel(mapelId, idx) {
     if (typeof showToast === 'function') showToast("Mata pelajaran berhasil dihapus.");
 }
 
-// --- 4. MANAJEMEN TABEL DATA MURID (10 ITEM PER HALAMAN - MODERN UI & AVATAR) ---
+// --- 4. MANAJEMEN TABEL DATA MURID (10 ITEM PER HALAMAN - MODERN UI & REFINED BADGE) ---
 function renderMasterSiswaTable() {
     var tbody = document.getElementById('master-siswa-table-body');
     if (!tbody) return;
@@ -340,7 +340,11 @@ function renderMasterSiswaTable() {
                     '<div><p class="font-bold text-slate-800 dark:text-slate-200">' + namaSiswa + '</p></div>' +
                 '</div>' +
             '</td>' +
-            '<td class="p-3 text-center"><span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-xl text-[10px] font-bold border border-indigo-200 dark:border-indigo-800">' + (s.ketunaan || '-') + '</span></td>' +
+            '<td class="p-3 text-center">' +
+                '<span class="inline-block max-w-[150px] bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-xl text-[10px] font-bold border border-indigo-200 dark:border-indigo-800 leading-snug text-center shadow-xs">' + 
+                    (s.ketunaan || '-') + 
+                '</span>' +
+            '</td>' +
             '<td class="p-3 text-slate-600 dark:text-slate-300 font-medium">' + namaKelasLengkap + '</td>' +
             '<td class="p-3 text-center space-x-2">' +
                 '<button type="button" onclick="openModalSiswa(event, \'' + (s.id || idx) + '\')" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition cursor-pointer" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>' +
