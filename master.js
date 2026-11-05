@@ -1,6 +1,6 @@
 // ==========================================================================
 // Modul Data Master SIMPATIK SLBN 2 PELAIHARI
-// Version: Full Complete Master Data (Guru, Murid 10/Page, Kelas, Mapel, Ketunaan)
+// Version: Full Complete Master Data (Guru, Murid 10/Page, Kelas, Mapel, Ketunaan) - Modern UI
 // ==========================================================================
 
 // --- GLOBAL PAGINATION STATE UNTUK DATA MURID ---
@@ -30,12 +30,12 @@ function renderMasterKetunaanList() {
     (window.appState.ketunaanList || []).forEach(function(k, idx) {
         if (!k) return;
         var div = document.createElement('div');
-        div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold";
+        div.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/60 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200";
         div.innerHTML = 
-            '<span><i class="fa-solid fa-puzzle-piece text-indigo-600 mr-2"></i>' + k + '</span>' +
+            '<span><i class="fa-solid fa-puzzle-piece text-indigo-600 dark:text-indigo-400 mr-2"></i>' + k + '</span>' +
             '<div class="flex items-center gap-1">' +
-                '<button type="button" onclick="openModalEditKetunaan(' + idx + ')" class="text-indigo-600 hover:text-indigo-800 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
-                '<button type="button" onclick="handleDeleteKetunaan(' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
+                '<button type="button" onclick="openModalEditKetunaan(' + idx + ')" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
+                '<button type="button" onclick="handleDeleteKetunaan(' + idx + ')" class="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
             '</div>';
         container.appendChild(div);
     });
@@ -94,13 +94,13 @@ function populateKetunaanCheckboxes(selectedValues) {
     (window.appState.ketunaanList || []).forEach(function(k) {
         var isChecked = selectedList.includes(k) ? 'checked' : '';
         var lbl = document.createElement('label');
-        lbl.className = 'flex items-center gap-1.5 font-medium text-slate-700 cursor-pointer text-xs';
-        lbl.innerHTML = '<input type="checkbox" name="ketunaan_opt" value="' + k + '" ' + isChecked + ' class="rounded text-indigo-600"> ' + k;
+        lbl.className = 'flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300 cursor-pointer text-xs';
+        lbl.innerHTML = '<input type="checkbox" name="ketunaan_opt" value="' + k + '" ' + isChecked + ' class="rounded text-indigo-600 dark:bg-slate-900 dark:border-slate-700"> ' + k;
         container.appendChild(lbl);
     });
 }
 
-// --- 2. MANAJEMEN DATA KELAS (DILENGKAPI EDIT & MOVE URUTAN) ---
+// --- 2. MANAJEMEN DATA KELAS ---
 function renderMasterKelasList() {
     var container = document.getElementById('master-kelas-list-container');
     if (!container) return;
@@ -108,23 +108,23 @@ function renderMasterKelasList() {
 
     var classList = (window.appState && window.appState.classes) ? window.appState.classes : [];
     if (classList.length === 0) {
-        container.innerHTML = '<div class="text-xs text-slate-400 p-2 text-center font-medium">Belum ada data kelas.</div>';
+        container.innerHTML = '<div class="text-xs text-slate-400 dark:text-slate-500 p-2 text-center font-medium">Belum ada data kelas.</div>';
         return;
     }
 
     classList.forEach(function(c, idx) {
         var div = document.createElement('div');
-        div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold";
+        div.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/60 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200";
         var className = c.name || c.nama || c.namaKelas || '';
         var classId = c.id || '';
 
         div.innerHTML = 
-            '<span><i class="fa-solid fa-door-open text-indigo-600 mr-2"></i>' + (idx + 1) + '. ' + className + '</span>' +
+            '<span><i class="fa-solid fa-door-open text-indigo-600 dark:text-indigo-400 mr-2"></i>' + (idx + 1) + '. ' + className + '</span>' +
             '<div class="flex items-center gap-1">' +
-                '<button type="button" onclick="moveClassOrder(' + idx + ', \'up\')" class="text-slate-500 hover:text-slate-800 p-1 cursor-pointer" title="Pindah ke Atas"><i class="fa-solid fa-arrow-up"></i></button>' +
-                '<button type="button" onclick="moveClassOrder(' + idx + ', \'down\')" class="text-slate-500 hover:text-slate-800 p-1 cursor-pointer" title="Pindah ke Bawah"><i class="fa-solid fa-arrow-down"></i></button>' +
-                '<button type="button" onclick="openModalEditKelas(\'' + classId + '\', ' + idx + ')" class="text-indigo-600 hover:text-indigo-800 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
-                '<button type="button" onclick="handleDeleteKelas(\'' + classId + '\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
+                '<button type="button" onclick="moveClassOrder(' + idx + ', \'up\')" class="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 p-1 cursor-pointer" title="Pindah ke Atas"><i class="fa-solid fa-arrow-up"></i></button>' +
+                '<button type="button" onclick="moveClassOrder(' + idx + ', \'down\')" class="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 p-1 cursor-pointer" title="Pindah ke Bawah"><i class="fa-solid fa-arrow-down"></i></button>' +
+                '<button type="button" onclick="openModalEditKelas(\'' + classId + '\', ' + idx + ')" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
+                '<button type="button" onclick="handleDeleteKelas(\'' + classId + '\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
             '</div>';
         container.appendChild(div);
     });
@@ -209,21 +209,21 @@ function renderMasterMapelList() {
 
     var subjectList = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
     if (subjectList.length === 0) {
-        container.innerHTML = '<div class="text-xs text-slate-400 p-2 text-center font-medium">Belum ada mata pelajaran.</div>';
+        container.innerHTML = '<div class="text-xs text-slate-400 dark:text-slate-500 p-2 text-center font-medium">Belum ada mata pelajaran.</div>';
         return;
     }
 
     subjectList.forEach(function(m, idx) {
         var div = document.createElement('div');
-        div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold";
+        div.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/60 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200";
         var mapelName = m.name || m.nama || '';
         var mapelId = m.id || '';
 
         div.innerHTML = 
-            '<span><i class="fa-solid fa-book text-indigo-600 mr-2"></i>' + mapelName + '</span>' +
+            '<span><i class="fa-solid fa-book text-indigo-600 dark:text-indigo-400 mr-2"></i>' + mapelName + '</span>' +
             '<div class="flex items-center gap-1">' +
-                '<button type="button" onclick="openModalEditMapel(\'' + mapelId + '\', ' + idx + ')" class="text-indigo-600 hover:text-indigo-800 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
-                '<button type="button" onclick="handleDeleteMapel(\'' + mapelId + '\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
+                '<button type="button" onclick="openModalEditMapel(\'' + mapelId + '\', ' + idx + ')" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
+                '<button type="button" onclick="handleDeleteMapel(\'' + mapelId + '\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
             '</div>';
         container.appendChild(div);
     });
@@ -279,7 +279,7 @@ function handleDeleteMapel(mapelId, idx) {
     if (typeof showToast === 'function') showToast("Mata pelajaran berhasil dihapus.");
 }
 
-// --- 4. MANAJEMEN TABEL DATA MURID (10 ITEM PER HALAMAN) ---
+// --- 4. MANAJEMEN TABEL DATA MURID (10 ITEM PER HALAMAN - MODERN UI & AVATAR) ---
 function renderMasterSiswaTable() {
     var tbody = document.getElementById('master-siswa-table-body');
     if (!tbody) return;
@@ -305,7 +305,7 @@ function renderMasterSiswaTable() {
     });
 
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Data murid kosong / tidak ditemukan. (Total terdaftar: ' + studentList.length + ')</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400 dark:text-slate-500 font-medium italic">Data murid kosong atau tidak ditemukan. (Total terdaftar: ' + studentList.length + ')</td></tr>';
         renderSiswaPaginationControls(0, 0, 0);
         return;
     }
@@ -324,18 +324,27 @@ function renderMasterSiswaTable() {
         var realNumber = startIndex + idx + 1;
         var kelasIdentifier = s.classId || s.kelas || '';
         var namaKelasLengkap = (typeof getClassName === 'function') ? getClassName(kelasIdentifier) : kelasIdentifier;
+        var namaSiswa = s.nama || s.name || '-';
+        
+        var initials = namaSiswa.split(' ').map(function(n) { return n[0]; }).slice(0, 2).join('').toUpperCase();
+        if (!initials) initials = 'MS';
 
         var tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition border-b border-slate-100 text-xs";
+        tr.className = "hover:bg-indigo-50/40 dark:hover:bg-slate-700/50 transition border-b border-slate-100 dark:border-slate-700/60 text-xs";
         tr.innerHTML = 
-            '<td class="p-3 text-center text-slate-500 font-bold">' + realNumber + '</td>' +
-            '<td class="p-3 font-semibold text-slate-700">' + (s.nisn || '-') + '</td>' +
-            '<td class="p-3 font-bold text-slate-800">' + (s.nama || s.name || '-') + '</td>' +
-            '<td class="p-3 text-center"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-indigo-200">' + (s.ketunaan || '-') + '</span></td>' +
-            '<td class="p-3 text-slate-600 font-medium">' + namaKelasLengkap + '</td>' +
-            '<td class="p-3 text-center space-x-1">' +
-                '<button type="button" onclick="openModalSiswa(event, \'' + (s.id || idx) + '\')" class="text-indigo-600 hover:text-indigo-800 p-1 cursor-pointer" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>' +
-                '<button type="button" onclick="handleDeleteSiswa(\'' + (s.id || idx) + '\')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
+            '<td class="p-3 text-center text-slate-400 dark:text-slate-500 font-bold">' + realNumber + '</td>' +
+            '<td class="p-3 font-mono text-slate-600 dark:text-slate-300 font-semibold">' + (s.nisn || '-') + '</td>' +
+            '<td class="p-3">' +
+                '<div class="flex items-center space-x-3">' +
+                    '<div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 font-bold flex items-center justify-center text-[10px] shrink-0 border border-indigo-200 dark:border-indigo-800">' + initials + '</div>' +
+                    '<div><p class="font-bold text-slate-800 dark:text-slate-200">' + namaSiswa + '</p></div>' +
+                '</div>' +
+            '</td>' +
+            '<td class="p-3 text-center"><span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-xl text-[10px] font-bold border border-indigo-200 dark:border-indigo-800">' + (s.ketunaan || '-') + '</span></td>' +
+            '<td class="p-3 text-slate-600 dark:text-slate-300 font-medium">' + namaKelasLengkap + '</td>' +
+            '<td class="p-3 text-center space-x-2">' +
+                '<button type="button" onclick="openModalSiswa(event, \'' + (s.id || idx) + '\')" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition cursor-pointer" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>' +
+                '<button type="button" onclick="handleDeleteSiswa(\'' + (s.id || idx) + '\')" class="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer" title="Hapus"><i class="fa-solid fa-trash"></i></button>' +
             '</td>';
         tbody.appendChild(tr);
     });
@@ -358,16 +367,16 @@ function renderSiswaPaginationControls(totalItems, startItem, endItem) {
 
     var navDiv = document.createElement('div');
     navDiv.id = 'siswa-pagination-container';
-    navDiv.className = "flex flex-col sm:flex-row items-center justify-between pt-3 text-xs gap-2 border-t border-slate-100";
+    navDiv.className = "flex flex-col sm:flex-row items-center justify-between pt-3 text-xs gap-2 border-t border-slate-100 dark:border-slate-700/60";
     
     navDiv.innerHTML = 
-        '<div class="text-slate-500 font-medium">' +
-            'Menampilkan <span class="font-bold text-slate-800">' + startItem + '</span> - <span class="font-bold text-slate-800">' + endItem + '</span> dari <span class="font-bold text-indigo-600">' + totalItems + '</span> murid' +
+        '<div class="text-slate-500 dark:text-slate-400 font-medium">' +
+            'Menampilkan <span class="font-bold text-slate-800 dark:text-slate-200">' + startItem + '</span> - <span class="font-bold text-slate-800 dark:text-slate-200">' + endItem + '</span> dari <span class="font-bold text-indigo-600 dark:text-indigo-400">' + totalItems + '</span> murid' +
         '</div>' +
         '<div class="flex items-center gap-1.5">' +
-            '<button type="button" onclick="changeSiswaPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled class="px-2.5 py-1 bg-slate-100 text-slate-400 rounded-lg font-bold cursor-not-allowed"' : 'class="px-2.5 py-1 bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-bold cursor-pointer transition"') + '><i class="fa-solid fa-chevron-left mr-1"></i> Prev</button>' +
-            '<span class="px-3 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg border border-indigo-100">Hal ' + currentPage + ' / ' + totalPages + '</span>' +
-            '<button type="button" onclick="changeSiswaPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled class="px-2.5 py-1 bg-slate-100 text-slate-400 rounded-lg font-bold cursor-not-allowed"' : 'class="px-2.5 py-1 bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-bold cursor-pointer transition"') + '>Next <i class="fa-solid fa-chevron-right ml-1"></i></button>' +
+            '<button type="button" onclick="changeSiswaPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-lg font-bold cursor-not-allowed"' : 'class="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg font-bold cursor-pointer transition"') + '><i class="fa-solid fa-chevron-left mr-1"></i> Prev</button>' +
+            '<span class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold rounded-lg border border-indigo-100 dark:border-indigo-800">Hal ' + currentPage + ' / ' + totalPages + '</span>' +
+            '<button type="button" onclick="changeSiswaPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-lg font-bold cursor-not-allowed"' : 'class="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg font-bold cursor-pointer transition"') + '>Next <i class="fa-solid fa-chevron-right ml-1"></i></button>' +
         '</div>';
 
     parent.appendChild(navDiv);
