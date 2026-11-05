@@ -41,35 +41,6 @@ if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye');
 }
 }
 }
-​// Login Langsung via Form
-function executeFormLogin(e) {
-if (e) e.preventDefault();
-if (typeof doLogin === 'function') {
-doLogin(e);
-} else if (typeof handleLogin === 'function') {
-const u = (document.getElementById('login-nama') || {}).value;
-const p = (document.getElementById('login-password') || {}).value;
-handleLogin(u, p);
-}
-}
-​// Masuk Paksa / Reset Sesi Darurat
-function forceLoginDirect(e) {
-if (e) e.preventDefault();
-if (typeof forceLoginAdmin === 'function') {
-forceLoginAdmin();
-} else {
-var defaultUser = {
-id: "admin-default",
-username: "admin",
-nama: "Administrator Sistem",
-role: "admin"
-};
-if (window.appState) window.appState.currentUser = defaultUser;
-localStorage.setItem('sispko_session_user', JSON.stringify(defaultUser));
-​if (typeof checkUserSession === 'function') checkUserSession();
-if (typeof triggerUIRender === 'function') triggerUIRender();
-}
-}
 </script>
 ​<!-- ==================== SCREEN 1: LOGIN ==================== -->
 <div id="screen-login" class="min-h-screen flex items-center justify-center bg-slate-900 p-4">
