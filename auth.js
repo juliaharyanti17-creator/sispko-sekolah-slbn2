@@ -35,6 +35,20 @@ function handleLogin(e) {
         alert("Silakan isi Nama Pengguna / Username dan Kata Sandi!");
         return;
     }
+    // Pastikan fungsi ini ada di auth.js
+function executeFormLogin(e) {
+    if (e) e.preventDefault();
+    if (typeof doLogin === 'function') {
+        doLogin(e);
+    } else if (typeof handleLogin === 'function') {
+        var u = (document.getElementById('login-nama') || {}).value;
+        var p = (document.getElementById('login-password') || {}).value;
+        handleLogin(u, p);
+    } else {
+        console.error("Fungsi login belum diinisialisasi.");
+    }
+}
+window.executeFormLogin = executeFormLogin;
 
     // A. Fallback Administrator Sistem
     if ((inputUser === 'admin' || inputUser === 'administrator') && (inputPass === 'admin' || inputPass === 'admin123' || inputPass === '123456')) {
