@@ -86,7 +86,7 @@ window.getSubjectName = function(subjectIdOrName) {
 };
 
 // --------------------------------------------------------------------------
-// 1. SISTEM PERUBAHAN TAB & KONTEN HALAMAN
+// 1. SISTEM PERUBAHAN TAB & KONTEN HALAMAN (GLOBAL EXPOSED)
 // --------------------------------------------------------------------------
 window.switchTab = function(e, tabName) {
     if (e && e.preventDefault) e.preventDefault();
@@ -115,9 +115,9 @@ window.switchTab = function(e, tabName) {
 
         if (btn) {
             if (mod === tabName) {
-                btn.className = "tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all cursor-pointer";
+                btn.className = "tab-btn w-full px-3.5 py-3 rounded-2xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all duration-300 transform scale-[1.02] cursor-pointer";
             } else {
-                btn.className = "tab-btn w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between text-indigo-200 hover:bg-indigo-800/60 hover:text-white transition-all cursor-pointer";
+                btn.className = "tab-btn w-full px-3.5 py-3 rounded-2xl text-xs font-bold flex items-center justify-between text-indigo-200 hover:bg-white/10 hover:text-white transition-all duration-300 hover:translate-x-1 border border-white/5 hover:border-white/10 cursor-pointer";
             }
         }
     });
@@ -405,44 +405,6 @@ function resetForm(formId) {
     if (form) form.reset();
 }
 
-// --------------------------------------------------------------------------
-// 5. GLOBAL CLEANER AGGRESSIVE (PEMBERSIH OTOMATIS C_... & M_...)
-// --------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", function() {
-    setInterval(function() {
-        if (!window.appState) return;
-        
-        var elements = document.querySelectorAll('td, span, div, p, th, strong, b, small');
-        
-        elements.forEach(function(el) {
-            var text = el.innerText ? el.innerText.trim() : '';
-            if (!text) return;
-
-            if (text.startsWith('c_') && text.length > 5) {
-                if (typeof getClassName === 'function') {
-                    var namaKelas = getClassName(text);
-                    if (namaKelas && namaKelas !== text) {
-                        el.innerText = namaKelas;
-                        el.style.fontWeight = 'bold';
-                        el.style.color = '#4338ca';
-                    }
-                }
-            }
-            
-            if (text.startsWith('m_') && text.length > 5) {
-                if (typeof getSubjectName === 'function') {
-                    var namaMapel = getSubjectName(text);
-                    if (namaMapel && namaMapel !== text) {
-                        el.innerText = namaMapel;
-                        el.style.fontWeight = 'bold';
-                        el.style.color = '#0d9488';
-                    }
-                }
-            }
-        });
-    }, 500);
-});
-
 // ==========================================================================
 // CONFIGURATIONS & HYBRID STORAGE CONNECTOR - SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
@@ -458,7 +420,7 @@ window.appState = {
     students: [],
     journals: [],
     presensi: [],
-    presensiRecords: {}, // <-- DISINKRONKAN DENGAN PRESENSI.JS
+    presensiRecords: {}, // Terhubung dengan modul presensi.js
     evaluations: [],
     ketunaanList: [
         "Tuna Netra", "Tuna Rungu", "Tuna Grahita", "Tuna Grahita Sedang",
@@ -478,13 +440,12 @@ const firebaseConfig = {
   measurementId: "G-NHZLZGTSD0"
 };
 
-// Cegah Inisialisasi Ganda Firebase
 if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
 // ==========================================================================
-// 3. FUNGSI PENANGANAN SESI LOGIN & MEMUNCULKAN DASHBOARD
+// 3. FUNGSI SESI LOGIN & TAMPILAN DASHBOARD
 // ==========================================================================
 window.checkUserSession = function() {
     var loginSection = document.getElementById('screen-login') || document.getElementById('loginSection');
@@ -525,7 +486,7 @@ window.checkUserSession = function() {
 };
 
 // ==========================================================================
-// 4. FUNGSI SIMPAN DATA LOKAL & FIREBASE
+// 4. FUNGSI PENYIMPANAN DATA LOKAL & FIREBASE
 // ==========================================================================
 function updateLocalBackup() {
     try {
@@ -544,7 +505,7 @@ window.saveAppState = function() {
         students: window.appState.students || [],
         journals: window.appState.journals || [],
         presensi: window.appState.presensi || [],
-        presensiRecords: window.appState.presensiRecords || {}, // <-- DISINKRONKAN
+        presensiRecords: window.appState.presensiRecords || {},
         evaluations: window.appState.evaluations || [],
         ketunaanList: window.appState.ketunaanList || []
     };
@@ -560,7 +521,7 @@ window.savePresensiData = function() {
 };
 
 // ==========================================================================
-// 5. FUNGSI MUAT DATA SAAT REFRESH
+// 5. FUNGSI PEMUATAN DATA (LOAD APP STATE)
 // ==========================================================================
 window.loadAppState = function(callback) {
     var savedSession = localStorage.getItem('sispko_session_user');
@@ -578,7 +539,7 @@ window.loadAppState = function(callback) {
             if (parsedLocal.users && parsedLocal.users.length > 0) window.appState.users = parsedLocal.users;
             if (parsedLocal.journals) window.appState.journals = parsedLocal.journals;
             if (parsedLocal.presensi) window.appState.presensi = parsedLocal.presensi;
-            if (parsedLocal.presensiRecords) window.appState.presensiRecords = parsedLocal.presensiRecords; // <-- DISINKRONKAN
+            if (parsedLocal.presensiRecords) window.appState.presensiRecords = parsedLocal.presensiRecords;
             if (parsedLocal.evaluations) window.appState.evaluations = parsedLocal.evaluations;
             if (parsedLocal.ketunaanList) window.appState.ketunaanList = parsedLocal.ketunaanList;
         } catch(e) {}
@@ -600,7 +561,7 @@ window.loadAppState = function(callback) {
                 window.appState.subjects = data.subjects || [];
                 window.appState.users = (data.users && data.users.length > 0) ? data.users : window.appState.users;
                 window.appState.presensi = data.presensi || [];
-                window.appState.presensiRecords = data.presensiRecords || {}; // <-- DISINKRONKAN
+                window.appState.presensiRecords = data.presensiRecords || {};
                 window.appState.evaluations = data.evaluations || [];
                 window.appState.ketunaanList = data.ketunaanList || window.appState.ketunaanList;
                 
