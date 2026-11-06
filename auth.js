@@ -21,7 +21,9 @@ function toggleMobileSidebar(e) {
 
 // --- 1. HANDLE LOGIN UTAMA ---
 function handleLogin(e) {
-    if (e) e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+    }
 
     var usernameInput = document.getElementById('login-nama');
     var passwordInput = document.getElementById('login-password');
@@ -35,20 +37,6 @@ function handleLogin(e) {
         alert("Silakan isi Nama Pengguna / Username dan Kata Sandi!");
         return;
     }
-    // Pastikan fungsi ini ada di auth.js
-function executeFormLogin(e) {
-    if (e) e.preventDefault();
-    if (typeof doLogin === 'function') {
-        doLogin(e);
-    } else if (typeof handleLogin === 'function') {
-        var u = (document.getElementById('login-nama') || {}).value;
-        var p = (document.getElementById('login-password') || {}).value;
-        handleLogin(u, p);
-    } else {
-        console.error("Fungsi login belum diinisialisasi.");
-    }
-}
-window.executeFormLogin = executeFormLogin;
 
     // A. Fallback Administrator Sistem
     if ((inputUser === 'admin' || inputUser === 'administrator') && (inputPass === 'admin' || inputPass === 'admin123' || inputPass === '123456')) {
@@ -101,8 +89,17 @@ window.executeFormLogin = executeFormLogin;
     alert("Akun tidak ditemukan! Gunakan username 'admin' dengan password 'admin' untuk masuk sebagai Administrator.");
 }
 
+// Global hook untuk form submit di HTML
+window.executeFormLogin = function(e) {
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+    }
+    handleLogin(e);
+};
+
 // --- 2. SESI & PENGATURAN TAMPILAN BERDASARKAN ROLE ---
 function saveSessionAndEnterApp(userObj) {
+    if (!window.appState) window.appState = {};
     window.appState.currentUser = userObj;
     localStorage.setItem('sispko_session_user', JSON.stringify(userObj));
 
@@ -136,7 +133,7 @@ function saveSessionAndEnterApp(userObj) {
         window.populateDropdowns();
     }
 
-    // Auto-Landing Page berdasarkan Role (FIXED: Kepsek langsung ke evaluasi tanpa tertimpa)
+    // Auto-Landing Page berdasarkan Role
     var userRole = (userObj.role || '').toLowerCase();
     if (userRole === 'kepsek' || userRole === 'kepala sekolah') {
         if (typeof window.switchTab === 'function') window.switchTab(null, 'evaluasi');
@@ -280,7 +277,7 @@ function handleLogout(e) {
     if (!confirm("Apakah Anda yakin ingin keluar dari aplikasi SIMPATIK?")) return;
 
     localStorage.removeItem('sispko_session_user');
-    window.appState.currentUser = null;
+    if (window.appState) window.appState.currentUser = null;
 
     var screenLogin = document.getElementById('screen-login');
     var screenApp = document.getElementById('screen-app');
@@ -313,6 +310,7 @@ function togglePasswordVisibility(e) {
 
 // --- 6. MANAJEMEN USER / GURU (MASTER DATA) ---
 function initDefaultUsers() {
+    if (!window.appState) window.appState = {};
     if (!window.appState.users || !Array.isArray(window.appState.users) || window.appState.users.length === 0) {
         window.appState.users = [
             {
@@ -513,6 +511,7 @@ window.handleDeleteUser = function(idx) {
 
 // Inisialisasi Sesi Login saat pertama muat
 document.addEventListener('DOMContentLoaded', function() {
+    if (!window.appState) window.appState = {};
     var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
         try {
