@@ -61,6 +61,8 @@ function loadPresensiTable() {
         if (!initials) initials = 'MS';
 
         var tr = document.createElement('tr');
+        // Simpan student id pada atribut baris agar mudah dibaca saat tombol simpan diklik
+        tr.setAttribute('data-student-id', s.id);
         tr.className = "hover:bg-indigo-50/40 dark:hover:bg-slate-700/50 transition border-b border-slate-100 dark:border-slate-700/60 text-xs";
         tr.innerHTML = `
             <td class="p-3 text-center text-slate-400 dark:text-slate-500 font-bold">${idx + 1}</td>
@@ -79,11 +81,11 @@ function loadPresensiTable() {
                 </span>
             </td>
             <td class="p-3 text-center">
-                <div class="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 gap-1">
-                    <button type="button" onclick="setStudentStatus('${s.id}', 'H')" class="px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${status === 'H' || status === 'Hadir' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}">H</button>
-                    <button type="button" onclick="setStudentStatus('${s.id}', 'S')" class="px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${status === 'S' || status === 'Sakit' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}">S</button>
-                    <button type="button" onclick="setStudentStatus('${s.id}', 'I')" class="px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${status === 'I' || status === 'Izin' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}">I</button>
-                    <button type="button" onclick="setStudentStatus('${s.id}', 'A')" class="px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${status === 'A' || status === 'Alpa' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}">A</button>
+                <div class="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 gap-1 status-container" data-student-id="${s.id}">
+                    <button type="button" onclick="setStudentStatus('${s.id}', 'H')" class="btn-status-${s.id} px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${status === 'H' || status === 'Hadir' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}">H</button>
+                    <button type="button" onclick="setStudentStatus('${s.id}', 'S')" class="btn-status-${s.id} px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${status === 'S' || status === 'Sakit' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}">S</button>
+                    <button type="button" onclick="setStudentStatus('${s.id}', 'I')" class="btn-status-${s.id} px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${status === 'I' || status === 'Izin' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}">I</button>
+                    <button type="button" onclick="setStudentStatus('${s.id}', 'A')" class="btn-status-${s.id} px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${status === 'A' || status === 'Alpa' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}">A</button>
                 </div>
             </td>
             <td class="p-3 text-center text-slate-400 dark:text-slate-500">-</td>
@@ -124,23 +126,55 @@ function updatePresensiSummary(h, s, i, a, total) {
 }
 
 function handleSavePresensi(e) {
-    if (e) e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+    }
 
     var selectedTgl = document.getElementById('presensi-tanggal').value;
     var selectedClass = document.getElementById('presensi-kelas-select').value;
     var selectedMapel = document.getElementById('presensi-mapel-select') ? document.getElementById('presensi-mapel-select').value : 'HARIAN';
 
+    if (!selectedTgl || !selectedClass) {
+        if (typeof showToast === 'function') showToast("Pilih tanggal dan kelas terlebih dahulu!");
+        else alert("Pilih tanggal dan kelas terlebih dahulu!");
+        return;
+    }
+
     var harianKey = selectedTgl + '_' + selectedClass + '_HARIAN';
     var targetKey = selectedTgl + '_' + selectedClass + '_' + selectedMapel;
 
     if (!appState.presensiRecords) appState.presensiRecords = {};
+    if (!appState.presensiRecords[targetKey]) {
+        appState.presensiRecords[targetKey] = Object.assign({}, appState.presensiRecords[harianKey] || {});
+    }
+
+    // Ambil status terbaru langsung dari tombol aktif yang dipilih pada tabel
+    var rows = document.querySelectorAll('#presensi-table-body tr');
+    rows.forEach(function(tr) {
+        var studentId = tr.getAttribute('data-student-id');
+        if (studentId) {
+            var activeBtn = tr.querySelector('.status-container button.bg-emerald-600, .status-container button.bg-amber-500, .status-container button.bg-blue-600, .status-container button.bg-rose-600');
+            if (activeBtn) {
+                var statusText = activeBtn.textContent.trim();
+                appState.presensiRecords[targetKey][studentId] = statusText;
+            }
+        }
+    });
 
     // Jika disimpan saat posisi di mapel tertentu, sinkronkan juga ke harian utama jika harian utama masih kosong
     if (targetKey !== harianKey && !appState.presensiRecords[harianKey]) {
         appState.presensiRecords[harianKey] = Object.assign({}, appState.presensiRecords[targetKey]);
     }
 
+    // Simpan ke State Utama / LocalStorage / Firebase
     if (typeof saveAppState === 'function') saveAppState();
+    else localStorage.setItem('sispko_app_state', JSON.stringify(appState));
+
     if (typeof savePresensiData === 'function') savePresensiData();
-    if (typeof showToast === 'function') showToast("Presensi berhasil disimpan dan disinkronkan!");
-                          }
+
+    if (typeof showToast === 'function') {
+        showToast("Presensi berhasil disimpan dan disinkronkan!");
+    } else {
+        alert("Presensi berhasil disimpan dan disinkronkan!");
+    }
+}
