@@ -1,5 +1,5 @@
 // ==========================================================================
-// Modul Presensi Murid SIMPATIK SLBN 2 PELAIHARI (Modern UI & Dark Mode)
+// Modul Presensi Murid SIMPATIK SLBN 2 PELAIHARI (Alur Presensi Terpusat & Warisan Otomatis)
 // ==========================================================================
 
 function renderPresensiForm() {
@@ -16,9 +16,10 @@ function loadPresensiTable() {
 
     var selectedTgl = document.getElementById('presensi-tanggal') ? document.getElementById('presensi-tanggal').value : '';
     var selectedClass = document.getElementById('presensi-kelas-select') ? document.getElementById('presensi-kelas-select').value : '';
+    var selectedMapel = document.getElementById('presensi-mapel-select') ? document.getElementById('presensi-mapel-select').value : 'HARIAN';
 
-    if (!selectedClass) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-500 font-medium italic">Pilih kelas terlebih dahulu.</td></tr>';
+    if (!selectedClass || !selectedTgl) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-500 font-medium italic">Pilih tanggal dan kelas terlebih dahulu.</td></tr>';
         updatePresensiSummary(0, 0, 0, 0, 0);
         return;
     }
@@ -34,8 +35,16 @@ function loadPresensiTable() {
         return;
     }
 
-    var recordKey = selectedTgl + '_' + selectedClass;
-    var currentRecord = (appState.presensiRecords && appState.presensiRecords[recordKey]) ? appState.presensiRecords[recordKey] : {};
+    // Kunci Penyimpanan: Acuan Harian Utama & Spesifik per Mata Pelajaran
+    var harianKey = selectedTgl + '_' + selectedClass + '_HARIAN';
+    var spesifikKey = selectedTgl + '_' + selectedClass + '_' + selectedMapel;
+
+    if (!appState.presensiRecords) appState.presensiRecords = {};
+
+    // Logika Pewarisan: Ambil data spesifik mapel jika sudah pernah diubah, 
+    // jika belum ada, wariskan dari data presensi harian utama (HARIAN)
+    var baseRecord = appState.presensiRecords[harianKey] || {};
+    var currentRecord = appState.presensiRecords[spesifikKey] || baseRecord;
 
     var countH = 0, countS = 0, countI = 0, countA = 0;
 
@@ -88,13 +97,21 @@ function loadPresensiTable() {
 function setStudentStatus(studentId, status) {
     var selectedTgl = document.getElementById('presensi-tanggal').value;
     var selectedClass = document.getElementById('presensi-kelas-select').value;
+    var selectedMapel = document.getElementById('presensi-mapel-select') ? document.getElementById('presensi-mapel-select').value : 'HARIAN';
+    
     if (!selectedTgl || !selectedClass) return;
 
-    var recordKey = selectedTgl + '_' + selectedClass;
+    var harianKey = selectedTgl + '_' + selectedClass + '_HARIAN';
+    var targetKey = selectedTgl + '_' + selectedClass + '_' + selectedMapel;
+    
     if (!appState.presensiRecords) appState.presensiRecords = {};
-    if (!appState.presensiRecords[recordKey]) appState.presensiRecords[recordKey] = {};
+    
+    // Jika belum ada record spesifik untuk mapel ini, salin dulu dari data harian
+    if (!appState.presensiRecords[targetKey]) {
+        appState.presensiRecords[targetKey] = Object.assign({}, appState.presensiRecords[harianKey] || {});
+    }
 
-    appState.presensiRecords[recordKey][studentId] = status;
+    appState.presensiRecords[targetKey][studentId] = status;
     loadPresensiTable();
 }
 
@@ -108,7 +125,22 @@ function updatePresensiSummary(h, s, i, a, total) {
 
 function handleSavePresensi(e) {
     if (e) e.preventDefault();
+
+    var selectedTgl = document.getElementById('presensi-tanggal').value;
+    var selectedClass = document.getElementById('presensi-kelas-select').value;
+    var selectedMapel = document.getElementById('presensi-mapel-select') ? document.getElementById('presensi-mapel-select').value : 'HARIAN';
+
+    var harianKey = selectedTgl + '_' + selectedClass + '_HARIAN';
+    var targetKey = selectedTgl + '_' + selectedClass + '_' + selectedMapel;
+
+    if (!appState.presensiRecords) appState.presensiRecords = {};
+
+    // Jika disimpan saat posisi di mapel tertentu, sinkronkan juga ke harian utama jika harian utama masih kosong
+    if (targetKey !== harianKey && !appState.presensiRecords[harianKey]) {
+        appState.presensiRecords[harianKey] = Object.assign({}, appState.presensiRecords[targetKey]);
+    }
+
     if (typeof saveAppState === 'function') saveAppState();
     if (typeof savePresensiData === 'function') savePresensiData();
-    if (typeof showToast === 'function') showToast("Presensi berhasil disimpan!");
-}
+    if (typeof showToast === 'function') showToast("Presensi berhasil disimpan dan disinkronkan!");
+                          }
