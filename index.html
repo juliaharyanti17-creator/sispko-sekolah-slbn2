@@ -499,7 +499,34 @@ function togglePasswordVisibility(e) {
         </div>
     </div>
 </section>
-
+<!-- 5. Master Jadwal & Mapel Harian -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar-days text-indigo-600"></i> 5. Master Jadwal & Mapel Harian
+                </h3>
+                <button onclick="openModalJadwal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Tambah Jadwal
+                </button>
+            </div>
+            <div class="overflow-x-auto bg-white rounded-xl border border-slate-200">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 font-bold text-slate-600 border-b">
+                        <tr>
+                            <th class="p-3 text-center w-12">No</th>
+                            <th class="p-3">Kelas</th>
+                            <th class="p-3 text-center">Hari</th>
+                            <th class="p-3 text-center">Jam Ke</th>
+                            <th class="p-3">Mata Pelajaran</th>
+                            <th class="p-3 text-center w-28">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="master-jadwal-table-body" class="divide-y divide-slate-100 font-medium">
+                        <tr><td colspan="6" class="p-3 text-center text-slate-400">Memuat data jadwal...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 <!-- Toast Notification -->
 <div id="toast-banner" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-bold z-50 flex items-center gap-2 border border-slate-700 no-print">
 <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
