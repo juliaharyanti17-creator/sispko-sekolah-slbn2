@@ -429,14 +429,44 @@ function togglePasswordVisibility(e) {
 </section>
 
 <!-- MODUL 4: EVALUASI KEPSEK -->
+<!-- MODUL 4: EVALUASI KEPSEK -->
 <section id="modul-evaluasi" class="hidden space-y-6">
-<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-4">
-<h2 class="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
-<i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
-</h2>
-<p class="text-xs text-slate-500 font-medium">Daftar jurnal mengajar guru yang memerlukan pengawasan dan catatan pembinaan akademik.</p>
-<div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-</div>
+<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
+    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
+    </h2>
+    <p class="text-xs text-slate-500 font-medium">Daftar jurnal mengajar guru yang memerlukan pengawasan dan catatan pembinaan akademik.</p>
+
+    <!-- Widget Statistik Ringkasan -->
+    <div id="eval-section-grafik" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-indigo-50 border border-indigo-200/60 p-4 rounded-2xl text-center">
+            <div class="text-xs font-bold text-indigo-700 uppercase">Total Jurnal Masuk</div>
+            <div id="eval-stat-total-jurnal" class="text-2xl font-black text-indigo-900 mt-1">0</div>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200/60 p-4 rounded-2xl text-center">
+            <div class="text-xs font-bold text-emerald-700 uppercase">Sudah Disupervisi</div>
+            <div id="eval-stat-sudah-supervisi" class="text-2xl font-black text-emerald-900 mt-1">0</div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200/60 p-4 rounded-2xl text-center">
+            <div class="text-xs font-bold text-amber-700 uppercase">Belum Disupervisi</div>
+            <div id="eval-stat-belum-supervisi" class="text-2xl font-black text-amber-900 mt-1">0</div>
+        </div>
+    </div>
+
+    <!-- Canvas Grafik Chart.js -->
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+        <h3 class="text-xs font-bold text-slate-700 mb-3"><i class="fa-solid fa-chart-pie text-indigo-600 mr-1"></i> Grafik Status Supervisi Jurnal KBM</h3>
+        <div class="relative h-64 w-full">
+            <canvas id="evaluasi-chart-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Container Daftar Jurnal untuk Supervisi -->
+    <div class="space-y-3 pt-2">
+        <h3 id="eval-section-supervisi" class="text-xs font-bold text-slate-700">Daftar Jurnal Mengajar Guru</h3>
+        <div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        </div>
+    </div>
 </div>
 </section>
 
