@@ -146,10 +146,10 @@ window.refreshCurrentTabUI = function() {
     try {
         if (window.currentActiveTab === 'presensi' && typeof renderPresensiForm === 'function') {
             renderPresensiForm();
-        } else if (window.currentActiveTab === 'jurnal' && typeof renderJurnalList === 'function') {
-            renderJurnalList();
+        } else if (window.currentActiveTab === 'jurnal' && typeof renderJurnalTable === 'function') {
+            renderJurnalTable();
         } else if (window.currentActiveTab === 'master' && typeof renderAllMasterData === 'function') {
-            renderAllMasterData();
+            renderAllMasterData(); // <--- Pastikan baris ini ada di sini!
         } else if (window.currentActiveTab === 'rekap' && typeof renderRekapModule === 'function') {
             renderRekapModule();
         } else if (window.currentActiveTab === 'evaluasi' && typeof updateEvaluasiDashboard === 'function') {
@@ -159,7 +159,6 @@ window.refreshCurrentTabUI = function() {
         console.error("Gagal memperbarui UI Tab:", err);
     }
 };
-
 window.toggleMobileSidebar = function(e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     var sidebar = document.getElementById('sidebar-nav');
