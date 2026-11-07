@@ -1,9 +1,8 @@
 // ==========================================================================
-// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & EDIT LENGKAP)
+// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & JADWAL DINAMIS)
 // SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
-// Variabel Pengaturan Pagination Master untuk Semua Bagian
 var masterPagination = {
     user: { page: 1, limit: 5 },
     kelas: { page: 1, limit: 5 },
@@ -20,12 +19,11 @@ function renderAllMasterData() {
     renderMasterJadwal();
 }
 
-// Fungsi Ubah Jumlah Baris per Halaman (Limit) untuk Semua Bagian
 function changeMasterLimit(type, selectElement) {
     var val = parseInt(selectElement.value);
     if (masterPagination[type]) {
         masterPagination[type].limit = val;
-        masterPagination[type].page = 1; // Reset ke halaman 1
+        masterPagination[type].page = 1;
         if (type === 'user') renderMasterUsers();
         if (type === 'kelas') renderMasterKelas();
         if (type === 'ketunaan') renderMasterKetunaan();
@@ -35,7 +33,7 @@ function changeMasterLimit(type, selectElement) {
 }
 
 // ==========================================================================
-// 1. MANAJEMEN PENGGUNA / GURU (DENGAN PAGINATION & EDIT)
+// 1. MANAJEMEN PENGGUNA / GURU
 // ==========================================================================
 function renderMasterUsers() {
     var tbody = document.getElementById('master-users-table-body');
@@ -164,7 +162,7 @@ function handleDeleteUser(userId) {
 }
 
 // ==========================================================================
-// 2. MANAJEMEN KELAS (DENGAN PAGINATION & EDIT)
+// 2. MANAJEMEN KELAS
 // ==========================================================================
 function renderMasterKelas() {
     var container = document.getElementById('master-kelas-list-container');
@@ -279,7 +277,7 @@ function handleDeleteClass(classId) {
 }
 
 // ==========================================================================
-// 3. MANAJEMEN KETUNAAN (DENGAN PAGINATION & EDIT)
+// 3. MANAJEMEN KETUNAAN
 // ==========================================================================
 function renderMasterKetunaan() {
     var tbody = document.getElementById('master-ketunaan-table-body');
@@ -396,7 +394,7 @@ function handleDeleteKetunaan(index) {
 }
 
 // ==========================================================================
-// 4. MANAJEMEN SISWA / MURID (DENGAN PAGINATION LENGKAP: 10 PER HALAMAN)
+// 4. MANAJEMEN SISWA / MURID
 // ==========================================================================
 function renderMasterSiswa() {
     var tbody = document.getElementById('master-siswa-table-body');
@@ -542,7 +540,7 @@ function handleDeleteStudent(studentId) {
 }
 
 // ==========================================================================
-// 5. MANAJEMEN MASTER JADWAL & MAPEL HARIAN
+// 5. MANAJEMEN MASTER JADWAL & MAPEL HARIAN (DENGAN JAM DINAMIS)
 // ==========================================================================
 function getJadwalMasterList() {
     if (!window.appState.jadwalMaster) {
@@ -558,7 +556,7 @@ function renderMasterJadwal() {
 
     var jadwalList = getJadwalMasterList();
     if (jadwalList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data jadwal harian.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data jadwal harian. Silakan tambahkan.</td></tr>';
         renderMasterPaginationControls('jadwal', 0, 1, 5);
         return;
     }
@@ -585,8 +583,8 @@ function renderMasterJadwal() {
             <td class="p-2 text-center">Jam Ke-${j.jamKe}</td>
             <td class="p-2 font-semibold text-slate-700">${j.mapel}</td>
             <td class="p-2 text-center space-x-1">
-                <button onclick="openModalJadwal('${j.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
-                <button onclick="handleDeleteJadwal('${j.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
+                <button onclick="openModalJadwal('${j.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg font-bold cursor-pointer"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="handleDeleteJadwal('${j.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg font-bold cursor-pointer"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -600,8 +598,7 @@ function openModalJadwal(jadwalId) {
     var title = document.getElementById('modal-jadwal-title');
     var selectKelas = document.getElementById('jadwal-kelas-input');
     var selectHari = document.getElementById('jadwal-hari-input');
-    var inputJam = document.getElementById('jadwal-jam-input');
-    var inputMapel = document.getElementById('jadwal-mapel-input');
+    var containerJamMapel = document.getElementById('jadwal-jam-mapel-container');
     var editId = document.getElementById('jadwal-edit-id');
     if (!modal) return;
 
@@ -613,6 +610,8 @@ function openModalJadwal(jadwalId) {
         selectKelas.appendChild(opt);
     });
 
+    if (containerJamMapel) containerJamMapel.innerHTML = '';
+
     if (jadwalId) {
         title.textContent = "Edit Jadwal Harian";
         var list = getJadwalMasterList();
@@ -620,19 +619,63 @@ function openModalJadwal(jadwalId) {
         if (target) {
             selectKelas.value = target.classId;
             selectHari.value = target.hari;
-            inputJam.value = target.jamKe;
-            inputMapel.value = target.mapel;
             editId.value = target.id;
+            tambahBarisJamMapel(target.jamKe, target.mapel);
         }
     } else {
         title.textContent = "Tambah Jadwal Harian Baru";
-        inputJam.value = "1";
-        inputMapel.value = "";
         editId.value = "";
+        tambahBarisJamMapel(1, "");
     }
 
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
+}
+
+function tambahBarisJamMapel(jamKeVal, mapelVal) {
+    var container = document.getElementById('jadwal-jam-mapel-container');
+    if (!container) return;
+
+    var nextJam = jamKeVal || (container.children.length + 1);
+    
+    // Daftar mapel default atau dari appState.subjects
+    var subjects = window.appState.subjects || [
+        { name: 'Matematika' },
+        { name: 'Bahasa Indonesia' },
+        { name: 'Bina Diri / Keterampilan' },
+        { name: 'Pendidikan Agama' },
+        { name: 'PJOK' },
+        { name: 'Seni Budaya' }
+    ];
+
+    var rowId = 'jam_row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    var div = document.createElement('div');
+    div.className = "flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 jam-mapel-row";
+    div.id = rowId;
+
+    var optionsHtml = '<option value="">-- Pilih Mata Pelajaran --</option>';
+    subjects.forEach(function(s) {
+        var sName = s.name || s.nama;
+        var selected = (sName === mapelVal) ? 'selected' : '';
+        optionsHtml += '<option value="' + sName + '" ' + selected + '>' + sName + '</option>';
+    });
+
+    div.innerHTML = `
+        <div class="w-24 shrink-0">
+            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Jam Ke-</label>
+            <input type="number" class="input-jam-ke w-full px-2.5 py-1.5 rounded-lg border text-xs font-bold bg-white text-center" value="${nextJam}" min="1" max="10" required>
+        </div>
+        <div class="flex-1">
+            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Mata Pelajaran</label>
+            <select class="input-mapel-val w-full px-2.5 py-1.5 rounded-lg border text-xs font-semibold bg-white">
+                ${optionsHtml}
+            </select>
+        </div>
+        <div class="pt-4">
+            <button type="button" onclick="document.getElementById('${rowId}').remove()" class="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-xs font-bold cursor-pointer" title="Hapus Jam Ini"><i class="fa-solid fa-trash"></i></button>
+        </div>
+    `;
+    container.appendChild(div);
 }
 
 function closeModalJadwal() {
@@ -644,14 +687,22 @@ function handleSaveJadwal(e) {
     if (e) e.preventDefault();
     var classId = document.getElementById('jadwal-kelas-input').value;
     var hari = document.getElementById('jadwal-hari-input').value;
-    var jamKe = document.getElementById('jadwal-jam-input').value;
-    var mapel = document.getElementById('jadwal-mapel-input').value.trim();
     var editId = document.getElementById('jadwal-edit-id').value;
+
+    var rows = document.querySelectorAll('.jam-mapel-row');
+    if (rows.length === 0) {
+        alert("Harap tambahkan minimal 1 jam pelajaran!");
+        return;
+    }
 
     var list = getJadwalMasterList();
 
     if (editId) {
         var target = list.find(function(item) { return item.id === editId; });
+        var firstRow = rows[0];
+        var jamKe = firstRow.querySelector('.input-jam-ke').value;
+        var mapel = firstRow.querySelector('.input-mapel-val').value;
+
         if (target) {
             target.classId = classId;
             target.hari = hari;
@@ -660,15 +711,21 @@ function handleSaveJadwal(e) {
         }
         if (typeof showToast === 'function') showToast("Jadwal berhasil diperbarui.");
     } else {
-        var newJadwal = {
-            id: 'j_' + Date.now(),
-            classId: classId,
-            hari: hari,
-            jamKe: jamKe,
-            mapel: mapel
-        };
-        list.push(newJadwal);
-        if (typeof showToast === 'function') showToast("Jadwal baru berhasil ditambahkan.");
+        rows.forEach(function(row) {
+            var jamKe = row.querySelector('.input-jam-ke').value;
+            var mapel = row.querySelector('.input-mapel-val').value;
+            if (mapel) {
+                var newJadwal = {
+                    id: 'j_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                    classId: classId,
+                    hari: hari,
+                    jamKe: jamKe,
+                    mapel: mapel
+                };
+                list.push(newJadwal);
+            }
+        });
+        if (typeof showToast === 'function') showToast("Jadwal harian baru berhasil ditambahkan.");
     }
 
     if (typeof saveAppState === 'function') saveAppState();
