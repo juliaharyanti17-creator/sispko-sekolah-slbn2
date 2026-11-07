@@ -172,13 +172,21 @@ function setStudentStatus(studentId, status) {
     loadPresensiTable();
 }
 
-function updatePresensiSummary(h, s, i, a, total) {
-    if (document.getElementById('summary-hadir')) document.getElementById('summary-hadir').innerText = h;
-    if (document.getElementById('summary-sakit')) document.getElementById('summary-sakit').innerText = s;
-    if (document.getElementById('summary-izin')) document.getElementById('summary-izin').innerText = izin; // wait, let's fix typo 'izin' -> i
-    if (document.getElementById('summary-izin')) document.getElementById('summary-izin').innerText = i;
-    if (document.getElementById('summary-alpa')) document.getElementById('summary-alpa').innerText = a;
-    if (document.getElementById('summary-total')) document.getElementById('summary-total').innerText = total;
+// ==========================================================================
+// Perbaikan Fungsi updatePresensiSummary yang Aman dari Error "izin is not defined"
+// ==========================================================================
+function updatePresensiSummary(hadirCount, sakitCount, izinCount, alpaCount, totalCount) {
+    var elHadir = document.getElementById('summary-hadir');
+    var elSakit = document.getElementById('summary-sakit');
+    var elIzin  = document.getElementById('summary-izin');
+    var elAlpa  = document.getElementById('summary-alpa');
+    var elTotal = document.getElementById('summary-total');
+
+    if (elHadir) elHadir.innerText = hadirCount || 0;
+    if (elSakit) elSakit.innerText = sakitCount || 0;
+    if (elIzin)  elIzin.innerText  = izinCount || 0;
+    if (elAlpa)  elAlpa.innerText  = alpaCount || 0;
+    if (elTotal) elTotal.innerText = totalCount || 0;
 }
 
 function handleSavePresensi(e) {
