@@ -2,8 +2,8 @@
 // SIMPATIK SLBN 2 PELAIHARI - MAIN APPLICATION LOGIC (app.js)
 // ==========================================================================
 
-// 1. Deklarasi Global switchTab di Baris Paling Atas (Aman dari Konflik Scope)
-window.switchTab = function(e, tabName) {
+// 1. Deklarasi Global switchTab dengan Pelindung Aman (Anti Race Condition)
+window.switchTab = window.switchTab || function(e, tabName) {
     if (e && typeof e.preventDefault === 'function') {
         e.preventDefault();
     }
