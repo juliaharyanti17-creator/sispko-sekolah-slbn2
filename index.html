@@ -776,5 +776,123 @@ function togglePasswordVisibility(e) {
         </form>
     </div>
 </div>
+
+  <!-- ==================== MODAL MASTER FORM LENGKAP ==================== -->
+
+<!-- 1. MODAL TAMBAH/EDIT USER -->
+<div id="modal-user" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 id="modal-user-title" class="font-bold text-sm text-slate-800">Tambah User / Guru Baru</h3>
+            <button onclick="closeModalUser()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
+        </div>
+        <form onsubmit="handleSaveUser(event)" class="space-y-3">
+            <input type="hidden" id="user-edit-id" value="">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap & Gelar</label>
+                <input type="text" id="user-nama-input" required placeholder="Contoh: Ahmad, S.Pd" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Username</label>
+                <input type="text" id="user-username-input" required placeholder="Contoh: ahmad" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Kata Sandi (Password)</label>
+                <input type="password" id="user-password-input" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Role / Hak Akses</label>
+                <select id="user-role-input" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    <option value="guru">Guru / Wali Kelas</option>
+                    <option value="kepsek">Kepala Sekolah</option>
+                    <option value="admin">Administrator</option>
+                </select>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onclick="closeModalUser()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 2. MODAL TAMBAH/EDIT KELAS -->
+<div id="modal-kelas" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl border border-slate-100">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 id="modal-kelas-title" class="font-bold text-sm text-slate-800">Tambah Kelas Baru</h3>
+            <button onclick="closeModalClass()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
+        </div>
+        <form onsubmit="handleSaveClass(event)" class="space-y-3">
+            <input type="hidden" id="kelas-edit-id" value="">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Rombel / Kelas</label>
+                <input type="text" id="kelas-nama-input" required placeholder="Contoh: Kelas 1 SDLB" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onclick="closeModalClass()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Kelas</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. MODAL TAMBAH/EDIT KETUNAAN -->
+<div id="modal-ketunaan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl border border-slate-100">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 id="modal-ketunaan-title" class="font-bold text-sm text-slate-800">Tambah Kategori Ketunaan</h3>
+            <button onclick="closeModalKetunaan()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
+        </div>
+        <form onsubmit="handleSaveKetunaan(event)" class="space-y-3">
+            <input type="hidden" id="ketunaan-edit-index" value="">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Kategori Ketunaan</label>
+                <input type="text" id="ketunaan-nama-input" required placeholder="Contoh: Tuna Daksa" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onclick="closeModalKetunaan()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Ketunaan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 4. MODAL TAMBAH/EDIT SISWA / MURID -->
+<div id="modal-student" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 id="modal-student-title" class="font-bold text-sm text-slate-800">Tambah Murid Baru</h3>
+            <button onclick="closeModalStudent()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
+        </div>
+        <form onsubmit="handleSaveStudent(event)" class="space-y-3">
+            <input type="hidden" id="student-edit-id" value="">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap Murid</label>
+                <input type="text" id="student-nama-input" required placeholder="Contoh: Muhammad Rizki" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">NISN</label>
+                <input type="text" id="student-nisn-input" placeholder="Contoh: 0012345678" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Kelas</label>
+                    <select id="student-kelas-input" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Ketunaan</label>
+                    <select id="student-ketunaan-input" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onclick="closeModalStudent()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Murid</button>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>
