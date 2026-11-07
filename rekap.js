@@ -30,6 +30,11 @@ function setPresetRekapRange(e, type) {
 }
 
 function renderRekapModule() {
+    // Jalankan pengecekan hak akses admin untuk memunculkan/menyembunyikan tombol reset
+    if (typeof checkAdminRoleForRekap === 'function') {
+        checkAdminRoleForRekap();
+    }
+
     const startInput = document.getElementById('filter-rekap-start-date');
     const endInput = document.getElementById('filter-rekap-end-date');
     const classInput = document.getElementById('filter-rekap-kelas');
@@ -61,12 +66,11 @@ function renderRekapModule() {
                 const totalSiswaKelas = (appState.students || []).filter(s => s.classId === c.id || s.kelas === c.id || s.classId === c.name).length;
                 let hadir = 0, izin = 0, sakit = 0, alpa = 0, totalRecords = 0;
 
-                // Perbaikan Pembacaan Kunci Presensi (Aman untuk ID kelas bergaris bawah seperti c_123)
+                // Perbaikan Pembacaan Kunci Presensi (Aman untuk ID kelas bergaris bawah seperti c_172...)
                 Object.keys(appState.presensiRecords || {}).forEach(key => {
                     const parts = key.split('_');
                     if (parts.length >= 3) {
                         const tgl = parts[0];
-                        // Menggabungkan kembali bagian tengah sebagai classId (karena classId bisa mengandung underscore misal c_172...)
                         const classId = parts.slice(1, parts.length - 1).join('_');
 
                         if ((classId === c.id || classId === c.name || classId === c.nama) && tgl >= startDate && tgl <= endDate) {
@@ -134,6 +138,90 @@ function renderRekapModule() {
                 tbodyJurnal.appendChild(tr);
             });
         }
+    }
+}
+
+// ==========================================================================
+// FITUR PENGAMAN & TOMBOL RESET REKAP KHUSUS ADMIN
+// ==========================================================================
+function checkAdminRoleForRekap() {
+    var currentUser = (window.appState && window.appState.currentUser) ? window.appState.currentUser : null;
+    var btnReset = document.getElementById('btn-reset-rekap');
+    
+    if (!btnReset) return;
+
+    var role = (currentUser && currentUser.role) ? currentUser.role.toLowerCase() : '';
+    if (role === 'admin' || role === 'administrator') {
+        btnReset.classList.remove('hidden');
+        btnReset.style.display = 'inline-flex';
+    } else {
+        btnReset.classList.add('hidden');
+        btnReset.style.display = 'none';
+    }
+}
+
+function handleResetRekapData(e) {
+    if (e) e.preventDefault();
+
+    var currentUser = (window.appState && window.appState.currentUser) ? window.appState.currentUser : null;
+    var role = (currentUser && currentUser.role) ? currentUser.role.toLowerCase() : '';
+    
+    if (role !== 'admin' && role !== 'administrator') {
+        alert("Akses Ditolak: Hanya Administrator yang berhak mereset data presensi!");
+        return;
+    }
+
+    var startInput = document.getElementById('filter-rekap-start-date');
+    var endInput = document.getElementById('filter-rekap-end-date');
+    var classInput = document.getElementById('filter-rekap-kelas');
+
+    var startDate = startInput ? startInput.value : '';
+    var endDate = endInput ? endInput.value : startDate;
+    var filterKelas = classInput ? classInput.value : 'ALL';
+
+    var confirmMsg = `PERINGATAN ADMIN:\nAnda akan menghapus seluruh data presensi pada rentang tanggal ${startDate} sampai ${endDate} ${filterKelas === 'ALL' ? 'untuk SEMUA KELAS' : 'untuk kelas terpilih'}.\n\nApakah Anda yakin ingin melanjutkan?`;
+
+    if (!confirm(confirmMsg)) return;
+
+    var presensiRecords = window.appState.presensiRecords || {};
+    var deletedCount = 0;
+
+    Object.keys(presensiRecords).forEach(function(key) {
+        var parts = key.split('_');
+        if (parts.length >= 3) {
+            var tgl = parts[0];
+            var classId = parts.slice(1, parts.length - 1).join('_');
+
+            var matchDate = (tgl >= startDate && tgl <= endDate);
+            var matchClass = (filterKelas === 'ALL' || classId === filterKelas);
+
+            if (matchDate && matchClass) {
+                delete presensiRecords[key];
+                deletedCount++;
+            }
+        }
+    });
+
+    window.appState.presensiRecords = presensiRecords;
+
+    if (typeof saveAppState === 'function') {
+        saveAppState();
+    } else {
+        localStorage.setItem('simpatik_backup_state', JSON.stringify(window.appState));
+    }
+
+    if (typeof savePresensiData === 'function') {
+        savePresensiData();
+    } else if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/presensiRecords').set(presensiRecords);
+    }
+
+    renderRekapModule();
+
+    if (typeof showToast === 'function') {
+        showToast(`Berhasil mereset ${deletedCount} data presensi periode tersebut.`);
+    } else {
+        alert(`Berhasil mereset ${deletedCount} data presensi periode tersebut.`);
     }
 }
 
