@@ -1,15 +1,12 @@
 // ==========================================================================
-// AI-ASSISTANT.JS - AI Agent Natural & Inspektur Data Menyeluruh
-// SIMPATIK SLBN 2 PELAIHARI
+// AI-ASSISTANT.JS - Smart Data Inspector & AI Agent SIMPATIK
+// SLBN 2 PELAIHARI
 // ==========================================================================
 
 window.toggleAIChatModal = function(e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     var modal = document.getElementById('modal-ai-assistant');
-    if (!modal) {
-        console.warn("Elemen #modal-ai-assistant belum tersedia di dalam HTML.");
-        return;
-    }
+    if (!modal) return;
     
     if (modal.classList.contains('hidden')) {
         modal.classList.remove('hidden');
@@ -32,7 +29,7 @@ window.handleSendAIChat = function(e) {
     var text = input.value.trim();
     if (!text) return;
 
-    // 1. Tampilkan pesan pengguna
+    // 1. Tampilkan pesan user
     var userBubble = document.createElement('div');
     userBubble.className = "flex items-start justify-end gap-2.5";
     userBubble.innerHTML = `
@@ -47,7 +44,7 @@ window.handleSendAIChat = function(e) {
     input.value = '';
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
-    // 2. Indikator natural "AI sedang meracik jawaban..."
+    // 2. Indikator pemindaian data
     var typingIndicator = document.createElement('div');
     typingIndicator.id = "ai-typing-indicator";
     typingIndicator.className = "flex items-start gap-2.5";
@@ -60,18 +57,18 @@ window.handleSendAIChat = function(e) {
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Membaca seluruh isi database SIMPATIK...</span>
+            <span>Memindai seluruh isi database aplikasi...</span>
         </div>
     `;
     msgContainer.appendChild(typingIndicator);
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
-    // 3. Proses Analisis Mendalam
+    // 3. Proses Analisis Menyeluruh Terhadap window.appState
     setTimeout(function() {
         var indicatorEl = document.getElementById('ai-typing-indicator');
         if (indicatorEl) indicatorEl.remove();
 
-        var replyText = generateNaturalAIResponse(text);
+        var replyText = smartInspectAppState(text);
 
         var aiBubble = document.createElement('div');
         aiBubble.className = "flex items-start gap-2.5";
@@ -89,9 +86,10 @@ window.handleSendAIChat = function(e) {
 };
 
 /**
- * Logika Respons Natural & Inspeksi Menyeluruh window.appState
+ * Mesin Inspeksi Cerdas (Smart Inspector)
+ * Membaca window.appState secara utuh tanpa batasan kata kunci kaku
  */
-function generateNaturalAIResponse(query) {
+function smartInspectAppState(query) {
     var lower = query.toLowerCase();
     var state = window.appState || {};
 
@@ -101,79 +99,104 @@ function generateNaturalAIResponse(query) {
     var subjects = state.subjects || [];
     var journals = state.journals || [];
     var jadwal = state.jadwalMaster || [];
+    var ketunaanList = state.ketunaanList || [];
 
-    // Jika menyapa atau menanyakan kabar
-    if (lower.match(/^(halo|hai|pagi|siang|malam|assalamu)/)) {
-        return `Halo! Senang bisa membantu Anda kembali. Saya sudah memindai seluruh data terbaru di SIMPATIK SLBN 2 Pelaihari (${students.length} murid, ${classes.length} kelas, dan ${journals.length} jurnal KBM aktif). Ada hal spesifik yang ingin kita bahas atau periksa hari ini?`;
+    // Jika menanyakan ringkasan/statistik total
+    if (lower.includes('semua') || lower.includes('rekap') || lower.includes('ringkasan') || lower.includes('statistik') || lower.includes('info')) {
+        return `Berikut adalah rekam data lengkap yang saya temukan di sistem SIMPATIK saat ini:<br>` +
+               `🏫 <strong>Kelas (${classes.length}):</strong> ` + (classes.map(c => c.name || c.nama).join(', ') || 'Belum ada') + `<br>` +
+               `👨‍🎓 <strong>Total Siswa:</strong> ${students.length} orang<br>` +
+               `📚 <strong>Mata Pelajaran (${subjects.length}):</strong> ` + (subjects.map(s => typeof s === 'string' ? s : (s.name || s.nama)).join(', ') || 'Belum ada') + `<br>` +
+               `📝 <strong>Jurnal KBM Masuk:</strong> ${journals.length} laporan<br>` +
+               `👥 <strong>Pengguna/Guru (${users.length}):</strong> ` + (users.map(u => u.nama || u.username).join(', ') || 'Belum ada');
     }
 
-    // Pertanyaan seputar Siswa / Murid secara umum atau pencarian
-    if (lower.includes('siswa') || lower.includes('murid') || lower.includes('anak')) {
-        if (lower.includes('cari') || lower.includes('nama') || lower.includes('tentang')) {
-            var keyword = lower.replace(/cari|siswa|murid|nama|tentang/g, '').trim();
-            if (!keyword) return "Tentu, siapa nama murid yang ingin Anda cari di database?";
-            
-            var matched = students.filter(function(s) {
-                return (s.nama || s.name || '').toLowerCase().includes(keyword);
-            });
+    // Jika mencari siswa berdasarkan nama atau kelas
+    if (lower.includes('siswa') || lower.includes('murid') || lower.includes('anak') || lower.includes('cari')) {
+        if (students.length === 0) return "Belum ada data siswa yang tersimpan di database.";
+        
+        // Cek apakah ada penyebutan nama atau kelas spesifik
+        var matchedStudents = students.filter(function(s) {
+            var nama = (s.nama || s.name || '').toLowerCase();
+            var nisn = (s.nisn || '').toLowerCase();
+            var ketunaan = (s.ketunaan || '').toLowerCase();
+            return lower.includes(nama) || (nisn && lower.includes(nisn)) || (ketunaan && lower.includes(ketunaan));
+        });
 
-            if (matched.length === 0) return `Saya sudah memeriksa seluruh daftar siswa, namun tidak menemukan murid dengan nama yang mengandung "${keyword}".`;
-            
-            var res = matched.map(function(s) {
+        if (matchedStudents.length > 0) {
+            var details = matchedStudents.map(function(s) {
                 var cName = typeof getClassName === 'function' ? getClassName(s.classId || s.kelas) : (s.classId || '-');
                 return `• <strong>${s.nama || s.name}</strong> (NISN: ${s.nisn || '-'}, Kelas: ${cName}, Ketunaan: ${s.ketunaan || 'Umum'})`;
             }).join('<br>');
-            return `Berikut hasil penelusuran data siswa yang cocok:<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${res}</div>`;
+            return `Hasil pencarian data siswa:<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${details}</div>`;
         }
 
-        return `Berdasarkan data keseluruhan di sistem, saat ini tercatat ada <strong>${students.length} murid</strong> yang tersebar di ${classes.length} rombongan belajar. Semuanya tercatat lengkap dengan informasi ketunaan dan kelas masing-masing.`;
+        // Jika tidak spesifik menyebut nama, berikan ringkasan daftar siswa
+        var sampleStudents = students.slice(0, 8).map(s => s.nama || s.name).join(', ');
+        return `Terdapat total <strong>${students.length} siswa</strong> terdaftar. Di antaranya: ${sampleStudents}${students.length > 8 ? '...' : ''}. (Anda bisa mengetik "Cari siswa [Nama]" untuk mencari data spesifik).`;
     }
 
-    // Pertanyaan seputar Mata Pelajaran
-    if (lower.includes('mata pelajaran') || lower.includes('mapel') || lower.includes('pelajaran')) {
-        if (subjects.length === 0) return "Belum ada mata pelajaran yang dimasukkan ke Data Master saat ini.";
-        var listMapel = subjects.map(function(s) {
-            return `• ${typeof s === 'string' ? s : (s.name || s.nama)}`;
+    // Jika menanyakan mata pelajaran
+    if (lower.includes('pelajaran') || lower.includes('mapel')) {
+        if (subjects.length === 0) return "Belum ada mata pelajaran yang dimasukkan ke dalam Data Master.";
+        var listMapel = subjects.map((s, i) => `${i + 1}. ${typeof s === 'string' ? s : (s.name || s.nama)}`).join('<br>');
+        return `Daftar mata pelajaran aktif di sekolah:<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${listMapel}</div>`;
+    }
+
+    // Jika menanyakan kelas atau wali kelas
+    if (lower.includes('kelas') || lower.includes('wali kelas') || lower.includes('guru') || lower.includes('pengajar')) {
+        if (classes.length === 0) return "Belum ada data kelas terdaftar.";
+        
+        var classInfo = classes.map(function(c) {
+            var cId = c.id;
+            var cName = c.name || c.nama;
+            // Hitung jumlah siswa di kelas ini
+            var jmlSiswa = students.filter(s => s.classId === cId || s.kelas === cId || s.kelas === cName).length;
+            // Cari guru pengampu
+            var pengampu = users.find(u => u.kelasAmpuan === cId || (u.kelasAmpuan && u.kelasAmpuan.toLowerCase().includes(cName.toLowerCase())));
+            var namaGuru = pengampu ? (pengampu.nama || pengampu.username) : "Belum diset";
+            return `• <strong>${cName}</strong> (${jmlSiswa} Siswa) — Wali Kelas: ${namaGuru}`;
         }).join('<br>');
-        return `Di data master sekolah, saat ini terdaftar ${subjects.length} mata pelajaran aktif:<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${listMapel}</div>`;
+
+        return `Rincian data rombongan belajar (kelas):<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${classInfo}</div>`;
     }
 
-    // Pertanyaan seputar Guru / Wali Kelas
-    if (lower.includes('wali kelas') || lower.includes('guru') || lower.includes('pengajar')) {
-        if (users.length === 0) return "Belum ada data guru atau user lain yang tersimpan.";
-        var listUser = users.map(function(u) {
-            return `• <strong>${u.nama || u.username}</strong> — Hak Akses: <em>${(u.role || 'Guru').toUpperCase()}</em>`;
-        }).join('<br>');
-        return `Berikut daftar pengajar dan pengguna yang memegang akses di sistem:<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${listUser}</div>`;
+    // Jika menanyakan jurnal / kegiatan KBM
+    if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar') || lower.includes('aktivitas')) {
+        if (journals.length === 0) return "Belum ada laporan jurnal mengajar yang diinput.";
+        var jurnalList = journals.slice(-5).reverse().map(j => `• <strong>${j.tanggal}</strong> [${j.kelas || '-'}] ${j.mapel || '-'}: ${j.materi || '-'}`).join('<br>');
+        return `Total ada ${journals.length} jurnal KBM. Berikut catatan terbaru:<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${jurnalList}</div>`;
     }
 
-    // Pertanyaan seputar Jurnal KBM / Aktivitas Mengajar
-    if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar')) {
-        if (journals.length === 0) return "Belum ada laporan jurnal mengajar yang diinput oleh guru ke dalam sistem.";
-        var latest = journals.slice(-3).reverse().map(function(j) {
-            return `• <strong>${j.tanggal}</strong> (${j.mapel || 'Mapel'} di ${j.kelas || 'Kelas'}): "${j.materi || '-'}"`;
-        }).join('<br>');
-        return `Sejauh ini sudah ada <strong>${journals.length} laporan jurnal KBM</strong> yang masuk. Berikut beberapa aktivitas pembelajaran terakhir:<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${latest}</div>`;
-    }
-
-    // Pertanyaan seputar Jadwal
+    // Jika menanyakan jadwal
     if (lower.includes('jadwal')) {
-        if (jadwal.length === 0) return "Belum ada master jadwal harian yang diatur.";
-        return `Sistem mencatat ada total <strong>${jadwal.length} entri jadwal pelajaran</strong> harian yang terdistribusi untuk kelas-kelas di sekolah.`;
+        if (jadwal.length === 0) return "Belum ada data master jadwal pelajaran.";
+        return `Terdapat ${jadwal.length} entri master jadwal pelajaran harian yang tersimpan di sistem.`;
     }
 
-    // Pertanyaan rekap / ringkasan umum
-    if (lower.includes('rekap') || lower.includes('ringkasan') || lower.includes('statistik') || lower.includes('semua data')) {
-        return `Tentu, ini rangkuman menyeluruh dari data aplikasi saat ini:<br>` +
-               `🏫 <strong>${classes.length} Kelas</strong> aktif<br>` +
-               `👨‍🎓 <strong>${students.length} Total Murid</strong> terdaftar<br>` +
-               `📚 <strong>${subjects.length} Mata Pelajaran</strong> master<br>` +
-               `📝 <strong>${journals.length} Jurnal KBM</strong> guru tersimpan<br>` +
-               `👥 <strong>${users.length} Akun Pengguna</strong> aktif`;
+    // JIKA PERTANYAAN DI LUAR KATEGORI DI ATAS, LAKUKAN PENCARIAN CERDAS MENYELURUH (DEEP SEARCH)
+    // AI akan mencari apakah ada teks dalam state yang cocok dengan pertanyaan user
+    var foundResults = [];
+    
+    // Cek di students
+    students.forEach(s => {
+        if (JSON.stringify(s).toLowerCase().includes(lower)) {
+            foundResults.push(`Siswa: ${s.nama || s.name}`);
+        }
+    });
+    // Cek di users
+    users.forEach(u => {
+        if (JSON.stringify(u).toLowerCase().includes(lower)) {
+            foundResults.push(`User/Guru: ${u.nama || u.username}`);
+        }
+    });
+
+    if (foundResults.length > 0) {
+        return `Saya menemukan beberapa data yang cocok dengan pencarian Anda:<br><div class="p-2 bg-slate-50 rounded-xl border mt-1">${foundResults.slice(0, 5).join('<br>')}</div>`;
     }
 
-    // Fallback natural jika pertanyaan di luar kebiasaan
-    return `Saya paham maksud Anda. Saya bisa membantu membacakan atau merangkum data apa pun yang ada di aplikasi SIMPATIK ini—mulai dari daftar murid, jadwal, jurnal guru, hingga data kelas. Coba tanyakan secara spesifik, misalnya: <em>"Berapa jumlah siswa di kelas 1?"</em> atau <em>"Apa saja jurnal terbaru hari ini?"</em>`;
+    // Fallback ramah jika benar-benar tidak ditemukan
+    return `Saya sudah memindai seluruh memori aplikasi (${students.length} siswa, ${classes.length} kelas, ${journals.length} jurnal), tetapi belum menemukan informasi spesifik untuk "<em>${escapeHtml(query)}</em>". Coba tanyakan hal seputar data siswa, rekap kelas, mata pelajaran, atau jurnal KBM!`;
 }
 
 function escapeHtml(str) {
