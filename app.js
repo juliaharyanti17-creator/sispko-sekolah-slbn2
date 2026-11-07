@@ -2,21 +2,23 @@
 // SIMPATIK SLBN 2 PELAIHARI - MAIN APPLICATION LOGIC (app.js)
 // ==========================================================================
 
-// Deklarasi Darurat Global agar fungsi switchTab langsung siap dipanggil
-window.switchTab = window.switchTab || function(e, tabName) {
-    if (e && e.preventDefault) e.preventDefault();
+// 1. Deklarasi Global switchTab di Baris Paling Atas (Aman dari Konflik Scope)
+window.switchTab = function(e, tabName) {
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+    }
     if (!tabName) tabName = 'presensi';
     window.currentActiveTab = tabName;
 
-    if (typeof applyRoleAccessControl === 'function') {
-        applyRoleAccessControl();
+    if (typeof window.applyRoleAccessControl === 'function') {
+        window.applyRoleAccessControl();
     }
 
-    const modules = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
+    var modules = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
     
     modules.forEach(function(mod) {
-        const section = document.getElementById('modul-' + mod);
-        const btn = document.getElementById('tab-btn-' + mod);
+        var section = document.getElementById('modul-' + mod);
+        var btn = document.getElementById('tab-btn-' + mod);
 
         if (section) {
             if (mod === tabName) {
@@ -37,8 +39,8 @@ window.switchTab = window.switchTab || function(e, tabName) {
         }
     });
 
-    const sidebar = document.getElementById('sidebar-nav');
-    const backdrop = document.getElementById('sidebar-backdrop');
+    var sidebar = document.getElementById('sidebar-nav');
+    var backdrop = document.getElementById('sidebar-backdrop');
     if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('hidden')) {
         sidebar.classList.add('hidden');
         if (backdrop) backdrop.classList.add('hidden');
@@ -60,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initAppEvents() {
-    const loginForm = document.getElementById('loginForm') || document.getElementById('login-form') || document.querySelector('form');
+    var loginForm = document.getElementById('loginForm') || document.getElementById('login-form') || document.querySelector('form');
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -72,7 +74,7 @@ function initAppEvents() {
 }
 
 // --------------------------------------------------------------------------
-// 0. GLOBAL HELPER: TOAST NOTIFICATION & PENGUBAH ID KELAS/MAPEL
+// 2. GLOBAL HELPER: TOAST NOTIFICATION & PENGUBAH ID KELAS/MAPEL
 // --------------------------------------------------------------------------
 window.showToast = function(msg) {
     var toast = document.getElementById('toast-banner');
@@ -137,7 +139,7 @@ window.getSubjectName = function(subjectIdOrName) {
 };
 
 // --------------------------------------------------------------------------
-// 1. REFRESH UI & NAVIGASI PENDUKUNG
+// 3. REFRESH UI & NAVIGASI PENDUKUNG
 // --------------------------------------------------------------------------
 window.refreshCurrentTabUI = function() {
     try {
@@ -158,18 +160,18 @@ window.refreshCurrentTabUI = function() {
 };
 
 window.toggleMobileSidebar = function(e) {
-    if (e && e.preventDefault) e.preventDefault();
-    const sidebar = document.getElementById('sidebar-nav');
-    const backdrop = document.getElementById('sidebar-backdrop');
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    var sidebar = document.getElementById('sidebar-nav');
+    var backdrop = document.getElementById('sidebar-backdrop');
     
     if (sidebar) sidebar.classList.toggle('hidden');
     if (backdrop) backdrop.classList.add('hidden');
 };
 
 window.toggleSubMenu = function(submenuId, iconId, tabName, e) {
-    if (e && e.preventDefault) e.preventDefault();
-    const submenu = document.getElementById(submenuId);
-    const icon = document.getElementById(iconId);
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    var submenu = document.getElementById(submenuId);
+    var icon = document.getElementById(iconId);
     
     if (submenu) submenu.classList.toggle('hidden');
     if (icon) icon.classList.toggle('rotate-180');
@@ -177,16 +179,16 @@ window.toggleSubMenu = function(submenuId, iconId, tabName, e) {
 };
 
 window.scrollToSubSection = function(e, tabName, sectionId) {
-    if (e && e.preventDefault) e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
     window.switchTab(null, tabName);
     setTimeout(function() {
-        const target = document.getElementById(sectionId);
+        var target = document.getElementById(sectionId);
         if (target) target.scrollIntoView({ behavior: 'smooth' });
     }, 100);
 };
 
 // --------------------------------------------------------------------------
-// 2. OTENTIKASI PENGGUNA
+// 4. OTENTIKASI PENGGUNA
 // --------------------------------------------------------------------------
 window.forceLoginAdmin = function() {
     var adminUser = { 
@@ -206,7 +208,7 @@ window.forceLoginAdmin = function() {
 };
 
 // --------------------------------------------------------------------------
-// 3. RENDER DATA KE UI & TABEL MASTER
+// 5. RENDER DATA KE UI & TABEL MASTER
 // --------------------------------------------------------------------------
 window.renderAllMasterData = function() {
     renderStudentList();
@@ -215,100 +217,97 @@ window.renderAllMasterData = function() {
 };
 
 function renderStudentList() {
-    const tableBody = document.getElementById('master-siswa-table-body') || document.getElementById('studentTableBody');
+    var tableBody = document.getElementById('master-siswa-table-body') || document.getElementById('studentTableBody');
     if (!tableBody) return;
 
     tableBody.innerHTML = '';
-    const students = window.appState.students || [];
+    var students = window.appState.students || [];
 
     if (students.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-400">Belum ada data murid.</td></tr>';
         return;
     }
 
-    students.forEach((s, idx) => {
-        const kelasIdentifier = s.classId || s.kelas || '';
-        const namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdentifier) : kelasIdentifier;
+    students.forEach(function(s, idx) {
+        var kelasIdentifier = s.classId || s.kelas || '';
+        var namaKelasLengkap = typeof getClassName === 'function' ? getClassName(kelasIdentifier) : kelasIdentifier;
 
-        const tr = document.createElement('tr');
+        var tr = document.createElement('tr');
         tr.className = "border-b hover:bg-slate-50 text-xs";
-        tr.innerHTML = `
-            <td class="p-2 text-center w-8">${idx + 1}</td>
-            <td class="p-2">${s.nisn || '-'}</td>
-            <td class="p-2 font-semibold">${s.nama || '-'}</td>
-            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold">${s.ketunaan || '-'}</span></td>
-            <td class="p-2 font-bold text-indigo-700">${namaKelasLengkap}</td>
-            <td class="p-2 text-center space-x-1">
-                <button onclick="editStudent('${s.id}')" class="bg-amber-500 text-white px-2 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>
-                <button onclick="deleteStudent('${s.id}')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
-            </td>
-        `;
+        tr.innerHTML = 
+            '<td class="p-2 text-center w-8">' + (idx + 1) + '</td>' +
+            '<td class="p-2">' + (s.nisn || '-') + '</td>' +
+            '<td class="p-2 font-semibold">' + (s.nama || '-') + '</td>' +
+            '<td class="p-2 text-center"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold">' + (s.ketunaan || '-') + '</span></td>' +
+            '<td class="p-2 font-bold text-indigo-700">' + namaKelasLengkap + '</td>' +
+            '<td class="p-2 text-center space-x-1">' +
+                '<button onclick="editStudent(\'' + s.id + '\')" class="bg-amber-500 text-white px-2 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>' +
+                '<button onclick="deleteStudent(\'' + s.id + '\')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>' +
+            '</td>';
         tableBody.appendChild(tr);
     });
 }
 
 function renderClassList() {
-    const container = document.getElementById('master-kelas-list-container') || document.getElementById('classTableBody');
+    var container = document.getElementById('master-kelas-list-container') || document.getElementById('classTableBody');
     if (!container) return;
 
     container.innerHTML = '';
-    const classes = window.appState.classes || [];
+    var classes = window.appState.classes || [];
 
     if (classes.length === 0) {
         container.innerHTML = '<p class="text-xs text-slate-400 p-2">Belum ada kelas.</p>';
         return;
     }
 
-    classes.forEach((c, idx) => {
-        const div = document.createElement('div');
+    classes.forEach(function(c, idx) {
+        var div = document.createElement('div');
         div.className = "flex items-center justify-between p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs mb-1";
-        div.innerHTML = `
-            <span class="font-bold text-slate-700">${idx + 1}. ${c.name || c.nama || c.namaKelas || '-'}</span>
-            <div class="space-x-1">
-                <button onclick="moveClassOrder(${idx}, 'up')" title="Pindah Ke Atas" class="bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-arrow-up"></i></button>
-                <button onclick="moveClassOrder(${idx}, 'down')" title="Pindah Ke Bawah" class="bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-arrow-down"></i></button>
-                <button onclick="editClass('${c.id}')" class="bg-amber-500 text-white px-2.5 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>
-                <button onclick="deleteClass('${c.id}')" class="bg-rose-500 text-white px-2.5 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
-            </div>
-        `;
+        div.innerHTML = 
+            '<span class="font-bold text-slate-700">' + (idx + 1) + '. ' + (c.name || c.nama || c.namaKelas || '-') + '</span>' +
+            '<div class="space-x-1">' +
+                '<button onclick="moveClassOrder(' + idx + ', \'up\')" title="Pindah Ke Atas" class="bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-arrow-up"></i></button>' +
+                '<button onclick="moveClassOrder(' + idx + ', \'down\')" title="Pindah Ke Bawah" class="bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-arrow-down"></i></button>' +
+                '<button onclick="editClass(\'' + c.id + '\')" class="bg-amber-500 text-white px-2.5 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>' +
+                '<button onclick="deleteClass(\'' + c.id + '\')" class="bg-rose-500 text-white px-2.5 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>' +
+            '</div>';
         container.appendChild(div);
     });
 }
 
 function renderUserList() {
-    const tableBody = document.getElementById('master-users-table-body') || document.getElementById('userTableBody');
+    var tableBody = document.getElementById('master-users-table-body') || document.getElementById('userTableBody');
     if (!tableBody) return;
 
     tableBody.innerHTML = '';
-    const users = window.appState.users || [];
+    var users = window.appState.users || [];
 
     if (users.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400">Belum ada data user.</td></tr>';
         return;
     }
 
-    users.forEach((u) => {
-        const userKelas = u.classId || u.kelas || '';
-        const namaKelasUser = userKelas.startsWith('c_') && typeof getClassName === 'function' ? getClassName(userKelas) : (userKelas || '-');
+    users.forEach(function(u) {
+        var userKelas = u.classId || u.kelas || '';
+        var namaKelasUser = userKelas.startsWith('c_') && typeof getClassName === 'function' ? getClassName(userKelas) : (userKelas || '-');
 
-        const tr = document.createElement('tr');
+        var tr = document.createElement('tr');
         tr.className = "border-b hover:bg-slate-50 text-xs";
-        tr.innerHTML = `
-            <td class="p-2 font-semibold">${u.nama || u.username || '-'}</td>
-            <td class="p-2 text-center uppercase text-[10px] font-bold text-indigo-600">${u.role || 'Guru'}</td>
-            <td class="p-2">${namaKelasUser}</td>
-            <td class="p-2 text-center"><span class="text-emerald-500 font-bold text-xs">Aktif</span></td>
-            <td class="p-2 text-center space-x-1">
-                <button onclick="editUser('${u.id || u.username}')" class="bg-amber-500 text-white px-2 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>
-                <button onclick="deleteUser('${u.id || u.username}')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>
-            </td>
-        `;
+        tr.innerHTML = 
+            '<td class="p-2 font-semibold">' + (u.nama || u.username || '-') + '</td>' +
+            '<td class="p-2 text-center uppercase text-[10px] font-bold text-indigo-600">' + (u.role || 'Guru') + '</td>' +
+            '<td class="p-2">' + namaKelasUser + '</td>' +
+            '<td class="p-2 text-center"><span class="text-emerald-500 font-bold text-xs">Aktif</span></td>' +
+            '<td class="p-2 text-center space-x-1">' +
+                '<button onclick="editUser(\'' + (u.id || u.username) + '\')" class="bg-amber-500 text-white px-2 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>' +
+                '<button onclick="deleteUser(\'' + (u.id || u.username) + '\')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>' +
+            '</td>';
         tableBody.appendChild(tr);
     });
 }
 
 // --------------------------------------------------------------------------
-// 4. FITUR EDIT & PINDAH URUTAN KELAS
+// 6. FITUR EDIT & PINDAH URUTAN KELAS
 // --------------------------------------------------------------------------
 window.moveClassOrder = function(index, direction) {
     if (!window.appState || !window.appState.classes) return;
@@ -402,15 +401,14 @@ window.renderPresensiForm = function() {
 };
 
 function resetForm(formId) {
-    const form = document.getElementById(formId);
+    var form = document.getElementById(formId);
     if (form) form.reset();
 }
 
 // ==========================================================================
-// CONFIGURATIONS & HYBRID STORAGE CONNECTOR - SIMPATIK SLBN 2 PELAIHARI
+// 7. CONFIGURATIONS & HYBRID STORAGE CONNECTOR - SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
-// 1. Inisialisasi State Aplikasi Global
 window.appState = {
     currentUser: null,
     users: [
@@ -421,7 +419,7 @@ window.appState = {
     students: [],
     journals: [],
     presensi: [],
-    presensiRecords: {}, // Terhubung dengan modul presensi.js
+    presensiRecords: {}, 
     evaluations: [],
     ketunaanList: [
         "Tuna Netra", "Tuna Rungu", "Tuna Grahita", "Tuna Grahita Sedang",
@@ -429,8 +427,7 @@ window.appState = {
     ]
 };
 
-// 2. Konfigurasi SDK Firebase Realtime Database
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyDo7HJQTNgH2OyOjVetYajtR-gIdsWwj_0",
   authDomain: "sispko-sekolah.firebaseapp.com",
   databaseURL: "https://sispko-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -445,9 +442,6 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-// ==========================================================================
-// 3. FUNGSI SESI LOGIN & TAMPILAN DASHBOARD
-// ==========================================================================
 window.checkUserSession = function() {
     var loginSection = document.getElementById('screen-login') || document.getElementById('loginSection');
     var mainDashboard = document.getElementById('screen-app') || document.getElementById('mainDashboard');
@@ -486,9 +480,6 @@ window.checkUserSession = function() {
     }
 };
 
-// ==========================================================================
-// 4. FUNGSI PENYIMPANAN DATA LOKAL & FIREBASE
-// ==========================================================================
 function updateLocalBackup() {
     try {
         localStorage.setItem('simpatik_backup_state', JSON.stringify(window.appState));
@@ -521,9 +512,6 @@ window.savePresensiData = function() {
     }
 };
 
-// ==========================================================================
-// 5. FUNGSI PEMUATAN DATA (LOAD APP STATE)
-// ==========================================================================
 window.loadAppState = function(callback) {
     var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
