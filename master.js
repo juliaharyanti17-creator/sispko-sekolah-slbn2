@@ -16,6 +16,7 @@ function renderAllMasterData() {
     renderMasterKelas();
     renderMasterKetunaan();
     renderMasterSiswa();
+    renderMasterSubjects();
     renderMasterJadwal();
 }
 
