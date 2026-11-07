@@ -3,6 +3,13 @@
 // ==========================================================================
 
 function renderPresensiForm() {
+    // Otomatis set tanggal ke hari ini jika input tanggal masih kosong
+    var tanggalInput = document.getElementById('presensi-tanggal');
+    if (tanggalInput && !tanggalInput.value) {
+        var todayStr = new Date().toISOString().split('T')[0];
+        tanggalInput.value = todayStr;
+    }
+
     if (typeof window.populateDropdowns === 'function') {
         window.populateDropdowns();
     }
@@ -121,7 +128,7 @@ function setStudentStatus(studentId, status) {
 
     appState.presensiRecords[targetKey][studentId] = status;
     
-    // Perbarui tabel secara reaktif seketika tanpa menutup atau me-reset scroll
+    // Perbarui tabel secara reaktif seketika
     loadPresensiTable();
 }
 
@@ -172,10 +179,18 @@ function handleSavePresensi(e) {
         appState.presensiRecords[harianKey] = Object.assign({}, appState.presensiRecords[targetKey]);
     }
 
-    if (typeof saveAppState === 'function') saveAppState();
-    else localStorage.setItem('simpatik_backup_state', JSON.stringify(appState));
+    // Simpan ke LocalStorage & Firebase Realtime Database[span_0](start_span)[span_0](end_span)
+    if (typeof saveAppState === 'function') {
+        saveAppState();
+    } else {
+        localStorage.setItem('simpatik_backup_state', JSON.stringify(appState));
+    }
 
-    if (typeof savePresensiData === 'function') savePresensiData();
+    if (typeof savePresensiData === 'function') {
+        savePresensiData();
+    } else if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/presensiRecords').set(appState.presensiRecords);
+    }
 
     if (typeof showToast === 'function') {
         showToast("Presensi berhasil disimpan dan disinkronkan!");
