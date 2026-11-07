@@ -391,14 +391,114 @@ function togglePasswordVisibility(e) {
 
 <!-- MODUL 5: DATA MASTER -->
 <section id="modul-master" class="hidden space-y-6">
-<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
-<h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-<i class="fa-solid fa-sliders text-indigo-600"></i> Kelola Data Master Sekolah
-</h2>
-</div>
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
+        <div class="flex justify-between items-center border-b pb-4">
+            <div>
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-600"></i> Kelola Data Master Sekolah
+                </h2>
+                <p class="text-xs text-slate-500 font-medium mt-0.5">Pengaturan data dasar pengguna, kelas, ketunaan, dan siswa.</p>
+            </div>
+        </div>
+
+        <!-- 1. Master Pengguna / Guru -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-users text-indigo-600"></i> 1. Master Pengguna / Guru
+                </h3>
+                <button onclick="openModalUser()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Tambah User
+                </button>
+            </div>
+            <div class="overflow-x-auto bg-white rounded-xl border border-slate-200">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 font-bold text-slate-600 border-b">
+                        <tr>
+                            <th class="p-3">Nama & Username</th>
+                            <th class="p-3 text-center">Role</th>
+                            <th class="p-3">Kelas Ampuan</th>
+                            <th class="p-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="master-users-table-body" class="divide-y divide-slate-100 font-medium">
+                        <tr><td colspan="4" class="p-3 text-center text-slate-400">Memuat data user...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. Master Kelas -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-school text-indigo-600"></i> 2. Master Kelas
+                </h3>
+                <button onclick="openModalClass()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Tambah Kelas
+                </button>
+            </div>
+            <div id="master-kelas-list-container" class="space-y-1.5">
+                <p class="text-xs text-slate-400">Memuat data kelas...</p>
+            </div>
+        </div>
+
+        <!-- 3. Master Ketunaan -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-hands-bound text-indigo-600"></i> 3. Master Ketunaan
+                </h3>
+                <button onclick="openModalKetunaan()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Tambah Ketunaan
+                </button>
+            </div>
+            <div class="overflow-x-auto bg-white rounded-xl border border-slate-200">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 font-bold text-slate-600 border-b">
+                        <tr>
+                            <th class="p-3 text-center w-12">No</th>
+                            <th class="p-3">Kategori Ketunaan</th>
+                            <th class="p-3 text-center w-28">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="master-ketunaan-table-body" class="divide-y divide-slate-100 font-medium">
+                        <tr><td colspan="3" class="p-3 text-center text-slate-400">Memuat data ketunaan...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. Master Siswa / Murid -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-graduation-cap text-indigo-600"></i> 4. Master Daftar Siswa / Murid
+                </h3>
+                <button onclick="openModalStudent()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Tambah Siswa
+                </button>
+            </div>
+            <div class="overflow-x-auto bg-white rounded-xl border border-slate-200">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 font-bold text-slate-600 border-b">
+                        <tr>
+                            <th class="p-3 text-center w-12">No</th>
+                            <th class="p-3">NISN</th>
+                            <th class="p-3">Nama Siswa</th>
+                            <th class="p-3 text-center">Ketunaan</th>
+                            <th class="p-3">Kelas</th>
+                            <th class="p-3 text-center w-28">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="master-siswa-table-body" class="divide-y divide-slate-100 font-medium">
+                        <tr><td colspan="6" class="p-3 text-center text-slate-400">Memuat data siswa...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </section>
-</main>
-</div>
 
 <!-- Toast Notification -->
 <div id="toast-banner" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-bold z-50 flex items-center gap-2 border border-slate-700 no-print">
