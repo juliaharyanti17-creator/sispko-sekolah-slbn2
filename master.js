@@ -1,163 +1,86 @@
 // ==========================================================================
-// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN FILTER & FITUR EDIT LENGKAP)
+// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN FILTER, PAGINATION & EDIT LENGKAP)
 // SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
+// Variabel Pengaturan Pagination Master
+var masterPagination = {
+    user: { page: 1, limit: 5 },
+    siswa: { page: 1, limit: 10 }
+};
+
 function renderAllMasterData() {
-    renderMasterKelas();
     renderMasterUsers();
-    renderMasterSiswa();
+    renderMasterKelas();
     renderMasterKetunaan();
+    renderMasterSiswa();
 }
 
 // Sistem Filter Tab Kategori Master agar halaman tidak penuh
 function filterMasterTab(category, e) {
     if (e) e.preventDefault();
     
-    var groupKelasUser = document.getElementById('master-group-kelas-user');
-    var groupKetunaan = document.getElementById('master-group-ketunaan');
-    var groupSiswa = document.getElementById('master-group-siswa');
+    var gUser = document.getElementById('master-group-user');
+    var gKelas = document.getElementById('master-group-kelas');
+    var gKetunaan = document.getElementById('master-group-ketunaan');
+    var gSiswa = document.getElementById('master-group-siswa');
 
     var btnAll = document.getElementById('master-filter-all');
-    var btnSiswa = document.getElementById('master-filter-siswa');
-    var btnKelas = document.getElementById('master-filter-kelas');
     var btnUser = document.getElementById('master-filter-user');
+    var btnKelas = document.getElementById('master-filter-kelas');
     var btnKetunaan = document.getElementById('master-filter-ketunaan');
+    var btnSiswa = document.getElementById('master-filter-siswa');
 
     // Reset tombol filter
-    [btnAll, btnSiswa, btnKelas, btnUser, btnKetunaan].forEach(function(b) {
+    [btnAll, btnUser, btnKelas, btnKetunaan, btnSiswa].forEach(function(b) {
         if (b) {
             b.className = "px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-indigo-900 transition cursor-pointer";
         }
     });
 
-    // Tampilkan / Sembunyikan section berdasarkan kategori
-    if (groupKelasUser) groupKelasUser.style.display = 'grid';
-    if (groupKetunaan) groupKetunaan.style.display = 'block';
-    if (groupSiswa) groupSiswa.style.display = 'block';
+    // Tampilkan semua section terlebih dahulu
+    [gUser, gKelas, gKetunaan, gSiswa].forEach(function(g) {
+        if (g) g.style.display = 'block';
+    });
 
     if (category === 'all') {
         if (btnAll) btnAll.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
-    } else if (category === 'siswa') {
-        if (groupKelasUser) groupKelasUser.style.display = 'none';
-        if (groupKetunaan) groupKetunaan.style.display = 'none';
-        if (btnSiswa) btnSiswa.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
-    } else if (category === 'kelas') {
-        if (groupKetunaan) groupKetunaan.style.display = 'none';
-        if (groupSiswa) groupSiswa.style.display = 'none';
-        // Sembunyikan user tabel, tampilkan kelas saja
-        if (btnKelas) btnKelas.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
     } else if (category === 'user') {
-        if (groupKetunaan) groupKetunaan.style.display = 'none';
-        if (groupSiswa) groupSiswa.style.display = 'none';
+        if (gKelas) gKelas.style.display = 'none';
+        if (gKetunaan) gKetunaan.style.display = 'none';
+        if (gSiswa) gSiswa.style.display = 'none';
         if (btnUser) btnUser.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
+    } else if (category === 'kelas') {
+        if (gUser) gUser.style.display = 'none';
+        if (gKetunaan) gKetunaan.style.display = 'none';
+        if (gSiswa) gSiswa.style.display = 'none';
+        if (btnKelas) btnKelas.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
     } else if (category === 'ketunaan') {
-        if (groupKelasUser) groupKelasUser.style.display = 'none';
-        if (groupSiswa) groupSiswa.style.display = 'none';
+        if (gUser) gUser.style.display = 'none';
+        if (gKelas) gKelas.style.display = 'none';
+        if (gSiswa) gSiswa.style.display = 'none';
         if (btnKetunaan) btnKetunaan.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
+    } else if (category === 'siswa') {
+        if (gUser) gUser.style.display = 'none';
+        if (gKelas) gKelas.style.display = 'none';
+        if (gKetunaan) gKetunaan.style.display = 'none';
+        if (btnSiswa) btnSiswa.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
+    }
+}
+
+// Fungsi Ubah Jumlah Baris per Halaman (Limit)
+function changeMasterLimit(type, selectElement) {
+    var val = parseInt(selectElement.value);
+    if (masterPagination[type]) {
+        masterPagination[type].limit = val;
+        masterPagination[type].page = 1;
+        if (type === 'user') renderMasterUsers();
+        if (type === 'siswa') renderMasterSiswa();
     }
 }
 
 // ==========================================================================
-// 1. MANAJEMEN KELAS (DENGAN EDIT & TAMBAH MODAL)
-// ==========================================================================
-function renderMasterKelas() {
-    var container = document.getElementById('master-kelas-list-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    var classes = (window.appState && window.appState.classes) ? window.appState.classes : [];
-    if (classes.length === 0) {
-        container.innerHTML = '<div class="p-3 text-center text-slate-400 font-medium text-xs">Belum ada kelas terdaftar.</div>';
-        return;
-    }
-
-    classes.forEach(function(c) {
-        var div = document.createElement('div');
-        div.className = "flex justify-between items-center p-2.5 bg-white border border-slate-200 rounded-xl text-xs";
-        div.innerHTML = `
-            <div>
-                <strong class="text-slate-800 font-bold">${c.name || c.nama}</strong>
-                <span class="text-[10px] text-slate-500 block">ID: ${c.id}</span>
-            </div>
-            <div class="space-x-1">
-                <button onclick="openModalClass('${c.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
-                <button onclick="handleDeleteClass('${c.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-}
-
-function openModalClass(classId) {
-    var modal = document.getElementById('modal-kelas');
-    var title = document.getElementById('modal-kelas-title');
-    var input = document.getElementById('kelas-nama-input');
-    var editId = document.getElementById('kelas-edit-id');
-    if (!modal) return;
-
-    if (classId) {
-        title.textContent = "Edit Nama Kelas";
-        var c = (window.appState.classes || []).find(function(item) { return item.id === classId; });
-        if (c) {
-            input.value = c.name || c.nama;
-            editId.value = c.id;
-        }
-    } else {
-        title.textContent = "Tambah Kelas Baru";
-        input.value = "";
-        editId.value = "";
-    }
-
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
-}
-
-function closeModalClass() {
-    var modal = document.getElementById('modal-kelas');
-    if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
-}
-
-function handleSaveClass(e) {
-    if (e) e.preventDefault();
-    var input = document.getElementById('kelas-nama-input');
-    var editId = document.getElementById('kelas-edit-id');
-    if (!input) return;
-
-    var nama = input.value.trim();
-    if (!nama) return;
-
-    if (!window.appState.classes) window.appState.classes = [];
-
-    if (editId.value) {
-        var c = window.appState.classes.find(function(item) { return item.id === editId.value; });
-        if (c) {
-            c.name = nama;
-            c.nama = nama;
-        }
-        if (typeof showToast === 'function') showToast("Kelas berhasil diperbarui.");
-    } else {
-        var newClass = { id: 'c_' + Date.now(), name: nama, nama: nama, tingkat: 'SLB' };
-        window.appState.classes.push(newClass);
-        if (typeof showToast === 'function') showToast("Kelas baru ditambahkan.");
-    }
-
-    if (typeof saveAppState === 'function') saveAppState();
-    closeModalClass();
-    renderAllMasterData();
-}
-
-function handleDeleteClass(classId) {
-    if (confirm("Apakah Anda yakin ingin menghapus kelas ini?")) {
-        window.appState.classes = (window.appState.classes || []).filter(function(c) { return c.id !== classId; });
-        if (typeof saveAppState === 'function') saveAppState();
-        renderAllMasterData();
-        if (typeof showToast === 'function') showToast("Kelas berhasil dihapus.");
-    }
-}
-
-// ==========================================================================
-// 2. MANAJEMEN PENGGUNA / GURU (DENGAN EDIT & TAMBAH MODAL)
+// 1. MANAJEMEN PENGGUNA / GURU (DENGAN PAGINATION & EDIT)
 // ==========================================================================
 function renderMasterUsers() {
     var tbody = document.getElementById('master-users-table-body');
@@ -170,7 +93,12 @@ function renderMasterUsers() {
         return;
     }
 
-    users.forEach(function(u) {
+    var limit = masterPagination.user.limit || 5;
+    var page = masterPagination.user.page || 1;
+    var startIndex = (page - 1) * limit;
+    var paginatedUsers = users.slice(startIndex, startIndex + limit);
+
+    paginatedUsers.forEach(function(u) {
         var uId = u.id || u.username;
         var tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition";
@@ -273,141 +201,105 @@ function handleDeleteUser(userId) {
 }
 
 // ==========================================================================
-// 3. MANAJEMEN SISWA / MURID (DENGAN EDIT & TAMBAH MODAL)
+// 2. MANAJEMEN KELAS (DENGAN EDIT & TAMBAH)
 // ==========================================================================
-function renderMasterSiswa() {
-    var tbody = document.getElementById('master-siswa-table-body');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+function renderMasterKelas() {
+    var container = document.getElementById('master-kelas-list-container');
+    if (!container) return;
+    container.innerHTML = '';
 
-    var students = (window.appState && window.appState.students) ? window.appState.students : [];
-    if (students.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data murid.</td></tr>';
+    var classes = (window.appState && window.appState.classes) ? window.appState.classes : [];
+    if (classes.length === 0) {
+        container.innerHTML = '<div class="p-3 text-center text-slate-400 font-medium text-xs">Belum ada kelas terdaftar.</div>';
         return;
     }
 
-    students.forEach(function(s, idx) {
-        var namaKelasFormatted = typeof getClassName === 'function' ? getClassName(s.classId || s.kelas) : (s.classId || s.kelas || '-');
-        var tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-            <td class="p-2 text-center text-slate-500 font-bold">${idx + 1}</td>
-            <td class="p-2 font-semibold text-slate-600">${s.nisn || '-'}</td>
-            <td class="p-2 font-bold text-slate-800">${s.nama || s.name}</td>
-            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-md text-[10px] font-bold">${s.ketunaan || 'Umum'}</span></td>
-            <td class="p-2 text-slate-700 font-semibold">${namaKelasFormatted}</td>
-            <td class="p-2 text-center space-x-1">
-                <button onclick="openModalStudent('${s.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
-                <button onclick="handleDeleteStudent('${s.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
-            </td>
+    classes.forEach(function(c) {
+        var div = document.createElement('div');
+        div.className = "flex justify-between items-center p-2.5 bg-white border border-slate-200 rounded-xl text-xs";
+        div.innerHTML = `
+            <div>
+                <strong class="text-slate-800 font-bold">${c.name || c.nama}</strong>
+                <span class="text-[10px] text-slate-500 block">ID: ${c.id}</span>
+            </div>
+            <div class="space-x-1">
+                <button onclick="openModalClass('${c.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button onclick="handleDeleteClass('${c.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </div>
         `;
-        tbody.appendChild(tr);
+        container.appendChild(div);
     });
 }
 
-function openModalStudent(studentId) {
-    var modal = document.getElementById('modal-student');
-    var title = document.getElementById('modal-student-title');
-    var inNama = document.getElementById('student-nama-input');
-    var inNisn = document.getElementById('student-nisn-input');
-    var selectKelas = document.getElementById('student-kelas-input');
-    var selectKetunaan = document.getElementById('student-ketunaan-input');
-    var editId = document.getElementById('student-edit-id');
+function openModalClass(classId) {
+    var modal = document.getElementById('modal-kelas');
+    var title = document.getElementById('modal-kelas-title');
+    var input = document.getElementById('kelas-nama-input');
+    var editId = document.getElementById('kelas-edit-id');
     if (!modal) return;
 
-    // Isi dropdown kelas
-    selectKelas.innerHTML = '';
-    (window.appState.classes || []).forEach(function(c) {
-        var opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.name || c.nama;
-        selectKelas.appendChild(opt);
-    });
-
-    // Isi dropdown ketunaan
-    selectKetunaan.innerHTML = '';
-    (window.appState.ketunaanList || ["Tuna Netra", "Tuna Rungu", "Tuna Grahita", "Autis"]).forEach(function(k) {
-        var opt = document.createElement('option');
-        opt.value = k;
-        opt.textContent = k;
-        selectKetunaan.appendChild(opt);
-    });
-
-    if (studentId) {
-        title.textContent = "Edit Data Murid";
-        var s = (window.appState.students || []).find(function(item) { return item.id === studentId; });
-        if (s) {
-            inNama.value = s.nama || s.name || '';
-            inNisn.value = s.nisn || '';
-            selectKelas.value = s.classId || s.kelas || '';
-            selectKetunaan.value = s.ketunaan || '';
-            editId.value = s.id;
+    if (classId) {
+        title.textContent = "Edit Nama Kelas";
+        var c = (window.appState.classes || []).find(function(item) { return item.id === classId; });
+        if (c) {
+            input.value = c.name || c.nama;
+            editId.value = c.id;
         }
     } else {
-        title.textContent = "Tambah Murid Baru";
-        inNama.value = '';
-        inNisn.value = '';
-        editId.value = '';
+        title.textContent = "Tambah Kelas Baru";
+        input.value = "";
+        editId.value = "";
     }
 
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
 }
 
-function closeModalStudent() {
-    var modal = document.getElementById('modal-student');
+function closeModalClass() {
+    var modal = document.getElementById('modal-kelas');
     if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
 }
 
-function handleSaveStudent(e) {
+function handleSaveClass(e) {
     if (e) e.preventDefault();
-    var nama = document.getElementById('student-nama-input').value.trim();
-    var nisn = document.getElementById('student-nisn-input').value.trim();
-    var classId = document.getElementById('student-kelas-input').value;
-    var ketunaan = document.getElementById('student-ketunaan-input').value;
-    var editId = document.getElementById('student-edit-id').value;
+    var input = document.getElementById('kelas-nama-input');
+    var editId = document.getElementById('kelas-edit-id');
+    if (!input) return;
 
-    if (!window.appState.students) window.appState.students = [];
+    var nama = input.value.trim();
+    if (!nama) return;
 
-    if (editId) {
-        var s = window.appState.students.find(function(item) { return item.id === editId; });
-        if (s) {
-            s.nama = nama;
-            s.name = nama;
-            s.nisn = nisn || '-';
-            s.classId = classId;
-            s.ketunaan = ketunaan;
+    if (!window.appState.classes) window.appState.classes = [];
+
+    if (editId.value) {
+        var c = window.appState.classes.find(function(item) { return item.id === editId.value; });
+        if (c) {
+            c.name = nama;
+            c.nama = nama;
         }
-        if (typeof showToast === 'function') showToast("Data murid berhasil diperbarui.");
+        if (typeof showToast === 'function') showToast("Kelas berhasil diperbarui.");
     } else {
-        var newStudent = {
-            id: 's_' + Date.now(),
-            nisn: nisn || '-',
-            nama: nama,
-            name: nama,
-            ketunaan: ketunaan,
-            classId: classId
-        };
-        window.appState.students.push(newStudent);
-        if (typeof showToast === 'function') showToast("Murid baru berhasil ditambahkan.");
+        var newClass = { id: 'c_' + Date.now(), name: nama, nama: nama, tingkat: 'SLB' };
+        window.appState.classes.push(newClass);
+        if (typeof showToast === 'function') showToast("Kelas baru ditambahkan.");
     }
 
     if (typeof saveAppState === 'function') saveAppState();
-    closeModalStudent();
+    closeModalClass();
     renderAllMasterData();
 }
 
-function handleDeleteStudent(studentId) {
-    if (confirm("Apakah Anda yakin ingin menghapus data murid ini?")) {
-        window.appState.students = (window.appState.students || []).filter(function(s) { return s.id !== studentId; });
+function handleDeleteClass(classId) {
+    if (confirm("Apakah Anda yakin ingin menghapus kelas ini?")) {
+        window.appState.classes = (window.appState.classes || []).filter(function(c) { return c.id !== classId; });
         if (typeof saveAppState === 'function') saveAppState();
         renderAllMasterData();
-        if (typeof showToast === 'function') showToast("Data murid berhasil dihapus.");
+        if (typeof showToast === 'function') showToast("Kelas berhasil dihapus.");
     }
 }
 
 // ==========================================================================
-// 4. MANAJEMEN KETUNAAN
+// 3. MANAJEMEN KETUNAAN (DENGAN EDIT & TAMBAH)
 // ==========================================================================
 function renderMasterKetunaan() {
     var tbody = document.getElementById('master-ketunaan-table-body');
@@ -507,5 +399,143 @@ function handleDeleteKetunaan(index) {
         if (typeof saveAppState === 'function') saveAppState();
         renderMasterKetunaan();
         if (typeof showToast === 'function') showToast("Ketunaan berhasil dihapus.");
+    }
+}
+
+// ==========================================================================
+// 4. MANAJEMEN SISWA / MURID (DENGAN PAGINATION & EDIT)
+// ==========================================================================
+function renderMasterSiswa() {
+    var tbody = document.getElementById('master-siswa-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    var students = (window.appState && window.appState.students) ? window.appState.students : [];
+    if (students.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data murid.</td></tr>';
+        return;
+    }
+
+    var limit = masterPagination.siswa.limit || 10;
+    var page = masterPagination.siswa.page || 1;
+    var startIndex = (page - 1) * limit;
+    var paginatedStudents = students.slice(startIndex, startIndex + limit);
+
+    paginatedStudents.forEach(function(s, indexOffset) {
+        var idx = startIndex + indexOffset;
+        var namaKelasFormatted = typeof getClassName === 'function' ? getClassName(s.classId || s.kelas) : (s.classId || s.kelas || '-');
+        var tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+            <td class="p-2 text-center text-slate-500 font-bold">${idx + 1}</td>
+            <td class="p-2 font-semibold text-slate-600">${s.nisn || '-'}</td>
+            <td class="p-2 font-bold text-slate-800">${s.nama || s.name}</td>
+            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-md text-[10px] font-bold">${s.ketunaan || 'Umum'}</span></td>
+            <td class="p-2 text-slate-700 font-semibold">${namaKelasFormatted}</td>
+            <td class="p-2 text-center space-x-1">
+                <button onclick="openModalStudent('${s.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button onclick="handleDeleteStudent('${s.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openModalStudent(studentId) {
+    var modal = document.getElementById('modal-student');
+    var title = document.getElementById('modal-student-title');
+    var inNama = document.getElementById('student-nama-input');
+    var inNisn = document.getElementById('student-nisn-input');
+    var selectKelas = document.getElementById('student-kelas-input');
+    var selectKetunaan = document.getElementById('student-ketunaan-input');
+    var editId = document.getElementById('student-edit-id');
+    if (!modal) return;
+
+    selectKelas.innerHTML = '';
+    (window.appState.classes || []).forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name || c.nama;
+        selectKelas.appendChild(opt);
+    });
+
+    selectKetunaan.innerHTML = '';
+    (window.appState.ketunaanList || ["Tuna Netra", "Tuna Rungu", "Tuna Grahita", "Autis"]).forEach(function(k) {
+        var opt = document.createElement('option');
+        opt.value = k;
+        opt.textContent = k;
+        selectKetunaan.appendChild(opt);
+    });
+
+    if (studentId) {
+        title.textContent = "Edit Data Murid";
+        var s = (window.appState.students || []).find(function(item) { return item.id === studentId; });
+        if (s) {
+            inNama.value = s.nama || s.name || '';
+            inNisn.value = s.nisn || '';
+            selectKelas.value = s.classId || s.kelas || '';
+            selectKetunaan.value = s.ketunaan || '';
+            editId.value = s.id;
+        }
+    } else {
+        title.textContent = "Tambah Murid Baru";
+        inNama.value = '';
+        inNisn.value = '';
+        editId.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+function closeModalStudent() {
+    var modal = document.getElementById('modal-student');
+    if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
+}
+
+function handleSaveStudent(e) {
+    if (e) e.preventDefault();
+    var nama = document.getElementById('student-nama-input').value.trim();
+    var nisn = document.getElementById('student-nisn-input').value.trim();
+    var classId = document.getElementById('student-kelas-input').value;
+    var ketunaan = document.getElementById('student-ketunaan-input').value;
+    var editId = document.getElementById('student-edit-id').value;
+
+    if (!window.appState.students) window.appState.students = [];
+
+    if (editId) {
+        var s = window.appState.students.find(function(item) { return item.id === editId; });
+        if (s) {
+            s.nama = nama;
+            s.name = nama;
+            s.nisn = nisn || '-';
+            s.classId = classId;
+            s.ketunaan = ketunaan;
+        }
+        if (typeof showToast === 'function') showToast("Data murid berhasil diperbarui.");
+    } else {
+        var newStudent = {
+            id: 's_' + Date.now(),
+            nisn: nisn || '-',
+            nama: nama,
+            name: nama,
+            ketunaan: ketunaan,
+            classId: classId
+        };
+        window.appState.students.push(newStudent);
+        if (typeof showToast === 'function') showToast("Murid baru berhasil ditambahkan.");
+    }
+
+    if (typeof saveAppState === 'function') saveAppState();
+    closeModalStudent();
+    renderAllMasterData();
+}
+
+function handleDeleteStudent(studentId) {
+    if (confirm("Apakah Anda yakin ingin menghapus data murid ini?")) {
+        window.appState.students = (window.appState.students || []).filter(function(s) { return s.id !== studentId; });
+        if (typeof saveAppState === 'function') saveAppState();
+        renderAllMasterData();
+        if (typeof showToast === 'function') showToast("Data murid berhasil dihapus.");
     }
 }
