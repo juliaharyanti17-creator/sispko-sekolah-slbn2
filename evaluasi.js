@@ -3,39 +3,122 @@
 // ==========================================================================
 
 function updateEvaluasiDashboard() {
+    initEvaluasiDefaultDate();
     renderEvaluasiSupervisiDashboard();
     updateEvaluasiWidgets();
     updateEvaluasiCharts();
 }
 
-// 1. WIDGET STATISTIK RINGKASAN KEPSEK
+// Inisialisasi tanggal default ke hari ini pada filter evaluasi jika kosong
+function initEvaluasiDefaultDate() {
+    var todayStr = new Date().toISOString().split('T')[0];
+    var startInput = document.getElementById('eval-filter-start-date');
+    var endInput = document.getElementById('eval-filter-end-date');
+
+    if (startInput && !startInput.value) startInput.value = todayStr;
+    if (endInput && !endInput.value) endInput.value = todayStr;
+}
+
+function setPresetEvalRange(type) {
+    var today = new Date();
+    var todayStr = today.toISOString().split('T')[0];
+    var startInput = document.getElementById('eval-filter-start-date');
+    var endInput = document.getElementById('eval-filter-end-date');
+
+    if (!startInput || !endInput) return;
+
+    if (type === 'today') {
+        startInput.value = todayStr;
+        endInput.value = todayStr;
+    } else if (type === 'this_week') {
+        var dayOfWeek = today.getDay();
+        var distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        var monday = new Date(today);
+        monday.setDate(today.getDate() + distanceToMonday);
+        startInput.value = monday.toISOString().split('T')[0];
+        endInput.value = todayStr;
+    } else if (type === 'this_month') {
+        var firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        startInput.value = firstDay.toISOString().split('T')[0];
+        endInput.value = todayStr;
+    }
+    updateEvaluasiDashboard();
+}
+
+// 1. WIDGET STATISTIK KEHADIRAN MURID & JURNAL BERDASARKAN RENTANG TANGGAL
 function updateEvaluasiWidgets() {
+    var startInput = document.getElementById('eval-filter-start-date');
+    var endInput = document.getElementById('eval-filter-end-date');
+    var todayStr = new Date().toISOString().split('T')[0];
+
+    var startDate = (startInput && startInput.value) ? startInput.value : todayStr;
+    var endDate = (endInput && endInput.value) ? endInput.value : startDate;
+
+    // Hitung statistik jurnal & supervisi
     var journals = (window.appState && window.appState.journals) ? window.appState.journals : [];
-    var totalJurnal = journals.length;
-    var totalSupervisi = journals.filter(function(j) { return j.supervisi; }).length;
+    var filteredJournals = journals.filter(function(j) {
+        return j.tanggal >= startDate && j.tanggal <= endDate;
+    });
+
+    var totalJurnal = filteredJournals.length;
+    var totalSupervisi = filteredJournals.filter(function(j) { return j.supervisi; }).length;
     var totalBelum = totalJurnal - totalSupervisi;
 
-    var elTotal = document.getElementById('eval-stat-total-jurnal');
-    var elSup = document.getElementById('eval-stat-sudah-supervisi');
-    var elBelum = document.getElementById('eval-stat-belum-supervisi');
+    // Hitung statistik kehadiran murid berdasarkan rentang tanggal presensiRecords
+    var hadir = 0, sakit = 0, izin = 0, alpa = 0;
+    var activeStudentIds = (window.appState.students || []).map(function(s) { return s.id; });
+    var presensiRecords = window.appState.presensiRecords || {};
 
-    if (elTotal) elTotal.innerText = totalJurnal;
-    if (elSup) elSup.innerText = totalSupervisi;
-    if (elBelum) elBelum.innerText = totalBelum;
+    Object.keys(presensiRecords).forEach(function(key) {
+        var parts = key.split('_');
+        if (parts.length >= 3) {
+            var tgl = parts[0];
+            if (tgl >= startDate && tgl <= endDate) {
+                var recMap = presensiRecords[key] || {};
+                Object.keys(recMap).forEach(function(sId) {
+                    if (activeStudentIds.includes(sId)) {
+                        var st = recMap[sId];
+                        if (st === 'H' || st === 'Hadir') hadir++;
+                        else if (st === 'S' || st === 'Sakit') sakit++;
+                        else if (st === 'I' || st === 'Izin') izin++;
+                        else if (st === 'A' || st === 'Alpa') alpa++;
+                    }
+                });
+            }
+        }
+    });
+
+    // Update ke DOM Widget
+    if (document.getElementById('eval-stat-total-jurnal')) document.getElementById('eval-stat-total-jurnal').innerText = totalJurnal;
+    if (document.getElementById('eval-stat-sudah-supervisi')) document.getElementById('eval-stat-sudah-supervisi').innerText = totalSupervisi;
+    if (document.getElementById('eval-stat-belum-supervisi')) document.getElementById('eval-stat-belum-supervisi').innerText = totalBelum;
+
+    if (document.getElementById('eval-stat-hadir')) document.getElementById('eval-stat-hadir').innerText = hadir;
+    if (document.getElementById('eval-stat-sakit')) document.getElementById('eval-stat-sakit').innerText = sakit;
+    if (document.getElementById('eval-stat-izin')) document.getElementById('eval-stat-izin').innerText = izin;
+    if (document.getElementById('eval-stat-alpa')) document.getElementById('eval-stat-alpa').innerText = alpa;
 }
 
 // 2. GRAFIK STATISTIK MENGGUNAKAN CHART.JS
-let evaluasiChartInstance = null;
+var evaluasiChartInstance = null;
 
 function updateEvaluasiCharts() {
     var ctx = document.getElementById('evaluasi-chart-canvas');
     if (!ctx) return;
 
+    var startInput = document.getElementById('eval-filter-start-date');
+    var endInput = document.getElementById('eval-filter-end-date');
+    var todayStr = new Date().toISOString().split('T')[0];
+    var startDate = (startInput && startInput.value) ? startInput.value : todayStr;
+    var endDate = (endInput && endInput.value) ? endInput.value : startDate;
+
     var journals = (window.appState && window.appState.journals) ? window.appState.journals : [];
-    
-    // Hitung jurnal berdasarkan status supervisi
-    var sudahSupervisi = journals.filter(function(j) { return j.supervisi; }).length;
-    var belumSupervisi = journals.length - sudahSupervisi;
+    var filteredJournals = journals.filter(function(j) {
+        return j.tanggal >= startDate && j.tanggal <= endDate;
+    });
+
+    var sudahSupervisi = filteredJournals.filter(function(j) { return j.supervisi; }).length;
+    var belumSupervisi = filteredJournals.length - sudahSupervisi;
 
     if (evaluasiChartInstance) {
         evaluasiChartInstance.destroy();
