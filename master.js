@@ -1,5 +1,5 @@
 // ==========================================================================
-// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION DI SEMUA BAGIAN & EDIT)
+// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & EDIT LENGKAP)
 // SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
@@ -23,7 +23,7 @@ function changeMasterLimit(type, selectElement) {
     var val = parseInt(selectElement.value);
     if (masterPagination[type]) {
         masterPagination[type].limit = val;
-        masterPagination[type].page = 1;
+        masterPagination[type].page = 1; // Reset ke halaman 1
         if (type === 'user') renderMasterUsers();
         if (type === 'kelas') renderMasterKelas();
         if (type === 'ketunaan') renderMasterKetunaan();
@@ -42,11 +42,17 @@ function renderMasterUsers() {
     var users = (window.appState && window.appState.users) ? window.appState.users : [];
     if (users.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-medium">Belum ada user terdaftar.</td></tr>';
+        renderMasterPaginationControls('user', 0, 1, 5);
         return;
     }
 
     var limit = masterPagination.user.limit || 5;
     var page = masterPagination.user.page || 1;
+    var totalPages = Math.ceil(users.length / limit);
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    masterPagination.user.page = page;
+
     var startIndex = (page - 1) * limit;
     var paginatedUsers = users.slice(startIndex, startIndex + limit);
 
@@ -59,12 +65,14 @@ function renderMasterUsers() {
             <td class="p-2 text-center"><span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-md text-[10px] font-bold">${(u.role || 'GURU').toUpperCase()}</span></td>
             <td class="p-2 text-slate-600 text-[11px]">${u.kelasAmpuan || 'ALL'}</td>
             <td class="p-2 text-center space-x-1">
-                <button onclick="openModalUser('${uId}')" class="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="handleDeleteUser('${uId}')" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="openModalUser('${uId}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button onclick="handleDeleteUser('${uId}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
+
+    renderMasterPaginationControls('user', users.length, page, limit);
 }
 
 function openModalUser(userId) {
@@ -163,13 +171,22 @@ function renderMasterKelas() {
     var classes = (window.appState && window.appState.classes) ? window.appState.classes : [];
     if (classes.length === 0) {
         container.innerHTML = '<div class="p-3 text-center text-slate-400 font-medium text-xs">Belum ada kelas terdaftar.</div>';
+        renderMasterPaginationControls('kelas', 0, 1, 5);
         return;
     }
 
     var limit = masterPagination.kelas.limit || 5;
     var page = masterPagination.kelas.page || 1;
+    var totalPages = Math.ceil(classes.length / limit);
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    masterPagination.kelas.page = page;
+
     var startIndex = (page - 1) * limit;
     var paginatedClasses = classes.slice(startIndex, startIndex + limit);
+
+    var listWrapper = document.createElement('div');
+    listWrapper.className = "space-y-1.5";
 
     paginatedClasses.forEach(function(c) {
         var div = document.createElement('div');
@@ -184,8 +201,11 @@ function renderMasterKelas() {
                 <button onclick="handleDeleteClass('${c.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
             </div>
         `;
-        container.appendChild(div);
+        listWrapper.appendChild(div);
     });
+    container.appendChild(listWrapper);
+
+    renderMasterPaginationControls('kelas', classes.length, page, limit);
 }
 
 function openModalClass(classId) {
@@ -264,14 +284,19 @@ function renderMasterKetunaan() {
     tbody.innerHTML = '';
 
     var ketunaanList = (window.appState && window.appState.ketunaanList) ? window.appState.ketunaanList : [];
-
     if (ketunaanList.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Belum ada data ketunaan.</td></tr>';
+        renderMasterPaginationControls('ketunaan', 0, 1, 5);
         return;
     }
 
     var limit = masterPagination.ketunaan.limit || 5;
     var page = masterPagination.ketunaan.page || 1;
+    var totalPages = Math.ceil(ketunaanList.length / limit);
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    masterPagination.ketunaan.page = page;
+
     var startIndex = (page - 1) * limit;
     var paginatedKetunaan = ketunaanList.slice(startIndex, startIndex + limit);
 
@@ -289,6 +314,8 @@ function renderMasterKetunaan() {
         `;
         tbody.appendChild(tr);
     });
+
+    renderMasterPaginationControls('ketunaan', ketunaanList.length, page, limit);
 }
 
 function openModalKetunaan(index) {
@@ -366,7 +393,7 @@ function handleDeleteKetunaan(index) {
 }
 
 // ==========================================================================
-// 4. MANAJEMEN SISWA / MURID (DENGAN PAGINATION & EDIT)
+// 4. MANAJEMEN SISWA / MURID (DENGAN PAGINATION LENGKAP: 10 PER HALAMAN)
 // ==========================================================================
 function renderMasterSiswa() {
     var tbody = document.getElementById('master-siswa-table-body');
@@ -376,11 +403,17 @@ function renderMasterSiswa() {
     var students = (window.appState && window.appState.students) ? window.appState.students : [];
     if (students.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data murid.</td></tr>';
+        renderMasterPaginationControls('siswa', 0, 1, 10);
         return;
     }
 
     var limit = masterPagination.siswa.limit || 10;
     var page = masterPagination.siswa.page || 1;
+    var totalPages = Math.ceil(students.length / limit);
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    masterPagination.siswa.page = page;
+
     var startIndex = (page - 1) * limit;
     var paginatedStudents = students.slice(startIndex, startIndex + limit);
 
@@ -402,6 +435,8 @@ function renderMasterSiswa() {
         `;
         tbody.appendChild(tr);
     });
+
+    renderMasterPaginationControls('siswa', students.length, page, limit);
 }
 
 function openModalStudent(studentId) {
@@ -500,5 +535,80 @@ function handleDeleteStudent(studentId) {
         if (typeof saveAppState === 'function') saveAppState();
         renderAllMasterData();
         if (typeof showToast === 'function') showToast("Data murid berhasil dihapus.");
+    }
+}
+
+// ==========================================================================
+// 5. HELPER PAGINATION UNIVERSAL UNTUK SEMUA BAGIAN MASTER
+// ==========================================================================
+function renderMasterPaginationControls(type, totalData, currentPage, limit) {
+    var containerId = 'master-' + type + '-pagination-container';
+    var container = document.getElementById(containerId);
+    
+    if (!container) {
+        var targetEl = null;
+        if (type === 'user') targetEl = document.getElementById('master-users-table-body');
+        else if (type === 'kelas') targetEl = document.getElementById('master-kelas-list-container');
+        else if (type === 'ketunaan') targetEl = document.getElementById('master-ketunaan-table-body');
+        else if (type === 'siswa') targetEl = document.getElementById('master-siswa-table-body');
+
+        if (targetEl) {
+            var wrapper = targetEl.closest('.bg-slate-50');
+            if (wrapper) {
+                container = document.createElement('div');
+                container.id = containerId;
+                container.className = "flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 px-2 text-xs text-slate-600 border-t mt-3";
+                wrapper.appendChild(container);
+            }
+        }
+    }
+
+    if (!container) return;
+
+    if (totalData === 0) {
+        container.innerHTML = '<div class="text-[11px] text-slate-400">Tidak ada data untuk ditampilkan</div>';
+        return;
+    }
+
+    var totalPages = Math.ceil(totalData / limit) || 1;
+    var startItem = (currentPage - 1) * limit + 1;
+    var endItem = Math.min(currentPage * limit, totalData);
+
+    container.innerHTML = `
+        <div class="text-[11px] font-medium text-slate-500">
+            Menampilkan <span class="font-bold text-slate-700">${startItem}</span> - <span class="font-bold text-slate-700">${endItem}</span> dari <span class="font-bold text-slate-700">${totalData}</span> data
+        </div>
+        <div class="flex items-center gap-1">
+            <button onclick="changeMasterPage('${type}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled class="px-3 py-1.5 rounded-lg border bg-slate-100 text-slate-300 cursor-not-allowed text-[11px] font-bold"' : 'class="px-3 py-1.5 rounded-lg border bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-bold cursor-pointer"'}>
+                <i class="fa-solid fa-chevron-left mr-1"></i> Sebelumnya
+            </button>
+            <div class="px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg font-bold text-[11px]">
+                Hal ${currentPage} dari ${totalPages}
+            </div>
+            <button onclick="changeMasterPage('${type}', ${currentPage + 1})" ${currentPage >= totalPages ? 'disabled class="px-3 py-1.5 rounded-lg border bg-slate-100 text-slate-300 cursor-not-allowed text-[11px] font-bold"' : 'class="px-3 py-1.5 rounded-lg border bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-bold cursor-pointer"'}>
+                Selanjutnya <i class="fa-solid fa-chevron-right ml-1"></i>
+            </button>
+        </div>
+    `;
+}
+
+function changeMasterPage(type, targetPage) {
+    if (masterPagination[type]) {
+        var dataList = [];
+        if (type === 'user') dataList = window.appState.users || [];
+        else if (type === 'kelas') dataList = window.appState.classes || [];
+        else if (type === 'ketunaan') dataList = window.appState.ketunaanList || [];
+        else if (type === 'siswa') dataList = window.appState.students || [];
+
+        var limit = masterPagination[type].limit || 5;
+        var totalPages = Math.ceil(dataList.length / limit) || 1;
+
+        if (targetPage >= 1 && targetPage <= totalPages) {
+            masterPagination[type].page = targetPage;
+            if (type === 'user') renderMasterUsers();
+            else if (type === 'kelas') renderMasterKelas();
+            else if (type === 'ketunaan') renderMasterKetunaan();
+            else if (type === 'siswa') renderMasterSiswa();
+        }
     }
 }
