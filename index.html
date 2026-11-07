@@ -755,5 +755,26 @@ function togglePasswordVisibility(e) {
 
     </div>
 </div>
+
+  <!-- MODAL TAMBAH/EDIT MATA PELAJARAN -->
+<div id="modal-subject" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 id="modal-subject-title" class="font-bold text-sm text-slate-800">Tambah Mata Pelajaran</h3>
+            <button onclick="closeModalSubject()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
+        </div>
+        <form onsubmit="handleSaveSubject(event)" class="space-y-3">
+            <input type="hidden" id="subject-edit-index" value="">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Mata Pelajaran</label>
+                <input type="text" id="subject-nama-input" required placeholder="Contoh: Seni Budaya" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button type="button" onclick="closeModalSubject()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+                <button type="submit" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>
