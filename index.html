@@ -427,7 +427,6 @@ function togglePasswordVisibility(e) {
 </div>
 </div>
 </section>
-
 <!-- MODUL 4: EVALUASI KEPSEK -->
 <section id="modul-evaluasi" class="hidden space-y-6">
 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
@@ -436,7 +435,7 @@ function togglePasswordVisibility(e) {
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
                 <i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
             </h2>
-            <p class="text-xs text-slate-500 font-medium mt-0.5">Monitoring kehadiran murid dan supervisi aktivitas jurnal mengajar guru.</p>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">Monitoring kehadiran murid secara real-time dan supervisi aktivitas jurnal mengajar guru.</p>
         </div>
         <!-- Pintasan Preset Waktu -->
         <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
@@ -458,7 +457,7 @@ function togglePasswordVisibility(e) {
         </div>
     </div>
 
-    <!-- WIDGET 1: STATISTIK KEHADIRAN MURID (HADIR, SAKIT, IZIN, ALPA) -->
+    <!-- WIDGET 1: STATISTIK KEHADIRAN MURID -->
     <div class="space-y-2">
         <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
             <i class="fa-solid fa-users-viewfinder text-indigo-600"></i> Rekapitulasi Kehadiran Murid Berdasarkan Periode Terpilih
@@ -483,7 +482,33 @@ function togglePasswordVisibility(e) {
         </div>
     </div>
 
-    <!-- WIDGET 2: STATISTIK JURNAL & GRAFIK SUPERVISI -->
+    <!-- WIDGET 2: TABEL REAL-TIME REKAP PER KELAS (KHUSUS KEPSEK - TANPA AKSI/KLIK) -->
+    <div class="space-y-2 pt-2">
+        <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-table-list text-indigo-600"></i> Rincian Real-Time Kehadiran per Kelas
+        </h3>
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-200/60 font-bold text-slate-700">
+                        <tr>
+                            <th class="p-3 text-center w-12">No</th>
+                            <th class="p-3">Nama Kelas</th>
+                            <th class="p-3 text-center">Total Murid</th>
+                            <th class="p-3 text-center text-emerald-700">Hadir</th>
+                            <th class="p-3 text-center text-amber-700">Sakit</th>
+                            <th class="p-3 text-center text-blue-700">Izin</th>
+                            <th class="p-3 text-center text-rose-700">Alpa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eval-realtime-kelas-tbody" class="divide-y divide-slate-100 font-medium">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- WIDGET 3: STATISTIK JURNAL & GRAFIK SUPERVISI -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
         <div class="space-y-3 flex flex-col justify-between">
             <div class="bg-indigo-50 border border-indigo-200/60 p-4 rounded-2xl text-center">
@@ -507,6 +532,16 @@ function togglePasswordVisibility(e) {
             </div>
         </div>
     </div>
+
+    <!-- Container Daftar Jurnal untuk Supervisi -->
+    <div class="space-y-3 pt-4 border-t">
+        <h3 id="eval-section-supervisi" class="text-xs font-bold text-slate-700">Daftar Jurnal Mengajar Guru</h3>
+        <div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        </div>
+    </div>
+</div>
+</section>
+
 
     <!-- Container Daftar Jurnal untuk Supervisi -->
     <div class="space-y-3 pt-4 border-t">
