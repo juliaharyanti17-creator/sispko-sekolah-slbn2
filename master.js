@@ -1,25 +1,70 @@
-// ==========================================================================
-// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & EDIT LENGKAP)
-// SIMPATIK SLBN 2 PELAIHARI
-// ==========================================================================
+// Variabel penyimpan keyword pencarian sementara untuk siswa
+var masterSiswaSearchKeyword = '';
 
-// Variabel Pengaturan Pagination Master untuk Semua Bagian
-var masterPagination = {
-    user: { page: 1, limit: 5 },
-    kelas: { page: 1, limit: 5 },
-    ketunaan: { page: 1, limit: 5 },
-    siswa: { page: 1, limit: 10 },
-    subject: { page: 1, limit: 5 }
-};
-
-function renderAllMasterData() {
-    renderMasterUsers();
-    renderMasterKelas();
-    renderMasterKetunaan();
+function handleSearchMasterSiswa(keyword) {
+    masterSiswaSearchKeyword = keyword.trim().toLowerCase();
+    if (masterPagination.siswa) {
+        masterPagination.siswa.page = 1; // Reset ke halaman 1 saat mengetik
+    }
     renderMasterSiswa();
-    renderMasterSubjects();
 }
 
+// ==========================================================================
+// 4. MANAJEMEN SISWA / MURID (DENGAN PENCARIAN & PAGINATION)
+// ==========================================================================
+function renderMasterSiswa() {
+    var tbody = document.getElementById('master-siswa-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    var allStudents = (window.appState && window.appState.students) ? window.appState.students : [];
+    
+    // Filter data berdasarkan keyword Nama atau NISN
+    var students = allStudents.filter(function(s) {
+        if (!masterSiswaSearchKeyword) return true;
+        var nama = (s.nama || s.name || '').toLowerCase();
+        var nisn = (s.nisn || '').toLowerCase();
+        return nama.includes(masterSiswaSearchKeyword) || nisn.includes(masterSiswaSearchKeyword);
+    });
+
+    if (students.length === 0) {
+        var emptyMsg = allStudents.length === 0 ? "Belum ada data murid." : "Tidak ditemukan murid yang cocok dengan kata kunci pencarian.";
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">${emptyMsg}</td></tr>`;
+        renderMasterPaginationControls('siswa', 0, 1, 10);
+        return;
+    }
+
+    var limit = masterPagination.siswa.limit || 10;
+    var page = masterPagination.siswa.page || 1;
+    var totalPages = Math.ceil(students.length / limit);
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    masterPagination.siswa.page = page;
+
+    var startIndex = (page - 1) * limit;
+    var paginatedStudents = students.slice(startIndex, startIndex + limit);
+
+    paginatedStudents.forEach(function(s, indexOffset) {
+        var idx = startIndex + indexOffset;
+        var namaKelasFormatted = typeof getClassName === 'function' ? getClassName(s.classId || s.kelas) : (s.classId || s.kelas || '-');
+        var tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+            <td class="p-2 text-center text-slate-500 font-bold">${idx + 1}</td>
+            <td class="p-2 font-semibold text-slate-600">${s.nisn || '-'}</td>
+            <td class="p-2 font-bold text-slate-800">${s.nama || s.name}</td>
+            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-md text-[10px] font-bold">${s.ketunaan || 'Umum'}</span></td>
+            <td class="p-2 text-slate-700 font-semibold">${namaKelasFormatted}</td>
+            <td class="p-2 text-center space-x-1">
+                <button onclick="openModalStudent('${s.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button onclick="handleDeleteStudent('${s.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    renderMasterPaginationControls('siswa', students.length, page, limit);
+}
 // Fungsi Ubah Jumlah Baris per Halaman (Limit) untuk Semua Bagian
 function changeMasterLimit(type, selectElement) {
     var val = parseInt(selectElement.value);
