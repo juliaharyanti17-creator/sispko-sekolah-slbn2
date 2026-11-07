@@ -1,11 +1,13 @@
 // ==========================================================================
-// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN FILTER, PAGINATION & EDIT LENGKAP)
+// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION DI SEMUA BAGIAN & EDIT)
 // SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
-// Variabel Pengaturan Pagination Master
+// Variabel Pengaturan Pagination Master untuk Semua Bagian
 var masterPagination = {
     user: { page: 1, limit: 5 },
+    kelas: { page: 1, limit: 5 },
+    ketunaan: { page: 1, limit: 5 },
     siswa: { page: 1, limit: 10 }
 };
 
@@ -16,65 +18,15 @@ function renderAllMasterData() {
     renderMasterSiswa();
 }
 
-// Sistem Filter Tab Kategori Master agar halaman tidak penuh
-function filterMasterTab(category, e) {
-    if (e) e.preventDefault();
-    
-    var gUser = document.getElementById('master-group-user');
-    var gKelas = document.getElementById('master-group-kelas');
-    var gKetunaan = document.getElementById('master-group-ketunaan');
-    var gSiswa = document.getElementById('master-group-siswa');
-
-    var btnAll = document.getElementById('master-filter-all');
-    var btnUser = document.getElementById('master-filter-user');
-    var btnKelas = document.getElementById('master-filter-kelas');
-    var btnKetunaan = document.getElementById('master-filter-ketunaan');
-    var btnSiswa = document.getElementById('master-filter-siswa');
-
-    // Reset tombol filter
-    [btnAll, btnUser, btnKelas, btnKetunaan, btnSiswa].forEach(function(b) {
-        if (b) {
-            b.className = "px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-indigo-900 transition cursor-pointer";
-        }
-    });
-
-    // Tampilkan semua section terlebih dahulu
-    [gUser, gKelas, gKetunaan, gSiswa].forEach(function(g) {
-        if (g) g.style.display = 'block';
-    });
-
-    if (category === 'all') {
-        if (btnAll) btnAll.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
-    } else if (category === 'user') {
-        if (gKelas) gKelas.style.display = 'none';
-        if (gKetunaan) gKetunaan.style.display = 'none';
-        if (gSiswa) gSiswa.style.display = 'none';
-        if (btnUser) btnUser.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
-    } else if (category === 'kelas') {
-        if (gUser) gUser.style.display = 'none';
-        if (gKetunaan) gKetunaan.style.display = 'none';
-        if (gSiswa) gSiswa.style.display = 'none';
-        if (btnKelas) btnKelas.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
-    } else if (category === 'ketunaan') {
-        if (gUser) gUser.style.display = 'none';
-        if (gKelas) gKelas.style.display = 'none';
-        if (gSiswa) gSiswa.style.display = 'none';
-        if (btnKetunaan) btnKetunaan.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
-    } else if (category === 'siswa') {
-        if (gUser) gUser.style.display = 'none';
-        if (gKelas) gKelas.style.display = 'none';
-        if (gKetunaan) gKetunaan.style.display = 'none';
-        if (btnSiswa) btnSiswa.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer";
-    }
-}
-
-// Fungsi Ubah Jumlah Baris per Halaman (Limit)
+// Fungsi Ubah Jumlah Baris per Halaman (Limit) untuk Semua Bagian
 function changeMasterLimit(type, selectElement) {
     var val = parseInt(selectElement.value);
     if (masterPagination[type]) {
         masterPagination[type].limit = val;
         masterPagination[type].page = 1;
         if (type === 'user') renderMasterUsers();
+        if (type === 'kelas') renderMasterKelas();
+        if (type === 'ketunaan') renderMasterKetunaan();
         if (type === 'siswa') renderMasterSiswa();
     }
 }
@@ -201,7 +153,7 @@ function handleDeleteUser(userId) {
 }
 
 // ==========================================================================
-// 2. MANAJEMEN KELAS (DENGAN EDIT & TAMBAH)
+// 2. MANAJEMEN KELAS (DENGAN PAGINATION & EDIT)
 // ==========================================================================
 function renderMasterKelas() {
     var container = document.getElementById('master-kelas-list-container');
@@ -214,7 +166,12 @@ function renderMasterKelas() {
         return;
     }
 
-    classes.forEach(function(c) {
+    var limit = masterPagination.kelas.limit || 5;
+    var page = masterPagination.kelas.page || 1;
+    var startIndex = (page - 1) * limit;
+    var paginatedClasses = classes.slice(startIndex, startIndex + limit);
+
+    paginatedClasses.forEach(function(c) {
         var div = document.createElement('div');
         div.className = "flex justify-between items-center p-2.5 bg-white border border-slate-200 rounded-xl text-xs";
         div.innerHTML = `
@@ -299,7 +256,7 @@ function handleDeleteClass(classId) {
 }
 
 // ==========================================================================
-// 3. MANAJEMEN KETUNAAN (DENGAN EDIT & TAMBAH)
+// 3. MANAJEMEN KETUNAAN (DENGAN PAGINATION & EDIT)
 // ==========================================================================
 function renderMasterKetunaan() {
     var tbody = document.getElementById('master-ketunaan-table-body');
@@ -313,7 +270,13 @@ function renderMasterKetunaan() {
         return;
     }
 
-    ketunaanList.forEach(function(item, idx) {
+    var limit = masterPagination.ketunaan.limit || 5;
+    var page = masterPagination.ketunaan.page || 1;
+    var startIndex = (page - 1) * limit;
+    var paginatedKetunaan = ketunaanList.slice(startIndex, startIndex + limit);
+
+    paginatedKetunaan.forEach(function(item, indexOffset) {
+        var idx = startIndex + indexOffset;
         var tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition";
         tr.innerHTML = `
