@@ -56,7 +56,6 @@ function togglePasswordVisibility(e) {
       <p class="text-[11px] text-slate-500 font-medium mt-1">Sistem Informasi Monitoring Presensi, Aktivitas dan Evaluasi Kinerja</p>
     </div>
 
-    <!-- Diselaraskan menggunakan handleLogin(event) -->
     <form onsubmit="handleLogin(event)" class="space-y-4">
       <div>
         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Pengguna / Username</label>
@@ -208,7 +207,6 @@ function togglePasswordVisibility(e) {
 </div>
 </div>
 
-<!-- Kartu Ringkasan -->
 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 no-print">
 <div class="bg-emerald-50 border border-emerald-200/60 p-3.5 rounded-2xl text-center">
 <div class="text-[10px] font-bold text-emerald-700 uppercase">Hadir</div>
@@ -232,7 +230,6 @@ function togglePasswordVisibility(e) {
 </div>
 </div>
 
-<!-- Tabel Presensi -->
 <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
 <div class="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between no-print">
 <h3 class="font-bold text-xs text-slate-700 flex items-center gap-2">
@@ -382,93 +379,14 @@ function togglePasswordVisibility(e) {
 
 <!-- MODUL 4: EVALUASI KEPSEK -->
 <section id="modul-evaluasi" class="hidden space-y-6">
-    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
-            <div>
-                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
-                </h2>
-                <p class="text-xs text-slate-500 font-medium mt-0.5">Monitoring kehadiran murid secara real-time, supervisi jurnal guru, dan statistik kinerja.</p>
-            </div>
-            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
-                <button type="button" onclick="setPresetEvalRange('today')" class="px-3 py-1.5 bg-white text-indigo-900 rounded-lg shadow-sm cursor-pointer">Hari Ini</button>
-                <button type="button" onclick="setPresetEvalRange('this_week')" class="px-3 py-1.5 text-slate-600 hover:text-indigo-900 cursor-pointer">Minggu Ini</button>
-                <button type="button" onclick="setPresetEvalRange('this_month')" class="px-3 py-1.5 text-slate-600 hover:text-indigo-900 cursor-pointer">Bulan Ini</button>
-            </div>
-        </div>
+<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
+<h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+<i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
+</h2>
+</div>
+</section>
 
-        <!-- Filter Tanggal Evaluasi -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">Mulai Tanggal</label>
-                <input type="date" id="eval-filter-start-date" onchange="updateEvaluasiDashboard()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold bg-white">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">Sampai Tanggal</label>
-                <input type="date" id="eval-filter-end-date" onchange="updateEvaluasiDashboard()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold bg-white">
-            </div>
-        </div>
-
-        <!-- 1. Bagian Supervisi KBM -->
-        <div id="eval-section-supervisi" class="space-y-3 pt-2">
-            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-eye text-indigo-600"></i> 1. Supervisi Aktivitas Jurnal KBM Guru
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-indigo-50 border border-indigo-200/60 p-4 rounded-2xl text-center">
-                    <div class="text-xs font-bold text-indigo-700 uppercase">Total Jurnal Masuk</div>
-                    <div id="eval-stat-total-jurnal" class="text-2xl font-black text-indigo-900 mt-1">0</div>
-                </div>
-                <div class="bg-emerald-50 border border-emerald-200/60 p-4 rounded-2xl text-center">
-                    <div class="text-xs font-bold text-emerald-700 uppercase">Sudah Disupervisi</div>
-                    <div id="eval-stat-sudah-supervisi" class="text-2xl font-black text-emerald-900 mt-1">0</div>
-                </div>
-                <div class="bg-amber-50 border border-amber-200/60 p-4 rounded-2xl text-center">
-                    <div class="text-xs font-bold text-amber-700 uppercase">Belum Disupervisi</div>
-                    <div id="eval-stat-belum-supervisi" class="text-2xl font-black text-amber-900 mt-1">0</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. Bagian Absensi Kritis -->
-        <div id="eval-section-kritis" class="space-y-3 pt-4 border-t">
-            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> 2. Monitoring Absensi & Siswa Kritis (Alpa Tinggi)
-            </h3>
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-xs text-left">
-                        <thead class="bg-slate-100 font-bold text-slate-700 border-b">
-                            <tr>
-                                <th class="p-3 text-center w-12">No</th>
-                                <th class="p-3">Nama Siswa</th>
-                                <th class="p-3">Kelas</th>
-                                <th class="p-3 text-center text-amber-700">Sakit</th>
-                                <th class="p-3 text-center text-blue-700">Izin</th>
-                                <th class="p-3 text-center text-rose-700 font-bold">Alpa</th>
-                            </tr>
-                        </thead>
-                        <tbody id="eval-kritis-tbody" class="divide-y divide-slate-100 font-medium">
-                            <tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada data absensi kritis.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. Bagian Grafik & Statistik -->
-        <div id="eval-section-grafik" class="space-y-3 pt-4 border-t">
-            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-chart-column text-indigo-600"></i> 3. Grafik Statistik Kehadiran & Supervisi
-            </h3>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between">
-                <div class="relative h-64 w-full">
-                    <canvas id="evaluasi-chart-canvas"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</section><!-- MODUL 5: DATA MASTER -->
+<!-- MODUL 5: DATA MASTER -->
 <section id="modul-master" class="hidden space-y-6">
     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
         <div class="flex justify-between items-center border-b pb-4">
@@ -476,7 +394,7 @@ function togglePasswordVisibility(e) {
                 <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
                     <i class="fa-solid fa-sliders text-indigo-600"></i> Kelola Data Master Sekolah
                 </h2>
-                <p class="text-xs text-slate-500 font-medium mt-0.5">Pengaturan data dasar pengguna, kelas, ketunaan, siswa, dan jadwal harian.</p>
+                <p class="text-xs text-slate-500 font-medium mt-0.5">Pengaturan data dasar pengguna, kelas, ketunaan, siswa, mata pelajaran, dan jadwal harian.</p>
             </div>
         </div>
 
@@ -547,40 +465,14 @@ function togglePasswordVisibility(e) {
                 </table>
             </div>
         </div>
-      <!-- Master Mata Pelajaran -->
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-            <div class="flex justify-between items-center">
-                <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                    <i class="fa-solid fa-book text-indigo-600"></i> Master Mata Pelajaran
-                </h3>
-                <button onclick="openModalSubject()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">
-                    <i class="fa-solid fa-plus mr-1"></i> Tambah Mapel
-                </button>
-            </div>
-            <div class="overflow-x-auto bg-white rounded-xl border border-slate-200">
-                <table class="w-full text-xs text-left">
-                    <thead class="bg-slate-100 font-bold text-slate-600 border-b">
-                        <tr>
-                            <th class="p-3 text-center w-12">No</th>
-                            <th class="p-3">Nama Mata Pelajaran</th>
-                            <th class="p-3 text-center w-28">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="master-subjects-table-body" class="divide-y divide-slate-100 font-medium">
-                        <tr><td colspan="3" class="p-3 text-center text-slate-400">Memuat data mata pelajaran...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- 4. Master Siswa / Murid -->
+        <!-- 4. Master Siswa / Murid (Dengan Search Bar) -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                    <i class="fa-solid fa-graduation-cap text-indigo-600"></i> 4. Master Daftar Murid
+                    <i class="fa-solid fa-graduation-cap text-indigo-600"></i> 4. Master Daftar Siswa / Murid
                 </h3>
                 
-                <!-- KOLOM PENCARIAN BERDASARKAN NAMA & NISN -->
                 <div class="flex items-center gap-2 w-full sm:w-auto">
                     <div class="relative flex-1 sm:w-64">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
@@ -613,11 +505,37 @@ function togglePasswordVisibility(e) {
             </div>
         </div>
 
-        <!-- 5. Master Jadwal & Mapel Harian (Sudah di dalam modul-master) -->
+        <!-- 5. Master Mata Pelajaran (Dengan Pagination) -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                    <i class="fa-solid fa-calendar-days text-indigo-600"></i> 5. Master Jadwal & Mapel Harian
+                    <i class="fa-solid fa-book text-indigo-600"></i> 5. Master Mata Pelajaran
+                </h3>
+                <button onclick="openModalSubject()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Tambah Mapel
+                </button>
+            </div>
+            <div class="overflow-x-auto bg-white rounded-xl border border-slate-200">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 font-bold text-slate-600 border-b">
+                        <tr>
+                            <th class="p-3 text-center w-12">No</th>
+                            <th class="p-3">Nama Mata Pelajaran</th>
+                            <th class="p-3 text-center w-28">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="master-subjects-table-body" class="divide-y divide-slate-100 font-medium">
+                        <tr><td colspan="3" class="p-3 text-center text-slate-400">Memuat data mata pelajaran...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. Master Jadwal & Mapel Harian -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar-days text-indigo-600"></i> 6. Master Jadwal & Mapel Harian
                 </h3>
                 <button onclick="openModalJadwal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">
                     <i class="fa-solid fa-plus mr-1"></i> Tambah Jadwal
@@ -643,13 +561,16 @@ function togglePasswordVisibility(e) {
         </div>
     </div>
 </section>
+</main>
+</div>
+
 <!-- Toast Notification -->
 <div id="toast-banner" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-bold z-50 flex items-center gap-2 border border-slate-700 no-print">
 <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
 <span id="toast-msg">Notifikasi Sistem</span>
 </div>
 
-<!-- SCRIPT LOADING ORDER (Versi diperbarui ke ?v=101 agar cache di-refresh) -->
+<!-- SCRIPT LOADING ORDER -->
 <script src="config.js?v=105"></script>
 <script src="auth.js?v=105"></script>
 <script src="app.js?v=105"></script>
@@ -675,120 +596,8 @@ function togglePasswordVisibility(e) {
     });
   }
 </script>
-  <!-- MODAL TAMBAH/EDIT JADWAL MASTER (DINAMIS) -->
-<div id="modal-jadwal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center border-b pb-3">
-            <h3 id="modal-jadwal-title" class="font-bold text-sm text-slate-800">Tambah Jadwal Harian</h3>
-            <button onclick="closeModalJadwal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
-        </div>
-        <form id="form-jadwal" onsubmit="handleSaveJadwal(event)" class="space-y-4">
-            <input type="hidden" id="jadwal-edit-id" value="">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Kelas</label>
-                    <select id="jadwal-kelas-input" class="w-full px-3.5 py-2.5 rounded-xl border text-xs font-semibold bg-white">
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Hari</label>
-                    <select id="jadwal-hari-input" class="w-full px-3.5 py-2.5 rounded-xl border text-xs font-semibold bg-white">
-                        <option value="Senin">Senin</option>
-                        <option value="Selasa">Selasa</option>
-                        <option value="Rabu">Rabu</option>
-                        <option value="Kamis">Kamis</option>
-                        <option value="Jumat">Jumat</option>
-                        <option value="Sabtu">Sabtu</option>
-                    </select>
-                </div>
-            </div>
 
-            <div class="space-y-2 pt-2 border-t">
-                <div class="flex justify-between items-center">
-                    <label class="block text-xs font-bold text-slate-700"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Pengaturan Jam & Mata Pelajaran</label>
-                    <button type="button" onclick="tambahBarisJamMapel()" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold cursor-pointer border border-indigo-200">
-                        <i class="fa-solid fa-plus mr-1"></i> Tambah Jam Berikutnya
-                    </button>
-                </div>
-                <div id="jadwal-jam-mapel-container" class="space-y-2">
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-3 border-t">
-                <button type="button" onclick="closeModalJadwal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Jadwal</button>
-            </div>
-        </form>
-    </div>
-</div>
-<!-- ==================== MODAL AI ASSISTANT SIMPATIK ==================== -->
-<div id="modal-ai-assistant" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden flex flex-col h-[80vh] md:h-[650px]">
-        
-        <!-- Header Chat AI -->
-        <div class="bg-gradient-to-r from-indigo-900 to-purple-900 text-white p-4 flex items-center justify-between shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center font-bold text-amber-300 shadow-inner">
-                    <i class="fa-solid fa-robot text-lg"></i>
-                </div>
-                <div>
-                    <h3 class="font-black text-sm tracking-wide">AI Assistant SIMPATIK</h3>
-                    <p class="text-[10px] text-indigo-200 font-medium">Asisten Cerdas Pengawasan SLBN 2 Pelaihari</p>
-                </div>
-            </div>
-            <button onclick="toggleAIChatModal(event)" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer transition">
-                <i class="fa-solid fa-xmark text-sm"></i>
-            </button>
-        </div>
-
-        <!-- Area Percakapan (Chat Body) -->
-        <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs">
-            <!-- Pesan Sambutan Bot -->
-            <div class="flex items-start gap-2.5">
-                <div class="w-7 h-7 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 font-bold text-[10px]">
-                    AI
-                </div>
-                <div class="bg-white p-3 rounded-2xl rounded-tl-sm border border-slate-200/80 shadow-xs text-slate-700 max-w-[85%] leading-relaxed">
-                    Halo! Saya AI Assistant SIMPATIK SLBN 2 Pelaihari. Ada yang bisa saya bantu terkait rekap presensi, jadwal, atau analisis jurnal KBM hari ini?
-                </div>
-            </div>
-        </div>
-
-        <!-- Form Input Pesan (Chat Footer) -->
-        <div class="p-3 bg-white border-t border-slate-200 shrink-0">
-            <form id="form-ai-chat" onsubmit="handleSendAIChat(event)" class="flex items-center gap-2">
-                <input type="text" id="ai-chat-input" placeholder="Tanyakan sesuatu atau minta analisis data..." autocomplete="off" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
-                <button type="submit" class="px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow transition flex items-center justify-center cursor-pointer">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
-            </form>
-        </div>
-
-    </div>
-</div>
-
-  <!-- MODAL TAMBAH/EDIT MATA PELAJARAN -->
-<div id="modal-subject" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl">
-        <div class="flex justify-between items-center border-b pb-3">
-            <h3 id="modal-subject-title" class="font-bold text-sm text-slate-800">Tambah Mata Pelajaran</h3>
-            <button onclick="closeModalSubject()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
-        </div>
-        <form onsubmit="handleSaveSubject(event)" class="space-y-3">
-            <input type="hidden" id="subject-edit-index" value="">
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Mata Pelajaran</label>
-                <input type="text" id="subject-nama-input" required placeholder="Contoh: Seni Budaya" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-            </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button type="button" onclick="closeModalSubject()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
-                <button type="submit" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-  <!-- ==================== MODAL MASTER FORM LENGKAP ==================== -->
+<!-- ==================== MODAL MASTER FORM LENGKAP ==================== -->
 
 <!-- 1. MODAL TAMBAH/EDIT USER -->
 <div id="modal-user" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -901,6 +710,27 @@ function togglePasswordVisibility(e) {
             <div class="flex justify-end gap-2 pt-3 border-t">
                 <button type="button" onclick="closeModalStudent()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
                 <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Murid</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 5. MODAL TAMBAH/EDIT MATA PELAJARAN -->
+<div id="modal-subject" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 id="modal-subject-title" class="font-bold text-sm text-slate-800">Tambah Mata Pelajaran</h3>
+            <button onclick="closeModalSubject()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
+        </div>
+        <form onsubmit="handleSaveSubject(event)" class="space-y-3">
+            <input type="hidden" id="subject-edit-index" value="">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Mata Pelajaran</label>
+                <input type="text" id="subject-nama-input" required placeholder="Contoh: Seni Budaya" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button type="button" onclick="closeModalSubject()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+                <button type="submit" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan</button>
             </div>
         </form>
     </div>
