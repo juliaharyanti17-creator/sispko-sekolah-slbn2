@@ -460,10 +460,22 @@ function togglePasswordVisibility(e) {
 <!-- 1. POSISI PERTAMA: MANAJEMEN USER / GURU -->
 <div id="master-group-user" class="master-filter-section space-y-3">
     <div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
-        <h3 class="font-bold text-xs text-slate-700 flex items-center justify-between">
-            <span><i class="fa-solid fa-users-gear text-indigo-600 mr-1.5"></i> 1. Daftar Pengguna & Data Guru</span>
-            <button onclick="openModalUser()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah User</button>
-        </h3>
+        <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-users-gear text-indigo-600"></i> 1. Daftar Pengguna & Data Guru
+            </h3>
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                    <span>Tampilkan:</span>
+                    <select onchange="changeMasterLimit('user', this)" class="px-2 py-1 rounded-lg border text-xs font-semibold bg-white">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                    </select>
+                </div>
+                <button onclick="openModalUser()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah User</button>
+            </div>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full text-xs text-left">
                 <thead class="bg-slate-200/60 font-bold text-slate-700">
@@ -516,10 +528,22 @@ function togglePasswordVisibility(e) {
 <!-- 4. POSISI KEEMPAT: DAFTAR SISWA / MURID -->
 <div id="master-group-siswa" class="master-filter-section space-y-3">
     <div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
-        <h3 class="font-bold text-xs text-slate-700 flex items-center justify-between">
-            <span><i class="fa-solid fa-graduation-cap text-indigo-600 mr-1.5"></i> 4. Daftar Murid / Siswa SLBN 2 Pelaihari</span>
-            <button onclick="openModalStudent()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah Murid</button>
-        </h3>
+        <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-graduation-cap text-indigo-600"></i> 4. Daftar Murid / Siswa SLBN 2 Pelaihari
+            </h3>
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                    <span>Tampilkan:</span>
+                    <select onchange="changeMasterLimit('siswa', this)" class="px-2 py-1 rounded-lg border text-xs font-semibold bg-white">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button onclick="openModalStudent()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah Murid</button>
+            </div>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full text-xs text-left">
                 <thead class="bg-slate-200/60 font-bold text-slate-700">
@@ -543,8 +567,7 @@ function togglePasswordVisibility(e) {
 </main>
 </div>
 
-<!-- MODAL-MODAL MASTER (KELAS, USER, SISWA, KETUNAAN) -->
-<!-- Modal Form Kelas -->
+<!-- MODAL-MODAL MASTER -->
 <div id="modal-kelas" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100">
         <div class="flex justify-between items-center border-b pb-3">
@@ -565,7 +588,6 @@ function togglePasswordVisibility(e) {
     </div>
 </div>
 
-<!-- Modal Form User -->
 <div id="modal-user" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100">
         <div class="flex justify-between items-center border-b pb-3">
@@ -602,7 +624,6 @@ function togglePasswordVisibility(e) {
     </div>
 </div>
 
-<!-- Modal Form Siswa -->
 <div id="modal-student" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100">
         <div class="flex justify-between items-center border-b pb-3">
@@ -637,7 +658,6 @@ function togglePasswordVisibility(e) {
     </div>
 </div>
 
-<!-- Modal Form Ketunaan -->
 <div id="modal-ketunaan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100">
         <div class="flex justify-between items-center border-b pb-3">
@@ -664,16 +684,16 @@ function togglePasswordVisibility(e) {
 <span id="toast-msg">Notifikasi Sistem</span>
 </div>
 
-<!-- SCRIPT LOADING ORDER (Versi dinaikkan ke ?v=108) -->
-<script src="config.js?v=108"></script>
-<script src="auth.js?v=108"></script>
-<script src="app.js?v=108"></script>
-<script src="master.js?v=108"></script>
-<script src="presensi.js?v=108"></script>
-<script src="jurnal.js?v=108"></script>
-<script src="evaluasi.js?v=108"></script>
-<script src="rekap.js?v=108"></script>
-<script src="ai-assistant.js?v=108"></script>
+<!-- SCRIPT LOADING ORDER (Versi dinaikkan ke ?v=109) -->
+<script src="config.js?v=109"></script>
+<script src="auth.js?v=109"></script>
+<script src="app.js?v=109"></script>
+<script src="master.js?v=109"></script>
+<script src="presensi.js?v=109"></script>
+<script src="jurnal.js?v=109"></script>
+<script src="evaluasi.js?v=109"></script>
+<script src="rekap.js?v=109"></script>
+<script src="ai-assistant.js?v=109"></script>
 
 <!-- Debugger Eruda untuk Tablet -->
 <script src="//cdn.jsdelivr.net/npm/eruda"></script>
