@@ -559,5 +559,51 @@ function togglePasswordVisibility(e) {
     });
   }
 </script>
+  <!-- MODAL TAMBAH/EDIT JADWAL MASTER (DINAMIS) -->
+<div id="modal-jadwal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 id="modal-jadwal-title" class="font-bold text-sm text-slate-800">Tambah Jadwal Harian</h3>
+            <button onclick="closeModalJadwal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
+        </div>
+        <form id="form-jadwal" onsubmit="handleSaveJadwal(event)" class="space-y-4">
+            <input type="hidden" id="jadwal-edit-id" value="">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Kelas</label>
+                    <select id="jadwal-kelas-input" class="w-full px-3.5 py-2.5 rounded-xl border text-xs font-semibold bg-white">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Hari</label>
+                    <select id="jadwal-hari-input" class="w-full px-3.5 py-2.5 rounded-xl border text-xs font-semibold bg-white">
+                        <option value="Senin">Senin</option>
+                        <option value="Selasa">Selasa</option>
+                        <option value="Rabu">Rabu</option>
+                        <option value="Kamis">Kamis</option>
+                        <option value="Jumat">Jumat</option>
+                        <option value="Sabtu">Sabtu</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t">
+                <div class="flex justify-between items-center">
+                    <label class="block text-xs font-bold text-slate-700"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Pengaturan Jam & Mata Pelajaran</label>
+                    <button type="button" onclick="tambahBarisJamMapel()" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold cursor-pointer border border-indigo-200">
+                        <i class="fa-solid fa-plus mr-1"></i> Tambah Jam Berikutnya
+                    </button>
+                </div>
+                <div id="jadwal-jam-mapel-container" class="space-y-2">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onclick="closeModalJadwal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Jadwal</button>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>
