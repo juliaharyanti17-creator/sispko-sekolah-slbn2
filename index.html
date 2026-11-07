@@ -357,6 +357,11 @@ function togglePasswordVisibility(e) {
 <i class="fa-solid fa-chart-line text-indigo-600"></i> Rekapitulasi Presensi & Aktivitas Jurnal
 </h2>
 <div class="flex items-center gap-2">
+<!-- Tombol Reset Rekap Khusus Admin -->
+<button id="btn-reset-rekap" onclick="handleResetRekapData(event)" class="hidden px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow cursor-pointer">
+<i class="fa-solid fa-trash-can mr-1"></i> Reset Data Presensi
+</button>
+
 <button onclick="triggerPrintReport(event)" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold shadow hover:bg-slate-900 cursor-pointer">
 <i class="fa-solid fa-print mr-1"></i> Cetak Laporan
 </button>
@@ -511,16 +516,16 @@ function togglePasswordVisibility(e) {
 <span id="toast-msg">Notifikasi Sistem</span>
 </div>
 
-<!-- SCRIPT LOADING ORDER (Versi dinaikkan ke ?v=106 untuk membersihkan cache browser/tablet) -->
-<script src="config.js?v=106"></script>
-<script src="auth.js?v=106"></script>
-<script src="app.js?v=106"></script>
-<script src="master.js?v=106"></script>
-<script src="presensi.js?v=106"></script>
-<script src="jurnal.js?v=106"></script>
-<script src="evaluasi.js?v=106"></script>
-<script src="rekap.js?v=106"></script>
-<script src="ai-assistant.js?v=106"></script>
+<!-- SCRIPT LOADING ORDER (Versi dinaikkan ke ?v=107 untuk membersihkan cache browser/tablet) -->
+<script src="config.js?v=107"></script>
+<script src="auth.js?v=107"></script>
+<script src="app.js?v=107"></script>
+<script src="master.js?v=107"></script>
+<script src="presensi.js?v=107"></script>
+<script src="jurnal.js?v=107"></script>
+<script src="evaluasi.js?v=107"></script>
+<script src="rekap.js?v=107"></script>
+<script src="ai-assistant.js?v=107"></script>
 
 <!-- Debugger Eruda untuk Tablet -->
 <script src="//cdn.jsdelivr.net/npm/eruda"></script>
