@@ -96,6 +96,12 @@ function analyzeAppDataWithAI(query) {
     var users = state.users || [];
     var journals = state.journals || [];
     var jadwal = state.jadwalMaster || [];
+    // Di dalam fungsi analisis AI (analyzeAppDataWithAI):
+var subjects = window.appState.subjects || window.appState.mapel || window.appState.mataPelajaran || [];
+
+if (lower.includes('jadwal') || lower.includes('pelajaran') || lower.includes('mapel')) {
+    return `Terdapat <strong>${subjects.length} entri mata pelajaran</strong> yang terdaftar dalam sistem master sekolah.`;
+}
 
     // Jika pengguna bertanya tentang data siswa / murid
     if (lower.includes('siswa') || lower.includes('murid') || lower.includes('anak')) {
