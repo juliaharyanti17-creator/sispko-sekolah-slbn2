@@ -819,3 +819,122 @@ function changeMasterPage(type, targetPage) {
         }
     }
 }
+// ==========================================================================
+// 6. MANAJEMEN MASTER MATA PELAJARAN
+// ==========================================================================
+function renderMasterSubjects() {
+    var tbody = document.getElementById('master-subjects-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    // Pastikan array subjects ada di appState
+    if (!window.appState.subjects) {
+        window.appState.subjects = [
+            { name: 'Matematika' },
+            { name: 'Bahasa Indonesia' },
+            { name: 'Bina Diri / Keterampilan' },
+            { name: 'Pendidikan Agama' },
+            { name: 'PJOK' }
+        ];
+    }
+
+    var subjects = window.appState.subjects;
+    if (subjects.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Belum ada mata pelajaran terdaftar.</td></tr>';
+        return;
+    }
+
+    subjects.forEach(function(s, idx) {
+        var mapelNama = typeof s === 'string' ? s : (s.name || s.nama);
+        var tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+            <td class="p-2 text-center text-slate-500 font-bold">${idx + 1}</td>
+            <td class="p-2 font-bold text-slate-800">${mapelNama}</td>
+            <td class="p-2 text-center space-x-1">
+                <button onclick="openModalSubject(${idx})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button onclick="handleDeleteSubject(${idx})" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openModalSubject(index) {
+    var modal = document.getElementById('modal-subject');
+    var title = document.getElementById('modal-subject-title');
+    var input = document.getElementById('subject-nama-input');
+    var editIdx = document.getElementById('subject-edit-index');
+    if (!modal) return;
+
+    if (typeof index === 'number' && index >= 0) {
+        if (title) title.textContent = "Edit Mata Pelajaran";
+        var subjects = window.appState.subjects || [];
+        var target = subjects[index];
+        if (input) input.value = typeof target === 'string' ? target : (target.name || target.nama || '');
+        if (editIdx) editIdx.value = index;
+    } else {
+        if (title) title.textContent = "Tambah Mata Pelajaran Baru";
+        if (input) input.value = '';
+        if (editIdx) editIdx.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+function closeModalSubject() {
+    var modal = document.getElementById('modal-subject');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+}
+
+function handleSaveSubject(e) {
+    if (e) e.preventDefault();
+    var input = document.getElementById('subject-nama-input');
+    var editIdx = document.getElementById('subject-edit-index');
+    if (!input) return;
+
+    var namaBaru = input.value.trim();
+    if (!namaBaru) return;
+
+    if (!window.appState.subjects) window.appState.subjects = [];
+
+    var idx = editIdx.value !== '' ? parseInt(editIdx.value) : -1;
+
+    if (idx >= 0) {
+        // Edit
+        if (typeof window.appState.subjects[idx] === 'string') {
+            window.appState.subjects[idx] = namaBaru;
+        } else {
+            window.appState.subjects[idx].name = namaBaru;
+            window.appState.subjects[idx].nama = namaBaru;
+        }
+        if (typeof showToast === 'function') showToast("Mata pelajaran berhasil diperbarui.");
+    } else {
+        // Tambah Baru
+        window.appState.subjects.push({ name: namaBaru });
+        if (typeof showToast === 'function') showToast("Mata pelajaran baru ditambahkan.");
+    }
+
+    if (typeof saveAppState === 'function') saveAppState();
+    closeModalSubject();
+    renderMasterSubjects();
+}
+
+function handleDeleteSubject(index) {
+    var subjects = window.appState.subjects || [];
+    var target = subjects[index];
+    var namaTarget = typeof target === 'string' ? target : (target.name || target.nama);
+
+    if (confirm(`Apakah Anda yakin ingin menghapus mata pelajaran "${namaTarget}"?`)) {
+        subjects.splice(index, 1);
+        window.appState.subjects = subjects;
+
+        if (typeof saveAppState === 'function') saveAppState();
+        renderMasterSubjects();
+        if (typeof showToast === 'function') showToast("Mata pelajaran berhasil dihapus.");
+    }
+}
