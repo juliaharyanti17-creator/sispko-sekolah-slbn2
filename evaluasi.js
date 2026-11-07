@@ -4,9 +4,68 @@
 
 function updateEvaluasiDashboard() {
     renderEvaluasiSupervisiDashboard();
-    if (typeof updateEvaluasiCharts === 'function') {
-        updateEvaluasiCharts();
+    updateEvaluasiWidgets();
+    updateEvaluasiCharts();
+}
+
+// 1. WIDGET STATISTIK RINGKASAN KEPSEK
+function updateEvaluasiWidgets() {
+    var journals = (window.appState && window.appState.journals) ? window.appState.journals : [];
+    var totalJurnal = journals.length;
+    var totalSupervisi = journals.filter(function(j) { return j.supervisi; }).length;
+    var totalBelum = totalJurnal - totalSupervisi;
+
+    var elTotal = document.getElementById('eval-stat-total-jurnal');
+    var elSup = document.getElementById('eval-stat-sudah-supervisi');
+    var elBelum = document.getElementById('eval-stat-belum-supervisi');
+
+    if (elTotal) elTotal.innerText = totalJurnal;
+    if (elSup) elSup.innerText = totalSupervisi;
+    if (elBelum) elBelum.innerText = totalBelum;
+}
+
+// 2. GRAFIK STATISTIK MENGGUNAKAN CHART.JS
+let evaluasiChartInstance = null;
+
+function updateEvaluasiCharts() {
+    var ctx = document.getElementById('evaluasi-chart-canvas');
+    if (!ctx) return;
+
+    var journals = (window.appState && window.appState.journals) ? window.appState.journals : [];
+    
+    // Hitung jurnal berdasarkan status supervisi
+    var sudahSupervisi = journals.filter(function(j) { return j.supervisi; }).length;
+    var belumSupervisi = journals.length - sudahSupervisi;
+
+    if (evaluasiChartInstance) {
+        evaluasiChartInstance.destroy();
     }
+
+    evaluasiChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Sudah Disupervisi', 'Belum Disupervisi'],
+            datasets: [{
+                data: [sudahSupervisi, belumSupervisi],
+                backgroundColor: ['#10b981', '#f59e0b'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 11, weight: 'bold' },
+                        color: '#334155'
+                    }
+                }
+            }
+        }
+    });
 }
 
 function renderEvaluasiSupervisiDashboard() {
@@ -68,5 +127,5 @@ function renderEvaluasiSupervisiDashboard() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    renderEvaluasiSupervisiDashboard();
+    updateEvaluasiDashboard();
 });
