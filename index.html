@@ -351,13 +351,39 @@ function togglePasswordVisibility(e) {
 
 <!-- MODUL 3: REKAP -->
 <section id="modul-rekap" class="hidden space-y-6">
-<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
-<h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+<h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
 <i class="fa-solid fa-chart-line text-indigo-600"></i> Rekapitulasi Presensi & Aktivitas Jurnal
 </h2>
-<div class="space-y-6">
+<div class="flex items-center gap-2">
+<button onclick="triggerPrintReport(event)" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold shadow hover:bg-slate-900 cursor-pointer">
+<i class="fa-solid fa-print mr-1"></i> Cetak Laporan
+</button>
+</div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-2xl border">
 <div>
-<h3 class="text-xs font-bold text-slate-700 mb-2">Rekap Presensi</h3>
+<label class="block text-xs font-bold text-slate-600 mb-1">Mulai Tanggal</label>
+<input type="date" id="filter-rekap-start-date" onchange="renderRekapModule()" class="w-full px-3 py-2 rounded-xl border text-xs font-semibold">
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Sampai Tanggal</label>
+<input type="date" id="filter-rekap-end-date" onchange="renderRekapModule()" class="w-full px-3 py-2 rounded-xl border text-xs font-semibold">
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Filter Kelas</label>
+<select id="filter-rekap-kelas" onchange="renderRekapModule()" class="w-full px-3 py-2 rounded-xl border text-xs font-semibold">
+<option value="ALL">Semua Kelas</option>
+</select>
+</div>
+</div>
+
+<div class="space-y-4">
+<h3 class="text-xs font-bold text-slate-700 flex items-center gap-2">
+<i class="fa-solid fa-clipboard-user text-indigo-600"></i> Rekapitulasi Presensi Murid (<span id="rekap-presensi-period-label">-</span>)
+</h3>
 <div class="overflow-x-auto border border-slate-200 rounded-2xl">
 <table class="w-full text-xs text-left">
 <thead class="bg-slate-50 border-b border-slate-200 font-bold text-slate-700">
@@ -376,16 +402,39 @@ function togglePasswordVisibility(e) {
 </table>
 </div>
 </div>
+
+<div class="space-y-4 pt-4 border-t">
+<h3 class="text-xs font-bold text-slate-700 flex items-center gap-2">
+<i class="fa-solid fa-book-bookmark text-indigo-600"></i> Rekapitulasi Aktivitas Jurnal KBM (<span id="rekap-jurnal-period-label">-</span>)
+</h3>
+<div class="overflow-x-auto border border-slate-200 rounded-2xl">
+<table class="w-full text-xs text-left">
+<thead class="bg-slate-50 border-b border-slate-200 font-bold text-slate-700">
+<tr>
+<th class="p-3 text-center w-10">NO</th>
+<th class="p-3">TANGGAL</th>
+<th class="p-3">GURU</th>
+<th class="p-3">KELAS & MAPEL</th>
+<th class="p-3">MATERI PEMBELAJARAN</th>
+</tr>
+</thead>
+<tbody id="rekap-table-jurnal-body" class="divide-y divide-slate-100 font-medium"></tbody>
+</table>
+</div>
 </div>
 </div>
 </section>
 
 <!-- MODUL 4: EVALUASI KEPSEK -->
 <section id="modul-evaluasi" class="hidden space-y-6">
-<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
-<h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-4">
+<h2 class="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
 <i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
 </h2>
+<p class="text-xs text-slate-500 font-medium">Daftar jurnal mengajar guru yang memerlukan pengawasan dan catatan pembinaan akademik.</p>
+<!-- Container wajib agar daftar jurnal evaluasi muncul -->
+<div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+</div>
 </div>
 </section>
 
@@ -395,6 +444,62 @@ function togglePasswordVisibility(e) {
 <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
 <i class="fa-solid fa-sliders text-indigo-600"></i> Kelola Data Master Sekolah
 </h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Manajemen Kelas -->
+<div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
+<h3 class="font-bold text-xs text-slate-700 flex items-center justify-between">
+<span>Daftar Kelas</span>
+<button onclick="openModalClass()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah Kelas</button>
+</h3>
+<div id="master-kelas-list-container" class="space-y-1"></div>
+</div>
+
+<!-- Manajemen User/Guru -->
+<div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
+<h3 class="font-bold text-xs text-slate-700 flex items-center justify-between">
+<span>Daftar Pengguna & Guru</span>
+<button onclick="openModalUser()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah User</button>
+</h3>
+<div class="overflow-x-auto">
+<table class="w-full text-xs text-left">
+<thead class="bg-slate-200/60 font-bold text-slate-700">
+<tr>
+<th class="p-2">Nama</th>
+<th class="p-2 text-center">Role</th>
+<th class="p-2">Ampuan</th>
+<th class="p-2 text-center">Aksi</th>
+</tr>
+</thead>
+<tbody id="master-users-table-body" class="divide-y divide-slate-100"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Manajemen Siswa -->
+<div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
+<h3 class="font-bold text-xs text-slate-700 flex items-center justify-between">
+<span>Daftar Murid SLBN 2 Pelaihari</span>
+<button onclick="openModalStudent()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah Murid</button>
+</h3>
+<div class="overflow-x-auto">
+<table class="w-full text-xs text-left">
+<thead class="bg-slate-200/60 font-bold text-slate-700">
+<tr>
+<th class="p-2 text-center w-8">No</th>
+<th class="p-2">NISN</th>
+<th class="p-2">Nama Murid</th>
+<th class="p-2 text-center">Ketunaan</th>
+<th class="p-2">Kelas</th>
+<th class="p-2 text-center">Aksi</th>
+</tr>
+</thead>
+<tbody id="master-siswa-table-body" class="divide-y divide-slate-100"></tbody>
+</table>
+</div>
+</div>
+
 </div>
 </section>
 </main>
@@ -406,7 +511,7 @@ function togglePasswordVisibility(e) {
 <span id="toast-msg">Notifikasi Sistem</span>
 </div>
 
-<!-- SCRIPT LOADING ORDER (Versi diperbarui ke ?v=101 agar cache di-refresh) -->
+<!-- SCRIPT LOADING ORDER (Versi dinaikkan ke ?v=106 untuk membersihkan cache browser/tablet) -->
 <script src="config.js?v=106"></script>
 <script src="auth.js?v=106"></script>
 <script src="app.js?v=106"></script>
