@@ -1,5 +1,5 @@
 // ==========================================================================
-// AI-ASSISTANT.JS - Asisten Cerdas Tingkat Lanjut (SIMPATIK SLBN 2 PELAIHARI)
+// AI-ASSISTANT.JS - Asisten Cerdas Super Pintar (SIMPATIK SLBN 2 PELAIHARI)
 // ==========================================================================
 
 window.toggleAIChatModal = function(e) {
@@ -84,7 +84,7 @@ window.handleSendAIChat = function(e) {
 };
 
 /**
- * Logika Analisis Pintar untuk Menjawab Berbagai Pertanyaan Spesifik
+ * Logika Analisis Tingkat Lanjut (Super Pintar)
  */
 function analyzeAppDataWithAI(query) {
     var lower = query.toLowerCase();
@@ -96,8 +96,9 @@ function analyzeAppDataWithAI(query) {
     var subjects = state.subjects || [];
     var journals = state.journals || [];
     var jadwal = state.jadwalMaster || [];
+    var presensi = state.presensiRecords || {};
 
-    // A. Pertanyaan seputar Mata Pelajaran
+    // 1. Pertanyaan seputar Mata Pelajaran
     if (lower.includes('mata pelajaran') || lower.includes('mapel') || lower.includes('pelajaran apa')) {
         if (subjects.length === 0) return "Belum ada data mata pelajaran yang terdaftar di Data Master.";
         var listMapel = subjects.map(function(s, i) {
@@ -107,7 +108,7 @@ function analyzeAppDataWithAI(query) {
         return `Berikut adalah daftar mata pelajaran aktif di SLBN 2 Pelaihari:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${listMapel}</div>`;
     }
 
-    // B. Pertanyaan seputar Wali Kelas / Guru
+    // 2. Pertanyaan seputar Wali Kelas / Guru
     if (lower.includes('wali kelas') || lower.includes('guru') || lower.includes('mengajar di kelas')) {
         var matchedClass = classes.find(function(c) {
             var cName = (c.name || c.nama || '').toLowerCase();
@@ -131,7 +132,7 @@ function analyzeAppDataWithAI(query) {
         return `Berikut daftar guru dan pengurus yang terdaftar di sistem:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${listGuru}</div>`;
     }
 
-    // C. Pencarian Data Siswa / Murid Spesifik
+    // 3. Pencarian Data Siswa / Murid Spesifik
     if (lower.includes('cari siswa') || lower.includes('cari murid') || lower.includes('tentang siswa') || lower.includes('murid bernama')) {
         var keyword = lower.replace('cari siswa', '').replace('cari murid', '').replace('tentang siswa', '').replace('murid bernama', '').trim();
         if (!keyword) return "Silakan sebutkan nama siswa yang ingin dicari (Contoh: *Cari siswa Riza*).";
@@ -151,32 +152,57 @@ function analyzeAppDataWithAI(query) {
         return `Ditemukan ${foundStudents.length} murid:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${resultHtml}</div>`;
     }
 
-    // D. Pertanyaan seputar Jadwal Pelajaran
+    // 4. Analisis Jadwal Berdasarkan Hari (Misal: "Jadwal hari Senin")
     if (lower.includes('jadwal') || lower.includes('jam pelajaran')) {
-        if (jadwal.length === 0) return "Belum ada entri master jadwal pelajaran yang diinput di menu Data Master.";
-        return `Terdapat <strong>${jadwal.length} entri jadwal pelajaran</strong> harian yang tersimpan di sistem sekolah.`;
+        var hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+        var targetHari = hariList.find(function(h) { return lower.includes(h); });
+
+        if (targetHari && jadwal.length > 0) {
+            var filteredJadwal = jadwal.filter(function(j) { return (j.hari || '').toLowerCase() === targetHari; });
+            if (filteredJadwal.length === 0) {
+                return `Belum ada jadwal pelajaran yang diinput untuk hari <strong>${targetHari.toUpperCase()}</strong>.`;
+            }
+            var listJadwalHtml = filteredJadwal.map(function(j) {
+                var namaKelas = typeof getClassName === 'function' ? getClassName(j.classId) : j.classId;
+                return `• <strong>${namaKelas}</strong> - Jam Ke-${j.jamKe}: ${j.mapel}`;
+            }).join('<br>');
+            return `📅 <strong>Jadwal Hari ${targetHari.toUpperCase()}:</strong><br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${listJadwalHtml}</div>`;
+        }
+
+        return `Terdapat <strong>${jadwal.length} entri jadwal pelajaran</strong> harian yang tersimpan di sistem sekolah. Anda juga bisa bertanya spesifik seperti *"Jadwal hari Senin"*.`;
     }
 
-    // E. Pertanyaan seputar Rekap & Statistik Umum (Siswa, Kelas, Jurnal)
-    if (lower.includes('siswa') || lower.includes('murid') || lower.includes('statistik') || lower.includes('rekap')) {
-        return `📊 <strong>Ringkasan Data SIMPATIK:</strong><br>` +
+    // 5. Analisis Jurnal / Aktivitas Guru KBM
+    if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar') || lower.includes('aktivitas')) {
+        if (journals.length === 0) return "Belum ada laporan jurnal mengajar guru yang diinput ke dalam sistem.";
+        var recentJournals = journals.slice(-3).reverse().map(function(j) {
+            return `• <strong>${j.tanggal}</strong> (${j.kelas || '-' } - ${j.mapel || '-'}): ${j.materi || '-'}`;
+        }).join('<br>');
+        return `Tercatat total <strong>${journals.length} laporan jurnal KBM</strong>. Berikut 3 aktivitas mengajar terakhir:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${recentJournals}</div>`;
+    }
+
+    // 6. Ringkasan Statistik Lengkap Sistem
+    if (lower.includes('statistik') || lower.includes('rekap') || lower.includes('ringkasan') || lower.includes('info sekolah')) {
+        return `📊 <strong>Ringkasan Data SIMPATIK SLBN 2 Pelaihari:</strong><br>` +
                `• Total Murid: <strong>${students.length} orang</strong><br>` +
                `• Total Kelas: <strong>${classes.length} rombel</strong><br>` +
+               `• Total Mata Pelajaran: <strong>${subjects.length} mapel</strong><br>` +
                `• Total Jurnal KBM: <strong>${journals.length} laporan</strong><br>` +
                `• Total Guru/User: <strong>${users.length} akun</strong>`;
     }
 
-    // F. Sapaan Umum
+    // 7. Sapaan Umum
     if (lower.includes('halo') || lower.includes('hai')) {
-        return `Halo! Saya AI Assistant SIMPATIK SLBN 2 Pelaihari. Saya siap membantu Anda mencari data siswa, wali kelas, mata pelajaran, hingga rekap jurnal KBM. Ada yang bisa saya bantu?`;
+        return `Halo! Saya AI Assistant SIMPATIK SLBN 2 Pelaihari. Saya siap membantu Anda menganalisis data sekolah secara instan. Apa yang ingin Anda ketahui hari ini?`;
     }
 
-    // G. Fallback Pintar Berdasarkan Kata Kunci Acak
-    return `Saya telah memindai database sekolah. Saat ini tercatat <strong>${students.length} murid</strong> dan <strong>${classes.length} kelas</strong> aktif. Anda dapat bertanya seputar: <br>` +
+    // 8. Fallback Pintar
+    return `Saya mengerti pertanyaan Anda. Sebagai AI Assistant SIMPATIK, Anda bisa mencoba bertanya hal-hal berikut:<br>` +
            `1. *"Mata pelajaran apa saja yang ada?"*<br>` +
            `2. *"Siapa wali kelas 1?"*<br>` +
            `3. *"Cari siswa [Nama Siswa]"*<br>` +
-           `4. *"Berapa total murid?"*`;
+           `4. *"Jadwal hari Senin"*<br>` +
+           `5. *"Ringkasan statistik sekolah"*`;
 }
 
 function escapeHtml(str) {
