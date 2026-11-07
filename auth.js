@@ -52,7 +52,7 @@ function handleLogin(e) {
         return;
     }
 
-    // B. Fallback Kepala Sekolah
+    // B. Fallback Kepala Sekolah (Maisyanti Disi Fatimah, S.Pd.I., M.Pd)
     if ((inputUser === 'kepsek' || inputUser === 'maisyanti') && (inputPass === 'kepsek' || inputPass === '123456' || inputPass === 'admin')) {
         var kepsekUser = {
             id: "u_kepsek_default",
@@ -207,6 +207,7 @@ window.populateDropdowns = function() {
         userMapelArr = user.mapelAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
     }
 
+    // Filter ketat kelas berdasarkan hak ampunan guru (kecuali admin/kepsek)
     var allowedClasses = classes.filter(function(c) {
         if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL' || user.kelasAmpuan === '') {
             return true;
@@ -214,10 +215,11 @@ window.populateDropdowns = function() {
         var cId = (c.id || '').toLowerCase();
         var cName = (c.name || c.nama || '').toLowerCase();
         return userKelasArr.some(function(uk) {
-            return cId === uk || cName === uk;
+            return cId === uk || cName.includes(uk) || uk.includes(cId);
         });
     });
 
+    // Filter ketat mapel berdasarkan hak ampunan guru (kecuali admin/kepsek)
     var allowedSubjects = subjects.filter(function(s) {
         if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL' || user.mapelAmpuan === '') {
             return true;
@@ -225,7 +227,7 @@ window.populateDropdowns = function() {
         var sId = (s.id || '').toLowerCase();
         var sName = (s.name || s.nama || '').toLowerCase();
         return userMapelArr.some(function(um) {
-            return sId === um || sName === um;
+            return sId === um || sName.includes(um) || um.includes(sId);
         });
     });
 
