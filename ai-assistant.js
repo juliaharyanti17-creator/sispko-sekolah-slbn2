@@ -1,11 +1,8 @@
 // ==========================================================================
-// AI-ASSISTANT.JS - Asisten Cerdas SIMPATIK
-// SIMPATIK SLBN 2 PELAIHARI
+// AI-ASSISTANT.JS - Asisten Cerdas Terintegrasi Data SIMPATIK
+// SLBN 2 PELAIHARI
 // ==========================================================================
 
-/**
- * Membuka atau menutup jendela Modal Chat AI Assistant
- */
 window.toggleAIChatModal = function(e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     var modal = document.getElementById('modal-ai-assistant');
@@ -25,9 +22,6 @@ window.toggleAIChatModal = function(e) {
     }
 };
 
-/**
- * Menangani pengiriman pesan chat dari pengguna ke AI Assistant
- */
 window.handleSendAIChat = function(e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     
@@ -38,7 +32,7 @@ window.handleSendAIChat = function(e) {
     var text = input.value.trim();
     if (!text) return;
 
-    // 1. Render Bubble Pesan Pengguna
+    // 1. Tampilkan pesan pengguna
     var userBubble = document.createElement('div');
     userBubble.className = "flex items-start justify-end gap-2.5";
     userBubble.innerHTML = `
@@ -53,7 +47,7 @@ window.handleSendAIChat = function(e) {
     input.value = '';
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
-    // 2. Tampilkan Indikator "AI sedang mengetik..."
+    // 2. Indikator "AI sedang memproses data..."
     var typingIndicator = document.createElement('div');
     typingIndicator.id = "ai-typing-indicator";
     typingIndicator.className = "flex items-start gap-2.5";
@@ -62,21 +56,19 @@ window.handleSendAIChat = function(e) {
             AI
         </div>
         <div class="bg-white p-3 rounded-2xl rounded-tl-sm border border-slate-200/80 shadow-xs text-slate-400 italic text-xs">
-            Sedang menganalisis data SIMPATIK...
+            Menganalisis database SIMPATIK...
         </div>
     `;
     msgContainer.appendChild(typingIndicator);
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
-    // 3. Simulasi Proses Analisis Data & Respon AI (Delay 800ms)
+    // 3. Proses Analisis Berdasarkan window.appState Nyata
     setTimeout(function() {
-        // Hapus indikator mengetik
         var indicatorEl = document.getElementById('ai-typing-indicator');
         if (indicatorEl) indicatorEl.remove();
 
-        var replyText = generateAIResponse(text);
+        var replyText = analyzeAppDataWithAI(text);
 
-        // Render Bubble Respon AI
         var aiBubble = document.createElement('div');
         aiBubble.className = "flex items-start gap-2.5";
         aiBubble.innerHTML = `
@@ -89,43 +81,63 @@ window.handleSendAIChat = function(e) {
         `;
         msgContainer.appendChild(aiBubble);
         msgContainer.scrollTop = msgContainer.scrollHeight;
-    }, 800);
+    }, 700);
 };
 
 /**
- * Logika Generator Respon Berdasarkan Konteks Aplikasi (window.appState)
+ * Fungsi Pintar untuk Mengambil Data Nyata dari window.appState
  */
-function generateAIResponse(query) {
-    var lowerQuery = query.toLowerCase();
+function analyzeAppDataWithAI(query) {
+    var lower = query.toLowerCase();
     var state = window.appState || {};
 
-    if (lowerQuery.includes('presensi') || lowerQuery.includes('hadir') || lowerQuery.includes('siswa')) {
-        var totalSiswa = (state.students && Array.isArray(state.students)) ? state.students.length : 0;
-        var totalKelas = (state.classes && Array.isArray(state.classes)) ? state.classes.length : 0;
-        return `Berdasarkan database sistem saat ini, terdapat <strong>${totalSiswa} murid</strong> yang terdaftar di ${totalKelas} rombongan belajar SLBN 2 Pelaihari. Anda dapat memantau rincian kehadiran harian pada tab <em>Presensi Murid</em>.`;
-    } 
-    
-    if (lowerQuery.includes('jurnal') || lowerQuery.includes('kbm') || lowerQuery.includes('guru')) {
-        var totalJurnal = (state.journals && Array.isArray(state.journals)) ? state.journals.length : 0;
-        return `Tercatat ada <strong>${totalJurnal} laporan jurnal KBM</strong> guru yang telah dimasukkan ke dalam sistem. Kepala Sekolah dapat meninjau aktivitas ini melalui panel <em>Evaluasi Kepsek</em>.`;
-    } 
-    
-    if (lowerQuery.includes('jadwal') || lowerQuery.includes('pelajaran')) {
-        var totalJadwal = (state.jadwalMaster && Array.isArray(state.jadwalMaster)) ? state.jadwalMaster.length : 0;
-        return `Sistem mencatat ada ${totalJadwal} entri master jadwal pelajaran harian. Pengaturan dan penambahan jam pelajaran dapat dikelola melalui menu <em>Data Master Sekolah</em>.`;
-    } 
-    
-    if (lowerQuery.includes('halo') || lowerQuery.includes('hai') || lowerQuery.includes('pagi') || lowerQuery.includes('siang')) {
-        return "Halo! Saya AI Assistant SIMPATIK SLBN 2 Pelaihari. Ada yang bisa saya bantu terkait rekap presensi, jadwal KBM, atau laporan aktivitas guru hari ini?";
+    var students = state.students || [];
+    var classes = state.classes || [];
+    var users = state.users || [];
+    var journals = state.journals || [];
+    var jadwal = state.jadwalMaster || [];
+
+    // Jika pengguna bertanya tentang data siswa / murid
+    if (lower.includes('siswa') || lower.includes('murid') || lower.includes('anak')) {
+        if (students.length === 0) return "Belum ada data murid yang tercatat di database saat ini.";
+        var listNama = students.slice(0, 5).map(function(s) { return s.nama || s.name; }).join(', ');
+        var extra = students.length > 5 ? ` dan ${students.length - 5} murid lainnya.` : '.';
+        return `Total terdapat <strong>${students.length} murid</strong> terdaftar di SLBN 2 Pelaihari dari ${classes.length} kelas. Beberapa di antaranya: ${listNama}${extra}`;
     }
 
-    // Default Fallback Response
-    return `Saya memahami pertanyaan Anda mengenai "${escapeHtml(query)}". Sebagai asisten cerdas SIMPATIK, saya menyarankan Anda untuk memeriksa rekapitulasi data terbaru di menu utama atau menghubungi administrator sistem jika memerlukan bantuan teknis lanjutan.`;
+    // Jika pengguna bertanya tentang kelas
+    if (lower.includes('kelas')) {
+        if (classes.length === 0) return "Belum ada data kelas yang terdaftar.";
+        var kelasNames = classes.map(function(c) { return c.name || c.nama; }).join(', ');
+        return `Daftar rombongan belajar (kelas) yang aktif di sistem meliputi: <strong>${kelasNames}</strong>.`;
+    }
+
+    // Jika pengguna bertanya tentang jurnal mengajar guru
+    if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar')) {
+        if (journals.length === 0) return "Belum ada laporan jurnal mengajar yang diinput oleh guru.";
+        return `Tercatat ada <strong>${journals.length} laporan jurnal KBM</strong> guru yang masuk ke dalam sistem pengawasan.`;
+    }
+
+    // Jika pengguna bertanya tentang guru / user
+    if (lower.includes('guru') || lower.includes('pengguna') || lower.includes('user') || lower.includes('admin')) {
+        if (users.length === 0) return "Belum ada data pengguna lain yang terdaftar.";
+        var userNames = users.map(function(u) { return u.nama + ' (' + u.role + ')'; }).join(', ');
+        return `Pengguna aktif yang terdaftar dalam sistem: ${userNames}.`;
+    }
+
+    // Jika pengguna bertanya tentang jadwal pelajaran
+    if (lower.includes('jadwal') || lower.includes('pelajaran')) {
+        return `Terdapat ${jadwal.length} entri master jadwal pelajaran harian yang tersimpan di sistem administrasi sekolah.`;
+    }
+
+    // Pertanyaan umum / sapaan
+    if (lower.includes('halo') || lower.includes('hai')) {
+        return `Halo! Saya AI Assistant SIMPATIK. Saat ini saya membaca data riil sekolah: <strong>${students.length} Murid</strong>, <strong>${classes.length} Kelas</strong>, dan <strong>${journals.length} Jurnal KBM</strong>. Apa yang ingin Anda ketahui?`;
+    }
+
+    return `Berdasarkan pemindaian data SIMPATIK SLBN 2 Pelaihari, saat ini tersimpan ${students.length} data murid dan ${journals.length} riwayat jurnal. Silakan tanyakan informasi spesifik seputar rekap kelas, siswa, atau aktivitas KBM!`;
 }
 
-/**
- * Helper untuk mencegah XSS pada teks input chat
- */
 function escapeHtml(str) {
     if (!str) return '';
     return String(str)
