@@ -443,22 +443,14 @@ function togglePasswordVisibility(e) {
 <!-- MODUL 5: DATA MASTER (URUTAN: 1. USER/GURU, 2. KELAS, 3. KETUNAAN, 4. DAFTAR SISWA) -->
 <section id="modul-master" class="hidden space-y-6">
 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+<div class="flex justify-between items-center border-b pb-4">
     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
         <i class="fa-solid fa-sliders text-indigo-600"></i> Kelola Data Master Sekolah
     </h2>
-    <!-- Filter Kategori Master -->
-    <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl">
-        <button onclick="filterMasterTab('all', event)" id="master-filter-all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-900 shadow-sm transition cursor-pointer">Semua</button>
-        <button onclick="filterMasterTab('user', event)" id="master-filter-user" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-indigo-900 transition cursor-pointer">1. User / Guru</button>
-        <button onclick="filterMasterTab('kelas', event)" id="master-filter-kelas" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-indigo-900 transition cursor-pointer">2. Kelas</button>
-        <button onclick="filterMasterTab('ketunaan', event)" id="master-filter-ketunaan" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-indigo-900 transition cursor-pointer">3. Ketunaan</button>
-        <button onclick="filterMasterTab('siswa', event)" id="master-filter-siswa" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-indigo-900 transition cursor-pointer">4. Daftar Siswa</button>
-    </div>
 </div>
 
 <!-- 1. POSISI PERTAMA: MANAJEMEN USER / GURU -->
-<div id="master-group-user" class="master-filter-section space-y-3">
+<div id="master-group-user" class="space-y-3">
     <div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
         <div class="flex justify-between items-center">
             <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
@@ -493,23 +485,47 @@ function togglePasswordVisibility(e) {
 </div>
 
 <!-- 2. POSISI KEDUA: MANAJEMEN KELAS -->
-<div id="master-group-kelas" class="master-filter-section space-y-3">
+<div id="master-group-kelas" class="space-y-3">
     <div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
-        <h3 class="font-bold text-xs text-slate-700 flex items-center justify-between">
-            <span><i class="fa-solid fa-school text-indigo-600 mr-1.5"></i> 2. Daftar Kelas Sekolah</span>
-            <button onclick="openModalClass()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah Kelas</button>
-        </h3>
+        <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-school text-indigo-600"></i> 2. Daftar Kelas Sekolah
+            </h3>
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                    <span>Tampilkan:</span>
+                    <select onchange="changeMasterLimit('kelas', this)" class="px-2 py-1 rounded-lg border text-xs font-semibold bg-white">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                    </select>
+                </div>
+                <button onclick="openModalClass()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah Kelas</button>
+            </div>
+        </div>
         <div id="master-kelas-list-container" class="space-y-1.5"></div>
     </div>
 </div>
 
 <!-- 3. POSISI KETIGA: MANAJEMEN KETUNAAN -->
-<div id="master-group-ketunaan" class="master-filter-section space-y-3">
+<div id="master-group-ketunaan" class="space-y-3">
     <div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
-        <h3 class="font-bold text-xs text-slate-700 flex items-center justify-between">
-            <span><i class="fa-solid fa-wheelchair text-indigo-600 mr-1.5"></i> 3. Daftar Kategori Ketunaan</span>
-            <button onclick="openModalKetunaan()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah Ketunaan</button>
-        </h3>
+        <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-wheelchair text-indigo-600"></i> 3. Daftar Kategori Ketunaan
+            </h3>
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                    <span>Tampilkan:</span>
+                    <select onchange="changeMasterLimit('ketunaan', this)" class="px-2 py-1 rounded-lg border text-xs font-semibold bg-white">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                    </select>
+                </div>
+                <button onclick="openModalKetunaan()" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-[10px] font-bold cursor-pointer">+ Tambah Ketunaan</button>
+            </div>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full text-xs text-left">
                 <thead class="bg-slate-200/60 font-bold text-slate-700">
@@ -526,7 +542,7 @@ function togglePasswordVisibility(e) {
 </div>
 
 <!-- 4. POSISI KEEMPAT: DAFTAR SISWA / MURID -->
-<div id="master-group-siswa" class="master-filter-section space-y-3">
+<div id="master-group-siswa" class="space-y-3">
     <div class="bg-slate-50 p-4 rounded-2xl border space-y-3">
         <div class="flex justify-between items-center">
             <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
@@ -684,16 +700,16 @@ function togglePasswordVisibility(e) {
 <span id="toast-msg">Notifikasi Sistem</span>
 </div>
 
-<!-- SCRIPT LOADING ORDER (Versi dinaikkan ke ?v=109) -->
-<script src="config.js?v=109"></script>
-<script src="auth.js?v=109"></script>
-<script src="app.js?v=109"></script>
-<script src="master.js?v=109"></script>
-<script src="presensi.js?v=109"></script>
-<script src="jurnal.js?v=109"></script>
-<script src="evaluasi.js?v=109"></script>
-<script src="rekap.js?v=109"></script>
-<script src="ai-assistant.js?v=109"></script>
+<!-- SCRIPT LOADING ORDER (Versi dinaikkan ke ?v=110) -->
+<script src="config.js?v=110"></script>
+<script src="auth.js?v=110"></script>
+<script src="app.js?v=110"></script>
+<script src="master.js?v=110"></script>
+<script src="presensi.js?v=110"></script>
+<script src="jurnal.js?v=110"></script>
+<script src="evaluasi.js?v=110"></script>
+<script src="rekap.js?v=110"></script>
+<script src="ai-assistant.js?v=110"></script>
 
 <!-- Debugger Eruda untuk Tablet -->
 <script src="//cdn.jsdelivr.net/npm/eruda"></script>
