@@ -2,6 +2,57 @@
 // SIMPATIK SLBN 2 PELAIHARI - MAIN APPLICATION LOGIC (app.js)
 // ==========================================================================
 
+// Deklarasi Darurat Global agar fungsi switchTab langsung siap dipanggil
+window.switchTab = window.switchTab || function(e, tabName) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!tabName) tabName = 'presensi';
+    window.currentActiveTab = tabName;
+
+    if (typeof applyRoleAccessControl === 'function') {
+        applyRoleAccessControl();
+    }
+
+    const modules = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
+    
+    modules.forEach(function(mod) {
+        const section = document.getElementById('modul-' + mod);
+        const btn = document.getElementById('tab-btn-' + mod);
+
+        if (section) {
+            if (mod === tabName) {
+                section.classList.remove('hidden');
+                section.style.setProperty('display', 'block', 'important');
+            } else {
+                section.classList.add('hidden');
+                section.style.setProperty('display', 'none', 'important');
+            }
+        }
+
+        if (btn) {
+            if (mod === tabName) {
+                btn.className = "tab-btn w-full px-3.5 py-3 rounded-2xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all duration-300 transform scale-[1.02] cursor-pointer";
+            } else {
+                btn.className = "tab-btn w-full px-3.5 py-3 rounded-2xl text-xs font-bold flex items-center justify-between text-indigo-200 hover:bg-white/10 hover:text-white transition-all duration-300 hover:translate-x-1 border border-white/5 hover:border-white/10 cursor-pointer";
+            }
+        }
+    });
+
+    const sidebar = document.getElementById('sidebar-nav');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('hidden')) {
+        sidebar.classList.add('hidden');
+        if (backdrop) backdrop.classList.add('hidden');
+    }
+
+    try {
+        if (typeof window.refreshCurrentTabUI === 'function') {
+            window.refreshCurrentTabUI();
+        }
+    } catch (err) {
+        console.warn("Peringatan saat render data modul:", err);
+    }
+};
+
 window.currentActiveTab = 'presensi';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -86,58 +137,8 @@ window.getSubjectName = function(subjectIdOrName) {
 };
 
 // --------------------------------------------------------------------------
-// 1. SISTEM PERUBAHAN TAB & KONTEN HALAMAN (GLOBAL EXPOSED)
+// 1. REFRESH UI & NAVIGASI PENDUKUNG
 // --------------------------------------------------------------------------
-window.switchTab = function(e, tabName) {
-    if (e && e.preventDefault) e.preventDefault();
-    if (!tabName) tabName = 'presensi';
-    window.currentActiveTab = tabName;
-
-    if (typeof applyRoleAccessControl === 'function') {
-        applyRoleAccessControl();
-    }
-
-    const modules = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
-    
-    modules.forEach(function(mod) {
-        const section = document.getElementById('modul-' + mod);
-        const btn = document.getElementById('tab-btn-' + mod);
-
-        if (section) {
-            if (mod === tabName) {
-                section.classList.remove('hidden');
-                section.style.setProperty('display', 'block', 'important');
-            } else {
-                section.classList.add('hidden');
-                section.style.setProperty('display', 'none', 'important');
-            }
-        }
-
-        if (btn) {
-            if (mod === tabName) {
-                btn.className = "tab-btn w-full px-3.5 py-3 rounded-2xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all duration-300 transform scale-[1.02] cursor-pointer";
-            } else {
-                btn.className = "tab-btn w-full px-3.5 py-3 rounded-2xl text-xs font-bold flex items-center justify-between text-indigo-200 hover:bg-white/10 hover:text-white transition-all duration-300 hover:translate-x-1 border border-white/5 hover:border-white/10 cursor-pointer";
-            }
-        }
-    });
-
-    const sidebar = document.getElementById('sidebar-nav');
-    const backdrop = document.getElementById('sidebar-backdrop');
-    if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('hidden')) {
-        sidebar.classList.add('hidden');
-        if (backdrop) backdrop.classList.add('hidden');
-    }
-
-    try {
-        if (typeof window.refreshCurrentTabUI === 'function') {
-            window.refreshCurrentTabUI();
-        }
-    } catch (err) {
-        console.warn("Peringatan saat render data modul:", err);
-    }
-};
-
 window.refreshCurrentTabUI = function() {
     try {
         if (window.currentActiveTab === 'presensi' && typeof renderPresensiForm === 'function') {
