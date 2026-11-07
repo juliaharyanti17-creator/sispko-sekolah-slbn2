@@ -6,13 +6,15 @@
 window.appState = {
     currentUser: null,
     users: [
-        { id: 'admin-default', nama: 'Administrator SLBN 2', username: 'admin', password: 'admin', role: 'admin' }
+        { id: 'admin-default', nama: 'Administrator SLBN 2', username: 'admin', password: 'admin', role: 'admin', kelasAmpuan: 'ALL', mapelAmpuan: 'ALL' },
+        { id: 'u_kepsek_default', nama: 'Maisyanti Disi Fatimah, S.Pd.I., M.Pd', username: 'kepsek', password: '123', role: 'kepsek', kelasAmpuan: 'ALL', mapelAmpuan: 'ALL' }
     ],
     classes: [],
     subjects: [],
     students: [],
     journals: [],
     presensi: [],
+    presensiRecords: {},
     evaluations: [],
     ketunaanList: [
         "Tuna Netra", "Tuna Rungu", "Tuna Grahita", "Tuna Grahita Sedang",
@@ -48,7 +50,6 @@ window.checkUserSession = function() {
     var roleElem = document.getElementById('user-display-role');
 
     if (window.appState && window.appState.currentUser) {
-        // Sesi Aktif: Sembunyikan Layar Login, Tampilkan Layar Utama
         if (loginSection) {
             loginSection.style.display = 'none';
             loginSection.classList.add('hidden');
@@ -59,18 +60,15 @@ window.checkUserSession = function() {
             mainDashboard.classList.remove('hidden');
         }
 
-        // Perbarui Nama & Role User di Sidebar
         if (nameElem) nameElem.textContent = window.appState.currentUser.nama || window.appState.currentUser.username;
         if (roleElem) roleElem.textContent = (window.appState.currentUser.role || 'ADMIN').toUpperCase();
         
-        // Buka Modul Presensi
         if (typeof window.switchTab === 'function') {
             window.switchTab(null, window.currentActiveTab || 'presensi');
         }
 
         console.log("✓ Sesi login aktif untuk:", window.appState.currentUser.username || window.appState.currentUser.nama);
     } else {
-        // Sesi Belum Ada: Tampilkan Layar Login
         if (loginSection) {
             loginSection.style.display = 'flex';
             loginSection.classList.remove('hidden');
@@ -83,48 +81,13 @@ window.checkUserSession = function() {
 };
 
 // ==========================================================================
-// 4. FUNGSI SIMPAN DATA LOKAL & FIREBASE
+// 4. FUNGSI SIMPAN DATA LOKAL & FIREBASE (HYBRID STORAGE)
 // ==========================================================================
 function updateLocalBackup() {
     try {
         localStorage.setItem('simpatik_backup_state', JSON.stringify(window.appState));
     } catch(e) { console.error("Gagal backup lokal:", e); }
 }
-
-window.saveStudentsData = function() {
-    updateLocalBackup();
-    if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/students').set(window.appState.students || []);
-    }
-};
-
-window.saveClassesData = function() {
-    updateLocalBackup();
-    if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/classes').set(window.appState.classes || []);
-    }
-};
-
-window.saveUsersData = function() {
-    updateLocalBackup();
-    if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/users').set(window.appState.users || []);
-    }
-};
-
-window.saveJournalsData = function() {
-    updateLocalBackup();
-    if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/journals').set(window.appState.journals || []);
-    }
-};
-
-window.savePresensiData = function() {
-    updateLocalBackup();
-    if (typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('simpatik_data/presensi').set(window.appState.presensi || []);
-    }
-};
 
 window.saveAppState = function() {
     updateLocalBackup();
@@ -137,11 +100,28 @@ window.saveAppState = function() {
         students: window.appState.students || [],
         journals: window.appState.journals || [],
         presensi: window.appState.presensi || [],
+        presensiRecords: window.appState.presensiRecords || {},
         evaluations: window.appState.evaluations || [],
         ketunaanList: window.appState.ketunaanList || []
     };
 
-    firebase.database().ref('simpatik_data').set(dataToSave);
+    firebase.database().ref('simpatik_data').set(dataToSave).catch(function(err) {
+        console.warn("Gagal sinkronisasi ke Firebase, menggunakan Local Backup:", err);
+    });
+};
+
+window.savePresensiData = function() {
+    updateLocalBackup();
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/presensiRecords').set(window.appState.presensiRecords || {});
+    }
+};
+
+window.saveJournalsData = function() {
+    updateLocalBackup();
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('simpatik_data/journals').set(window.appState.journals || []);
+    }
 };
 
 // ==========================================================================
@@ -163,6 +143,7 @@ window.loadAppState = function(callback) {
             if (parsedLocal.users && parsedLocal.users.length > 0) window.appState.users = parsedLocal.users;
             if (parsedLocal.journals) window.appState.journals = parsedLocal.journals;
             if (parsedLocal.presensi) window.appState.presensi = parsedLocal.presensi;
+            if (parsedLocal.presensiRecords) window.appState.presensiRecords = parsedLocal.presensiRecords;
             if (parsedLocal.evaluations) window.appState.evaluations = parsedLocal.evaluations;
             if (parsedLocal.ketunaanList) window.appState.ketunaanList = parsedLocal.ketunaanList;
         } catch(e) {}
@@ -184,6 +165,7 @@ window.loadAppState = function(callback) {
                 window.appState.subjects = data.subjects || [];
                 window.appState.users = (data.users && data.users.length > 0) ? data.users : window.appState.users;
                 window.appState.presensi = data.presensi || [];
+                window.appState.presensiRecords = data.presensiRecords || {};
                 window.appState.evaluations = data.evaluations || [];
                 window.appState.ketunaanList = data.ketunaanList || window.appState.ketunaanList;
                 
@@ -196,6 +178,7 @@ window.loadAppState = function(callback) {
             if (callback) callback();
         })
         .catch(function(err) {
+            console.warn("Gagal memuat dari Firebase, menggunakan Local Backup:", err);
             triggerUIRender();
             if (callback) callback();
         });
