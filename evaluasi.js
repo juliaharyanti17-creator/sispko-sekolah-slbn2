@@ -6,6 +6,7 @@ function updateEvaluasiDashboard() {
     initEvaluasiDefaultDate();
     renderEvaluasiSupervisiDashboard();
     updateEvaluasiWidgets();
+    renderEvaluasiRealtimeKelasTable();
     updateEvaluasiCharts();
 }
 
@@ -54,7 +55,6 @@ function updateEvaluasiWidgets() {
     var startDate = (startInput && startInput.value) ? startInput.value : todayStr;
     var endDate = (endInput && endInput.value) ? endInput.value : startDate;
 
-    // Hitung statistik jurnal & supervisi
     var journals = (window.appState && window.appState.journals) ? window.appState.journals : [];
     var filteredJournals = journals.filter(function(j) {
         return j.tanggal >= startDate && j.tanggal <= endDate;
@@ -64,7 +64,6 @@ function updateEvaluasiWidgets() {
     var totalSupervisi = filteredJournals.filter(function(j) { return j.supervisi; }).length;
     var totalBelum = totalJurnal - totalSupervisi;
 
-    // Hitung statistik kehadiran murid berdasarkan rentang tanggal presensiRecords
     var hadir = 0, sakit = 0, izin = 0, alpa = 0;
     var activeStudentIds = (window.appState.students || []).map(function(s) { return s.id; });
     var presensiRecords = window.appState.presensiRecords || {};
@@ -88,7 +87,6 @@ function updateEvaluasiWidgets() {
         }
     });
 
-    // Update ke DOM Widget
     if (document.getElementById('eval-stat-total-jurnal')) document.getElementById('eval-stat-total-jurnal').innerText = totalJurnal;
     if (document.getElementById('eval-stat-sudah-supervisi')) document.getElementById('eval-stat-sudah-supervisi').innerText = totalSupervisi;
     if (document.getElementById('eval-stat-belum-supervisi')) document.getElementById('eval-stat-belum-supervisi').innerText = totalBelum;
@@ -99,7 +97,71 @@ function updateEvaluasiWidgets() {
     if (document.getElementById('eval-stat-alpa')) document.getElementById('eval-stat-alpa').innerText = alpa;
 }
 
-// 2. GRAFIK STATISTIK MENGGUNAKAN CHART.JS
+// 2. TABEL REKAP REAL-TIME PER KELAS KHUSUS KEPSEK (TANPA AKSI / KLIK)
+function renderEvaluasiRealtimeKelasTable() {
+    var tbody = document.getElementById('eval-realtime-kelas-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    var startInput = document.getElementById('eval-filter-start-date');
+    var endInput = document.getElementById('eval-filter-end-date');
+    var todayStr = new Date().toISOString().split('T')[0];
+    var startDate = (startInput && startInput.value) ? startInput.value : todayStr;
+    var endDate = (endInput && endInput.value) ? endInput.value : startDate;
+
+    var classes = window.appState.classes || [];
+    var students = window.appState.students || [];
+    var presensiRecords = window.appState.presensiRecords || {};
+
+    if (classes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada data kelas.</td></tr>';
+        return;
+    }
+
+    classes.forEach(function(c, index) {
+        var classStudents = students.filter(function(s) {
+            return s.classId === c.id || s.kelas === c.id || s.classId === c.name || s.kelas === c.name;
+        });
+        var totalMurid = classStudents.length;
+        var studentIds = classStudents.map(function(s) { return s.id; });
+
+        var cHadir = 0, cSakit = 0, cIzin = 0, cAlpa = 0;
+
+        Object.keys(presensiRecords).forEach(function(key) {
+            var parts = key.split('_');
+            if (parts.length >= 3) {
+                var tgl = parts[0];
+                var classIdMatch = parts.slice(1, parts.length - 1).join('_');
+
+                if ((classIdMatch === c.id || classIdMatch === c.name || classIdMatch === c.nama) && tgl >= startDate && tgl <= endDate) {
+                    var recMap = presensiRecords[key] || {};
+                    studentIds.forEach(function(sId) {
+                        var st = recMap[sId];
+                        if (st === 'H' || st === 'Hadir') cHadir++;
+                        else if (st === 'S' || st === 'Sakit') cSakit++;
+                        else if (st === 'I' || st === 'Izin') cIzin++;
+                        else cAlpa++; // Dianggap alpa jika tidak tercatat / kosong
+                    });
+                }
+            }
+        });
+
+        var tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+            <td class="p-3 text-center text-slate-500 font-bold">${index + 1}</td>
+            <td class="p-3 font-bold text-slate-800">${c.name || c.nama}</td>
+            <td class="p-3 text-center font-semibold text-slate-700">${totalMurid}</td>
+            <td class="p-3 text-center font-bold text-emerald-700">${cHadir}</td>
+            <td class="p-3 text-center font-bold text-amber-700">${cSakit}</td>
+            <td class="p-3 text-center font-bold text-blue-700">${cIzin}</td>
+            <td class="p-3 text-center font-bold text-rose-700">${cAlpa}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// 3. GRAFIK STATISTIK MENGGUNAKAN CHART.JS
 var evaluasiChartInstance = null;
 
 function updateEvaluasiCharts() {
