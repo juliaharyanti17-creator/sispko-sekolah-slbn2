@@ -80,6 +80,7 @@ function renderRekapModule() {
                     }
                 });
 
+                // Perhitungan persentase kehadiran yang aman dari NaN
                 const percentHadir = totalRecords > 0 ? Math.round((hadir / totalRecords) * 100) : 0;
 
                 const tr = document.createElement('tr');
