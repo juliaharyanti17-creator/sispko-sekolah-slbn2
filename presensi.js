@@ -61,7 +61,6 @@ function loadPresensiTable() {
         if (!initials) initials = 'MS';
 
         var tr = document.createElement('tr');
-        // Simpan student id pada atribut baris agar mudah dibaca saat tombol simpan diklik
         tr.setAttribute('data-student-id', s.id);
         tr.className = "hover:bg-indigo-50/40 dark:hover:bg-slate-700/50 transition border-b border-slate-100 dark:border-slate-700/60 text-xs";
         tr.innerHTML = `
@@ -97,23 +96,32 @@ function loadPresensiTable() {
 }
 
 function setStudentStatus(studentId, status) {
-    var selectedTgl = document.getElementById('presensi-tanggal').value;
-    var selectedClass = document.getElementById('presensi-kelas-select').value;
-    var selectedMapel = document.getElementById('presensi-mapel-select') ? document.getElementById('presensi-mapel-select').value : 'HARIAN';
+    var tanggalEl = document.getElementById('presensi-tanggal');
+    var kelasEl = document.getElementById('presensi-kelas-select');
+    var mapelEl = document.getElementById('presensi-mapel-select');
+
+    var selectedTgl = tanggalEl ? tanggalEl.value : '';
+    var selectedClass = kelasEl ? kelasEl.value : '';
+    var selectedMapel = mapelEl ? mapelEl.value : 'HARIAN';
     
-    if (!selectedTgl || !selectedClass) return;
+    if (!selectedTgl || !selectedClass) {
+        if (typeof showToast === 'function') showToast("Pilih tanggal dan kelas terlebih dahulu!");
+        else alert("Pilih tanggal dan kelas terlebih dahulu!");
+        return;
+    }
 
     var harianKey = selectedTgl + '_' + selectedClass + '_HARIAN';
     var targetKey = selectedTgl + '_' + selectedClass + '_' + selectedMapel;
     
     if (!appState.presensiRecords) appState.presensiRecords = {};
     
-    // Jika belum ada record spesifik untuk mapel ini, salin dulu dari data harian
     if (!appState.presensiRecords[targetKey]) {
         appState.presensiRecords[targetKey] = Object.assign({}, appState.presensiRecords[harianKey] || {});
     }
 
     appState.presensiRecords[targetKey][studentId] = status;
+    
+    // Perbarui tabel secara reaktif seketika tanpa menutup atau me-reset scroll
     loadPresensiTable();
 }
 
@@ -148,7 +156,6 @@ function handleSavePresensi(e) {
         appState.presensiRecords[targetKey] = Object.assign({}, appState.presensiRecords[harianKey] || {});
     }
 
-    // Ambil status terbaru langsung dari tombol aktif yang dipilih pada tabel
     var rows = document.querySelectorAll('#presensi-table-body tr');
     rows.forEach(function(tr) {
         var studentId = tr.getAttribute('data-student-id');
@@ -161,14 +168,12 @@ function handleSavePresensi(e) {
         }
     });
 
-    // Jika disimpan saat posisi di mapel tertentu, sinkronkan juga ke harian utama jika harian utama masih kosong
     if (targetKey !== harianKey && !appState.presensiRecords[harianKey]) {
         appState.presensiRecords[harianKey] = Object.assign({}, appState.presensiRecords[targetKey]);
     }
 
-    // Simpan ke State Utama / LocalStorage / Firebase
     if (typeof saveAppState === 'function') saveAppState();
-    else localStorage.setItem('sispko_app_state', JSON.stringify(appState));
+    else localStorage.setItem('simpatik_backup_state', JSON.stringify(appState));
 
     if (typeof savePresensiData === 'function') savePresensiData();
 
