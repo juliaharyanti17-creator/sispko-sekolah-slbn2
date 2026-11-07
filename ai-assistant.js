@@ -57,7 +57,7 @@ window.handleSendAIChat = function(e) {
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Melakukan analisis mendalam pada window.appState...</span>
+            <span>Memindai dan menyaring seluruh database window.appState...</span>
         </div>
     `;
     msgContainer.appendChild(typingIndicator);
@@ -86,7 +86,7 @@ window.handleSendAIChat = function(e) {
 };
 
 /**
- * Mesin Inspeksi Mendalam (Deep Inspector)
+ * Mesin Inspeksi Mendalam (Deep Inspector) dengan Filter Ketunaan Cerdas
  */
 function deepInspectAppState(query) {
     var lower = query.toLowerCase();
@@ -98,8 +98,51 @@ function deepInspectAppState(query) {
     var subjects = state.subjects || [];
     var journals = state.journals || [];
     var jadwal = state.jadwalMaster || [];
+    var ketunaanList = state.ketunaanList || [];
 
-    // A. Ringkasan Eksekutif / Statistik Menyeluruh
+    // 1. Analisis Ketunaan / Disabilitas Spesifik (Misal: "autis", "tuna rungu", dll)
+    if (lower.includes('ketunaan') || lower.includes('autis') || lower.includes('tuna') || lower.includes('kategori')) {
+        // Cari keyword ketunaan dari list atau teks pertanyaan
+        var searchCat = "";
+        if (lower.includes('autis')) searchCat = "autis";
+        else if (lower.includes('netra')) searchCat = "netra";
+        else if (lower.includes('rungu')) searchCat = "rungu";
+        else if (lower.includes('grahita')) searchCat = "grahita";
+        else if (lower.includes('daksa')) searchCat = "daksa";
+        else {
+            // Ambil kata setelah kata kunci jika ada
+            var parts = lower.split('ketunaan');
+            if (parts.length > 1) searchCat = parts[1].trim();
+        }
+
+        if (searchCat) {
+            var filteredStudents = students.filter(function(s) {
+                var sKet = (s.ketunaan || '').toLowerCase();
+                return sKet.includes(searchCat);
+            });
+
+            if (filteredStudents.length === 0) {
+                return `Berdasarkan pemindaian database, tidak ditemukan murid dengan kategori ketunaan yang mengandung "${searchCat}". (Total siswa terdaftar: ${students.length} anak).`;
+            }
+
+            var listMatch = filteredStudents.map(function(s, idx) {
+                var cName = typeof getClassName === 'function' ? getClassName(s.classId || s.kelas) : (s.classId || '-');
+                return `${idx + 1}. <strong>${s.nama || s.name}</strong> (Kelas: ${cName}, Ketunaan: ${s.ketunaan})`;
+            }).join('<br>');
+
+            return `Ditemukan <strong>${filteredStudents.length} murid</strong> dengan kategori ketunaan <strong>"${searchCat}"</strong>:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1">${listMatch}</div>`;
+        }
+
+        // Jika hanya bertanya secara umum tentang ketunaan
+        var catSummary = ketunaanList.map(function(k) {
+            var count = students.filter(s => (s.ketunaan || '').toLowerCase().includes(k.toLowerCase())).length;
+            return `• <strong>${k}</strong>: ${count} murid`;
+        }).join('<br>');
+
+        return `Berikut adalah rekap jumlah murid berdasarkan kategori ketunaan:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1">${catSummary || 'Belum ada data ketunaan terpetakan.'}</div>`;
+    }
+
+    // 2. Ringkasan Eksekutif / Statistik Menyeluruh
     if (lower.includes('rekap') || lower.includes('ringkasan') || lower.includes('statistik') || lower.includes('laporan') || lower.includes('semua data')) {
         return `📊 <strong>Laporan Eksekutif SIMPATIK SLBN 2 Pelaihari:</strong><br>` +
                `• <strong>Rombongan Belajar:</strong> ${classes.length} kelas aktif<br>` +
@@ -109,11 +152,10 @@ function deepInspectAppState(query) {
                `• <strong>Entri Jadwal Pelajaran:</strong> ${jadwal.length} sesi`;
     }
 
-    // B. Analisis Data Siswa & Pencarian Spesifik
+    // 3. Analisis Data Siswa & Pencarian Spesifik
     if (lower.includes('siswa') || lower.includes('murid') || lower.includes('anak') || lower.includes('cari')) {
         if (students.length === 0) return "Belum ada data peserta didik yang tersimpan di dalam sistem.";
 
-        // Jika mencari nama spesifik
         var matched = students.filter(function(s) {
             var nama = (s.nama || s.name || '').toLowerCase();
             var nisn = (s.nisn || '').toLowerCase();
@@ -132,11 +174,10 @@ function deepInspectAppState(query) {
             return `Hasil penelusuran data peserta didik:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1">${results}</div>`;
         }
 
-        // Tampilkan distribusi ketunaan atau sampel siswa
-        return `Saat ini tercatat ada <strong>${students.length} peserta didik</strong> yang terdaftar di database. Anda dapat mencari data spesifik dengan mengetik <em>"Cari siswa [Nama]"</em> atau menanyakan rekap per kelas.`;
+        return `Saat ini tercatat ada <strong>${students.length} peserta didik</strong> yang terdaftar. Anda dapat menanyakan jumlah berdasarkan ketunaan tertentu (contoh: <em>"Berapa murid autis?"</em>).`;
     }
 
-    // C. Analisis Relasi Kelas & Wali Kelas
+    // 4. Analisis Relasi Kelas & Wali Kelas
     if (lower.includes('kelas') || lower.includes('wali kelas') || lower.includes('guru') || lower.includes('pengajar')) {
         if (classes.length === 0) return "Belum ada data kelas yang diatur di Data Master.";
 
@@ -153,15 +194,15 @@ function deepInspectAppState(query) {
         return `Berikut adalah rincian rombongan belajar dan pengampunya:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1">${detailKelas}</div>`;
     }
 
-    // D. Analisis Mata Pelajaran
+    // 5. Analisis Mata Pelajaran
     if (lower.includes('pelajaran') || lower.includes('mapel')) {
         if (subjects.length === 0) return "Belum ada mata pelajaran yang dimasukkan ke Data Master.";
         var listMapel = subjects.map((s, i) => `${i + 1}. ${typeof s === 'string' ? s : (s.name || s.nama)}`).join('<br>');
         return `Daftar mata pelajaran aktif:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1">${listMapel}</div>`;
     }
 
-    // E. Analisis Jurnal KBM & Aktivitas Mengajar Guru
-    if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar') || lower.includes('aktivitas')) {
+    // 6. Analisis Jurnal KBM
+    if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar')) {
         if (journals.length === 0) return "Belum ada laporan jurnal KBM yang masuk ke dalam sistem.";
         var recentJournals = journals.slice(-5).reverse().map(function(j) {
             return `• <strong>${j.tanggal}</strong> [${j.kelas || '-'}] (${j.mapel || '-'}): ${j.materi || '-'}`;
@@ -169,13 +210,13 @@ function deepInspectAppState(query) {
         return `Tercatat ada ${journals.length} laporan jurnal KBM. Berikut 5 aktivitas pembelajaran terakhir:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1">${recentJournals}</div>`;
     }
 
-    // F. Analisis Jadwal Pelajaran
+    // 7. Analisis Jadwal Pelajaran
     if (lower.includes('jadwal')) {
         if (jadwal.length === 0) return "Belum ada master jadwal pelajaran yang diinput.";
         return `Terdapat <strong>${jadwal.length} entri master jadwal pelajaran</strong> harian yang terdistribusi di sistem administrasi sekolah.`;
     }
 
-    // G. Deep Search Universal (Pencarian Menyeluruh ke Seluruh Objek State)
+    // 8. Deep Search Universal
     var foundMatches = [];
     students.forEach(s => {
         if (JSON.stringify(s).toLowerCase().includes(lower)) {
@@ -192,13 +233,13 @@ function deepInspectAppState(query) {
         return `Hasil penelusuran mendalam menemukan data berikut:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1">${foundMatches.slice(0, 5).join('<br>')}</div>`;
     }
 
-    // H. Fallback Kontekstual
+    // 9. Fallback Kontekstual
     return `Saya sudah memindai seluruh isi memori aplikasi SIMPATIK (mencakup ${students.length} siswa, ${classes.length} kelas, dan ${journals.length} jurnal). Namun, saya belum menangkap maksud dari "<em>${escapeHtml(query)}</em>".<br><br>` +
            `Coba tanyakan hal seperti:<br>` +
+           `• <em>"Berapa murid dengan ketunaan autis?"</em><br>` +
            `• <em>"Siapa wali kelas 1?"</em><br>` +
            `• <em>"Cari siswa [Nama]"</em><br>` +
-           `• <em>"Mata pelajaran apa saja yang ada?"</em><br>` +
-           `• <em>"Tampilkan rekap statistik sekolah"</em>`;
+           `• <em>"Mata pelajaran apa saja yang ada?"</em>`;
 }
 
 function escapeHtml(str) {
