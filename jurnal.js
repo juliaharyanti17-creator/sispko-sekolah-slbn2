@@ -1,5 +1,5 @@
 // ==========================================================================
-// Modul Jurnal Mengajar & Supervisi Guru SLBN 2 PELAIHARI
+// Modul Jurnal Mengajar & Supervisi Guru SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
 // Helper untuk menerjemahkan ID mapel menjadi nama lengkap mapel
@@ -76,7 +76,6 @@ function renderJurnalList() {
 
         if (!actionButtons) actionButtons = '<span class="text-slate-400 font-medium text-[10px]">Akses Terbatas</span>';
 
-        // Konversi mapel ID ke nama lengkap menggunakan getSubjectName
         var namaMapelLengkap = getSubjectName(j.mapel);
 
         tr.innerHTML = 
@@ -122,8 +121,14 @@ async function handleSaveJurnal(e) {
 
     var lampiranUrl = '';
     var namaFile = '';
+    
+    // Validasi & Pemrosesan File PDF (Maksimal 2MB agar tidak membebani database/storage lokal)
     if (filePdfInput && filePdfInput.files && filePdfInput.files[0]) {
         var file = filePdfInput.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            alert("Ukuran file terlalu besar! Harap unggah file PDF berukuran maksimal 2 MB.");
+            return;
+        }
         namaFile = file.name;
         lampiranUrl = await new Promise(function(resolve) {
             var reader = new FileReader();
@@ -188,36 +193,48 @@ function openModalSupervisi(index) {
     document.getElementById('supervisi-jurnal-id').value = index;
     
     var infoBox = document.getElementById('supervisi-target-info');
-    infoBox.innerHTML = 
-        '<div><strong>Guru:</strong> ' + (j.guru || '-') + '</div>' +
-        '<div><strong>Kelas / Mapel:</strong> ' + (typeof getClassName === 'function' ? getClassName(j.classId) : j.classId) + ' | ' + getSubjectName(j.mapel) + '</div>' +
-        '<div><strong>Materi:</strong> ' + (j.materi || '-') + '</div>';
+    if (infoBox) {
+        infoBox.innerHTML = 
+            '<div><strong>Guru:</strong> ' + (j.guru || '-') + '</div>' +
+            '<div><strong>Kelas / Mapel:</strong> ' + (typeof getClassName === 'function' ? getClassName(j.classId) : j.classId) + ' | ' + getSubjectName(j.mapel) + '</div>' +
+            '<div><strong>Materi:</strong> ' + (j.materi || '-') + '</div>';
+    }
+
+    var mediaEl = document.getElementById('supervisi-aspek-media');
+    var catatanEl = document.getElementById('supervisi-catatan-kepsek');
 
     if (j.supervisi) {
-        document.getElementById('supervisi-aspek-media').value = j.supervisi.penilaianMedia || 'Sangat Baik';
-        document.getElementById('supervisi-catatan-kepsek').value = j.supervisi.catatanKepsek || '';
+        if (mediaEl) mediaEl.value = j.supervisi.penilaianMedia || 'Sangat Baik';
+        if (catatanEl) catatanEl.value = j.supervisi.catatanKepsek || '';
     } else {
-        document.getElementById('supervisi-aspek-media').value = 'Sangat Baik';
-        document.getElementById('supervisi-catatan-kepsek').value = '';
+        if (mediaEl) mediaEl.value = 'Sangat Baik';
+        if (catatanEl) catatanEl.value = '';
     }
 
     var modal = document.getElementById('modal-supervisi');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
 }
 
 function closeModalSupervisi() {
     var modal = document.getElementById('modal-supervisi');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 }
 
 function handleSaveSupervisi(e) {
     if (e) e.preventDefault();
 
-    var index = parseInt(document.getElementById('supervisi-jurnal-id').value);
-    var penilaianMedia = document.getElementById('supervisi-aspek-media').value;
-    var catatanKepsek = document.getElementById('supervisi-catatan-kepsek').value.trim();
+    var idField = document.getElementById('supervisi-jurnal-id');
+    if (!idField) return;
+
+    var index = parseInt(idField.value);
+    var penilaianMedia = document.getElementById('supervisi-aspek-media')?.value || 'Sangat Baik';
+    var catatanKepsek = document.getElementById('supervisi-catatan-kepsek')?.value.trim() || '';
 
     if (!appState.journals[index]) return;
 
