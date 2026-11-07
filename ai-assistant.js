@@ -1,6 +1,5 @@
 // ==========================================================================
-// AI-ASSISTANT.JS - Asisten Cerdas Terintegrasi Data SIMPATIK
-// SLBN 2 PELAIHARI
+// AI-ASSISTANT.JS - Asisten Cerdas Tingkat Lanjut (SIMPATIK SLBN 2 PELAIHARI)
 // ==========================================================================
 
 window.toggleAIChatModal = function(e) {
@@ -56,13 +55,13 @@ window.handleSendAIChat = function(e) {
             AI
         </div>
         <div class="bg-white p-3 rounded-2xl rounded-tl-sm border border-slate-200/80 shadow-xs text-slate-400 italic text-xs">
-            Menganalisis database SIMPATIK...
+            Menganalisis database SIMPATIK secara mendalam...
         </div>
     `;
     msgContainer.appendChild(typingIndicator);
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
-    // 3. Proses Analisis Berdasarkan window.appState Nyata
+    // 3. Proses Analisis Pintar Berdasarkan window.appState
     setTimeout(function() {
         var indicatorEl = document.getElementById('ai-typing-indicator');
         if (indicatorEl) indicatorEl.remove();
@@ -85,7 +84,7 @@ window.handleSendAIChat = function(e) {
 };
 
 /**
- * Fungsi Pintar untuk Mengurai Pertanyaan dan Mengambil Data Nyata dari window.appState
+ * Logika Analisis Pintar untuk Menjawab Berbagai Pertanyaan Spesifik
  */
 function analyzeAppDataWithAI(query) {
     var lower = query.toLowerCase();
@@ -96,67 +95,88 @@ function analyzeAppDataWithAI(query) {
     var users = state.users || [];
     var subjects = state.subjects || [];
     var journals = state.journals || [];
+    var jadwal = state.jadwalMaster || [];
 
-    // 1. Pertanyaan seputar Mata Pelajaran
+    // A. Pertanyaan seputar Mata Pelajaran
     if (lower.includes('mata pelajaran') || lower.includes('mapel') || lower.includes('pelajaran apa')) {
-        if (subjects.length === 0) {
-            return "Belum ada data mata pelajaran yang terdaftar di menu Data Master.";
-        }
+        if (subjects.length === 0) return "Belum ada data mata pelajaran yang terdaftar di Data Master.";
         var listMapel = subjects.map(function(s, i) {
             var namaMapel = typeof s === 'string' ? s : (s.name || s.nama);
             return `${i + 1}. ${namaMapel}`;
         }).join('<br>');
-        
-        return `Berikut adalah daftar mata pelajaran yang aktif di SLBN 2 Pelaihari:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${listMapel}</div>`;
+        return `Berikut adalah daftar mata pelajaran aktif di SLBN 2 Pelaihari:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${listMapel}</div>`;
     }
 
-    // 2. Pertanyaan seputar Wali Kelas / Guru Kelas
-    if (lower.includes('wali kelas') || lower.includes('guru') || lower.includes('siapa yang mengajar')) {
-        // Cek apakah user menyebutkan kelas tertentu (misal: "kelas 1", "kelas 2")
+    // B. Pertanyaan seputar Wali Kelas / Guru
+    if (lower.includes('wali kelas') || lower.includes('guru') || lower.includes('mengajar di kelas')) {
         var matchedClass = classes.find(function(c) {
             var cName = (c.name || c.nama || '').toLowerCase();
-            return lower.includes(cName) || (lower.includes('1') && cName.includes('1')) || (lower.includes('2') && cName.includes('2'));
+            return lower.includes(cName) || (lower.includes('1') && cName.includes('1')) || (lower.includes('2') && cName.includes('2')) || (lower.includes('3') && cName.includes('3'));
         });
 
         if (matchedClass) {
             var className = matchedClass.name || matchedClass.nama;
             var classId = matchedClass.id;
-            // Cari guru yang mengampu kelas tersebut
             var waliKelas = users.find(function(u) {
                 return u.kelasAmpuan === classId || (u.kelasAmpuan && u.kelasAmpuan.toLowerCase().includes(className.toLowerCase()));
             });
-
             var namaGuru = waliKelas ? (waliKelas.nama || waliKelas.username) : "Belum ditentukan / Administrator";
-            return `Untuk <strong>${className}</strong>, wali kelas / guru pengampunya adalah: <strong>${namaGuru}</strong>.`;
+            return `Untuk <strong>${className}</strong>, wali kelas atau guru pengampunya adalah: <strong>${namaGuru}</strong>.`;
         }
 
-        // Jika tidak spesifik menyebut kelas, tampilkan semua daftar guru/wali kelas
         if (users.length === 0) return "Belum ada data pengguna/guru terdaftar.";
         var listGuru = users.map(function(u) {
             return `• <strong>${u.nama || u.username}</strong> (Role: ${(u.role || 'Guru').toUpperCase()})`;
         }).join('<br>');
-
-        return `Berikut adalah daftar guru dan pengurus yang terdaftar di sistem:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${listGuru}</div>`;
+        return `Berikut daftar guru dan pengurus yang terdaftar di sistem:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${listGuru}</div>`;
     }
 
-    // 3. Pertanyaan seputar Siswa / Murid
-    if (lower.includes('siswa') || lower.includes('murid') || lower.includes('anak')) {
-        if (students.length === 0) return "Belum ada data murid yang tercatat di database saat ini.";
-        return `Total terdapat <strong>${students.length} murid</strong> terdaftar di SLBN 2 Pelaihari dari ${classes.length} rombongan belajar.`;
+    // C. Pencarian Data Siswa / Murid Spesifik
+    if (lower.includes('cari siswa') || lower.includes('cari murid') || lower.includes('tentang siswa') || lower.includes('murid bernama')) {
+        var keyword = lower.replace('cari siswa', '').replace('cari murid', '').replace('tentang siswa', '').replace('murid bernama', '').trim();
+        if (!keyword) return "Silakan sebutkan nama siswa yang ingin dicari (Contoh: *Cari siswa Riza*).";
+
+        var foundStudents = students.filter(function(s) {
+            var namaSiswa = (s.nama || s.name || '').toLowerCase();
+            return namaSiswa.includes(keyword);
+        });
+
+        if (foundStudents.length === 0) return `Tidak ditemukan murid dengan nama yang mengandung "${keyword}".`;
+
+        var resultHtml = foundStudents.map(function(s) {
+            var kelasNama = typeof getClassName === 'function' ? getClassName(s.classId || s.kelas) : (s.classId || '-');
+            return `• <strong>${s.nama || s.name}</strong> (NISN: ${s.nisn || '-'}, Kelas: ${kelasNama}, Ketunaan: ${s.ketunaan || 'Umum'})`;
+        }).join('<br>');
+
+        return `Ditemukan ${foundStudents.length} murid:<br><div class="mt-2 p-2 bg-slate-50 rounded-xl border">${resultHtml}</div>`;
     }
 
-    // 4. Pertanyaan seputar Jurnal / KBM
-    if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar')) {
-        return `Tercatat ada <strong>${journals.length} laporan jurnal KBM</strong> guru yang masuk ke dalam sistem pengawasan.`;
+    // D. Pertanyaan seputar Jadwal Pelajaran
+    if (lower.includes('jadwal') || lower.includes('jam pelajaran')) {
+        if (jadwal.length === 0) return "Belum ada entri master jadwal pelajaran yang diinput di menu Data Master.";
+        return `Terdapat <strong>${jadwal.length} entri jadwal pelajaran</strong> harian yang tersimpan di sistem sekolah.`;
     }
 
-    // 5. Sapaan Umum
+    // E. Pertanyaan seputar Rekap & Statistik Umum (Siswa, Kelas, Jurnal)
+    if (lower.includes('siswa') || lower.includes('murid') || lower.includes('statistik') || lower.includes('rekap')) {
+        return `📊 <strong>Ringkasan Data SIMPATIK:</strong><br>` +
+               `• Total Murid: <strong>${students.length} orang</strong><br>` +
+               `• Total Kelas: <strong>${classes.length} rombel</strong><br>` +
+               `• Total Jurnal KBM: <strong>${journals.length} laporan</strong><br>` +
+               `• Total Guru/User: <strong>${users.length} akun</strong>`;
+    }
+
+    // F. Sapaan Umum
     if (lower.includes('halo') || lower.includes('hai')) {
-        return `Halo! Saya AI Assistant SIMPATIK. Saya dapat membantu Anda mengecek daftar mata pelajaran, wali kelas, rekap murid, hingga jurnal KBM. Silakan ajukan pertanyaan Anda!`;
+        return `Halo! Saya AI Assistant SIMPATIK SLBN 2 Pelaihari. Saya siap membantu Anda mencari data siswa, wali kelas, mata pelajaran, hingga rekap jurnal KBM. Ada yang bisa saya bantu?`;
     }
 
-    // Fallback Default
-    return `Saya memahami pertanyaan Anda mengenai "${escapeHtml(query)}". Anda bisa menanyakan hal seperti *"Mata pelajaran apa saja yang ada?"* atau *"Siapa wali kelas 1?"* untuk melihat rincian datanya.`;
+    // G. Fallback Pintar Berdasarkan Kata Kunci Acak
+    return `Saya telah memindai database sekolah. Saat ini tercatat <strong>${students.length} murid</strong> dan <strong>${classes.length} kelas</strong> aktif. Anda dapat bertanya seputar: <br>` +
+           `1. *"Mata pelajaran apa saja yang ada?"*<br>` +
+           `2. *"Siapa wali kelas 1?"*<br>` +
+           `3. *"Cari siswa [Nama Siswa]"*<br>` +
+           `4. *"Berapa total murid?"*`;
 }
 
 function escapeHtml(str) {
