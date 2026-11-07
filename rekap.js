@@ -61,26 +61,30 @@ function renderRekapModule() {
                 const totalSiswaKelas = (appState.students || []).filter(s => s.classId === c.id || s.kelas === c.id || s.classId === c.name).length;
                 let hadir = 0, izin = 0, sakit = 0, alpa = 0, totalRecords = 0;
 
+                // Perbaikan Pembacaan Kunci Presensi (Aman untuk ID kelas bergaris bawah seperti c_123)
                 Object.keys(appState.presensiRecords || {}).forEach(key => {
                     const parts = key.split('_');
-                    const tgl = parts[0], classId = parts[1];
+                    if (parts.length >= 3) {
+                        const tgl = parts[0];
+                        // Menggabungkan kembali bagian tengah sebagai classId (karena classId bisa mengandung underscore misal c_172...)
+                        const classId = parts.slice(1, parts.length - 1).join('_');
 
-                    if ((classId === c.id || classId === c.name || classId === c.nama) && tgl >= startDate && tgl <= endDate) {
-                        const recMap = appState.presensiRecords[key] || {};
-                        Object.keys(recMap).forEach(sId => {
-                            if (activeStudentIds.includes(sId)) {
-                                totalRecords++;
-                                const st = recMap[sId];
-                                if (st === 'H' || st === 'Hadir') hadir++;
-                                else if (st === 'I' || st === 'Izin') izin++;
-                                else if (st === 'S' || st === 'Sakit') sakit++;
-                                else if (st === 'A' || st === 'Alpa') alpa++;
-                            }
-                        });
+                        if ((classId === c.id || classId === c.name || classId === c.nama) && tgl >= startDate && tgl <= endDate) {
+                            const recMap = appState.presensiRecords[key] || {};
+                            Object.keys(recMap).forEach(sId => {
+                                if (activeStudentIds.includes(sId)) {
+                                    totalRecords++;
+                                    const st = recMap[sId];
+                                    if (st === 'H' || st === 'Hadir') hadir++;
+                                    else if (st === 'I' || st === 'Izin') izin++;
+                                    else if (st === 'S' || st === 'Sakit') sakit++;
+                                    else if (st === 'A' || st === 'Alpa') alpa++;
+                                }
+                            });
+                        }
                     }
                 });
 
-                // Perhitungan persentase kehadiran yang aman dari NaN
                 const percentHadir = totalRecords > 0 ? Math.round((hadir / totalRecords) * 100) : 0;
 
                 const tr = document.createElement('tr');
