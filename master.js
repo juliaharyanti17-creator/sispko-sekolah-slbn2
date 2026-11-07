@@ -8,7 +8,8 @@ var masterPagination = {
     user: { page: 1, limit: 5 },
     kelas: { page: 1, limit: 5 },
     ketunaan: { page: 1, limit: 5 },
-    siswa: { page: 1, limit: 10 }
+    siswa: { page: 1, limit: 10 },
+    jadwal: { page: 1, limit: 5 }
 };
 
 function renderAllMasterData() {
@@ -16,6 +17,7 @@ function renderAllMasterData() {
     renderMasterKelas();
     renderMasterKetunaan();
     renderMasterSiswa();
+    renderMasterJadwal();
 }
 
 // Fungsi Ubah Jumlah Baris per Halaman (Limit) untuk Semua Bagian
@@ -28,6 +30,7 @@ function changeMasterLimit(type, selectElement) {
         if (type === 'kelas') renderMasterKelas();
         if (type === 'ketunaan') renderMasterKetunaan();
         if (type === 'siswa') renderMasterSiswa();
+        if (type === 'jadwal') renderMasterJadwal();
     }
 }
 
@@ -539,7 +542,151 @@ function handleDeleteStudent(studentId) {
 }
 
 // ==========================================================================
-// 5. HELPER PAGINATION UNIVERSAL UNTUK SEMUA BAGIAN MASTER
+// 5. MANAJEMEN MASTER JADWAL & MAPEL HARIAN
+// ==========================================================================
+function getJadwalMasterList() {
+    if (!window.appState.jadwalMaster) {
+        window.appState.jadwalMaster = [];
+    }
+    return window.appState.jadwalMaster;
+}
+
+function renderMasterJadwal() {
+    var tbody = document.getElementById('master-jadwal-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    var jadwalList = getJadwalMasterList();
+    if (jadwalList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data jadwal harian.</td></tr>';
+        renderMasterPaginationControls('jadwal', 0, 1, 5);
+        return;
+    }
+
+    var limit = masterPagination.jadwal.limit || 5;
+    var page = masterPagination.jadwal.page || 1;
+    var totalPages = Math.ceil(jadwalList.length / limit);
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    masterPagination.jadwal.page = page;
+
+    var startIndex = (page - 1) * limit;
+    var paginatedJadwal = jadwalList.slice(startIndex, startIndex + limit);
+
+    paginatedJadwal.forEach(function(j, indexOffset) {
+        var idx = startIndex + indexOffset;
+        var namaKelas = typeof getClassName === 'function' ? getClassName(j.classId) : j.classId;
+        var tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition text-xs";
+        tr.innerHTML = `
+            <td class="p-2 text-center text-slate-500 font-bold">${idx + 1}</td>
+            <td class="p-2 font-bold text-slate-800">${namaKelas}</td>
+            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-md font-bold">${j.hari}</span></td>
+            <td class="p-2 text-center">Jam Ke-${j.jamKe}</td>
+            <td class="p-2 font-semibold text-slate-700">${j.mapel}</td>
+            <td class="p-2 text-center space-x-1">
+                <button onclick="openModalJadwal('${j.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button onclick="handleDeleteJadwal('${j.id}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    renderMasterPaginationControls('jadwal', jadwalList.length, page, limit);
+}
+
+function openModalJadwal(jadwalId) {
+    var modal = document.getElementById('modal-jadwal');
+    var title = document.getElementById('modal-jadwal-title');
+    var selectKelas = document.getElementById('jadwal-kelas-input');
+    var selectHari = document.getElementById('jadwal-hari-input');
+    var inputJam = document.getElementById('jadwal-jam-input');
+    var inputMapel = document.getElementById('jadwal-mapel-input');
+    var editId = document.getElementById('jadwal-edit-id');
+    if (!modal) return;
+
+    selectKelas.innerHTML = '';
+    (window.appState.classes || []).forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name || c.nama;
+        selectKelas.appendChild(opt);
+    });
+
+    if (jadwalId) {
+        title.textContent = "Edit Jadwal Harian";
+        var list = getJadwalMasterList();
+        var target = list.find(function(item) { return item.id === jadwalId; });
+        if (target) {
+            selectKelas.value = target.classId;
+            selectHari.value = target.hari;
+            inputJam.value = target.jamKe;
+            inputMapel.value = target.mapel;
+            editId.value = target.id;
+        }
+    } else {
+        title.textContent = "Tambah Jadwal Harian Baru";
+        inputJam.value = "1";
+        inputMapel.value = "";
+        editId.value = "";
+    }
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+function closeModalJadwal() {
+    var modal = document.getElementById('modal-jadwal');
+    if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
+}
+
+function handleSaveJadwal(e) {
+    if (e) e.preventDefault();
+    var classId = document.getElementById('jadwal-kelas-input').value;
+    var hari = document.getElementById('jadwal-hari-input').value;
+    var jamKe = document.getElementById('jadwal-jam-input').value;
+    var mapel = document.getElementById('jadwal-mapel-input').value.trim();
+    var editId = document.getElementById('jadwal-edit-id').value;
+
+    var list = getJadwalMasterList();
+
+    if (editId) {
+        var target = list.find(function(item) { return item.id === editId; });
+        if (target) {
+            target.classId = classId;
+            target.hari = hari;
+            target.jamKe = jamKe;
+            target.mapel = mapel;
+        }
+        if (typeof showToast === 'function') showToast("Jadwal berhasil diperbarui.");
+    } else {
+        var newJadwal = {
+            id: 'j_' + Date.now(),
+            classId: classId,
+            hari: hari,
+            jamKe: jamKe,
+            mapel: mapel
+        };
+        list.push(newJadwal);
+        if (typeof showToast === 'function') showToast("Jadwal baru berhasil ditambahkan.");
+    }
+
+    if (typeof saveAppState === 'function') saveAppState();
+    closeModalJadwal();
+    renderMasterJadwal();
+}
+
+function handleDeleteJadwal(jadwalId) {
+    if (confirm("Apakah Anda yakin ingin menghapus jadwal ini?")) {
+        window.appState.jadwalMaster = getJadwalMasterList().filter(function(item) { return item.id !== jadwalId; });
+        if (typeof saveAppState === 'function') saveAppState();
+        renderMasterJadwal();
+        if (typeof showToast === 'function') showToast("Jadwal berhasil dihapus.");
+    }
+}
+
+// ==========================================================================
+// 6. HELPER PAGINATION UNIVERSAL UNTUK SEMUA BAGIAN MASTER
 // ==========================================================================
 function renderMasterPaginationControls(type, totalData, currentPage, limit) {
     var containerId = 'master-' + type + '-pagination-container';
@@ -551,6 +698,7 @@ function renderMasterPaginationControls(type, totalData, currentPage, limit) {
         else if (type === 'kelas') targetEl = document.getElementById('master-kelas-list-container');
         else if (type === 'ketunaan') targetEl = document.getElementById('master-ketunaan-table-body');
         else if (type === 'siswa') targetEl = document.getElementById('master-siswa-table-body');
+        else if (type === 'jadwal') targetEl = document.getElementById('master-jadwal-table-body');
 
         if (targetEl) {
             var wrapper = targetEl.closest('.bg-slate-50');
@@ -599,6 +747,7 @@ function changeMasterPage(type, targetPage) {
         else if (type === 'kelas') dataList = window.appState.classes || [];
         else if (type === 'ketunaan') dataList = window.appState.ketunaanList || [];
         else if (type === 'siswa') dataList = window.appState.students || [];
+        else if (type === 'jadwal') dataList = window.appState.jadwalMaster || [];
 
         var limit = masterPagination[type].limit || 5;
         var totalPages = Math.ceil(dataList.length / limit) || 1;
@@ -609,6 +758,7 @@ function changeMasterPage(type, targetPage) {
             else if (type === 'kelas') renderMasterKelas();
             else if (type === 'ketunaan') renderMasterKetunaan();
             else if (type === 'siswa') renderMasterSiswa();
+            else if (type === 'jadwal') renderMasterJadwal();
         }
     }
 }
