@@ -77,37 +77,60 @@ function renderMasterUsers() {
     renderMasterPaginationControls('user', users.length, page, limit);
 }
 
-function openModalUser(userId) {
-    var modal = document.getElementById('modal-user');
-    var title = document.getElementById('modal-user-title');
-    var inNama = document.getElementById('user-nama-input');
-    var inUser = document.getElementById('user-username-input');
-    var inPass = document.getElementById('user-password-input');
-    var inRole = document.getElementById('user-role-input');
-    var editId = document.getElementById('user-edit-id');
-    if (!modal) return;
+function handleSaveUser(e) {
+    if (e) e.preventDefault();
+    var nama = document.getElementById('user-nama-input').value.trim();
+    var username = document.getElementById('user-username-input').value.trim();
+    var password = document.getElementById('user-password-input').value.trim();
+    var role = document.getElementById('user-role-input').value;
+    var editId = document.getElementById('user-edit-id').value;
 
-    if (userId) {
-        title.textContent = "Edit Data User / Guru";
-        var u = (window.appState.users || []).find(function(item) { return (item.id === userId || item.username === userId); });
+    // Ambil pilihan checkbox kelas ampuan yang dicentang
+    var selectedKelas = [];
+    document.querySelectorAll('input[name="user_kelas_opt"]:checked').forEach(function(cb) {
+        selectedKelas.push(cb.value);
+    });
+
+    // Ambil pilihan checkbox mata pelajaran ampuan yang dicentang
+    var selectedMapel = [];
+    document.querySelectorAll('input[name="user_mapel_opt"]:checked').forEach(function(cb) {
+        selectedMapel.push(cb.value);
+    });
+
+    if (!window.appState.users) window.appState.users = [];
+
+    // Tentukan string ampuannya (jika admin/kepsek atau tidak memilih, jadikan 'ALL')
+    var kelasAmpuanStr = (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || selectedKelas.length === 0) ? 'ALL' : selectedKelas.join(', ');
+    var mapelAmpuanStr = (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || selectedMapel.length === 0) ? 'ALL' : selectedMapel.join(', ');
+
+    if (editId) {
+        var u = window.appState.users.find(function(item) { return (item.id === editId || item.username === editId); });
         if (u) {
-            inNama.value = u.nama || '';
-            inUser.value = u.username || '';
-            inPass.value = u.password || '';
-            inRole.value = (u.role || 'guru').toLowerCase();
-            editId.value = u.id || u.username;
+            u.nama = nama;
+            u.username = username;
+            u.password = password;
+            u.role = role;
+            u.kelasAmpuan = kelasAmpuanStr;
+            u.mapelAmpuan = mapelAmpuanStr;
         }
+        if (typeof showToast === 'function') showToast("User berhasil diperbarui.");
     } else {
-        title.textContent = "Tambah User / Guru Baru";
-        inNama.value = '';
-        inUser.value = '';
-        inPass.value = '';
-        inRole.value = 'guru';
-        editId.value = '';
+        var newUser = {
+            id: 'u_' + Date.now(),
+            nama: nama,
+            username: username,
+            password: password,
+            role: role,
+            kelasAmpuan: kelasAmpuanStr,
+            mapelAmpuan: mapelAmpuanStr
+        };
+        window.appState.users.push(newUser);
+        if (typeof showToast === 'function') showToast("User baru ditambahkan.");
     }
 
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
+    if (typeof saveAppState === 'function') saveAppState();
+    closeModalUser();
+    renderAllMasterData();
 }
 
 function closeModalUser() {
