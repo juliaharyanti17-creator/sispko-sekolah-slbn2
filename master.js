@@ -774,3 +774,132 @@ function handleDeleteSubject(index) {
         if (typeof showToast === 'function') showToast("Mata pelajaran berhasil dihapus.");
     }
 }
+// ==========================================================================
+// 7. MANAJEMEN MASTER JADWAL HARIAN
+// ==========================================================================
+function renderMasterJadwal() {
+    var tbody = document.getElementById('master-jadwal-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!window.appState.jadwalMaster) {
+        window.appState.jadwalMaster = [];
+    }
+
+    var jadwal = window.appState.jadwalMaster;
+    if (jadwal.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data master jadwal pelajaran.</td></tr>';
+        return;
+    }
+
+    jadwal.forEach(function(j, idx) {
+        var namaKelas = typeof getClassName === 'function' ? getClassName(j.classId) : (j.classId || '-');
+        var tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+            <td class="p-2 text-center text-slate-500 font-bold">${idx + 1}</td>
+            <td class="p-2 font-bold text-slate-800">${namaKelas}</td>
+            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-md text-[10px] font-bold">${j.hari || '-'}</span></td>
+            <td class="p-2 text-center font-semibold text-slate-600">Jam Ke-${j.jamKe || '-'}</td>
+            <td class="p-2 text-slate-700 font-semibold">${j.mapel || '-'}</td>
+            <td class="p-2 text-center space-x-1">
+                <button onclick="openModalJadwal(${idx})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button onclick="handleDeleteJadwal(${idx})" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openModalJadwal(index) {
+    var modal = document.getElementById('modal-jadwal');
+    var title = document.getElementById('modal-jadwal-title');
+    var selectKelas = document.getElementById('jadwal-kelas-input');
+    var selectMapel = document.getElementById('jadwal-mapel-input');
+    var inputHari = document.getElementById('jadwal-hari-input');
+    var inputJam = document.getElementById('jadwal-jam-input');
+    var editIdx = document.getElementById('jadwal-edit-index');
+
+    if (!modal) return;
+
+    // Isi opsi dropdown Kelas
+    selectKelas.innerHTML = '';
+    (window.appState.classes || []).forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name || c.nama;
+        selectKelas.appendChild(opt);
+    });
+
+    // Isi opsi dropdown Mata Pelajaran
+    selectMapel.innerHTML = '';
+    (window.appState.subjects || []).forEach(function(s) {
+        var mapelNama = typeof s === 'string' ? s : (s.name || s.nama);
+        var opt = document.createElement('option');
+        opt.value = mapelNama;
+        opt.textContent = mapelNama;
+        selectMapel.appendChild(opt);
+    });
+
+    if (typeof index === 'number' && index >= 0) {
+        if (title) title.textContent = "Edit Jadwal Pelajaran";
+        var item = (window.appState.jadwalMaster || [])[index];
+        if (item) {
+            selectKelas.value = item.classId || '';
+            inputHari.value = item.hari || 'Senin';
+            inputJam.value = item.jamKe || '1';
+            selectMapel.value = item.mapel || '';
+            editIdx.value = index;
+        }
+    } else {
+        if (title) title.textContent = "Tambah Jadwal Pelajaran Baru";
+        inputJam.value = '1';
+        editIdx.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+function closeModalJadwal() {
+    var modal = document.getElementById('modal-jadwal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+}
+
+function handleSaveJadwal(e) {
+    if (e) e.preventDefault();
+    var classId = document.getElementById('jadwal-kelas-input').value;
+    var hari = document.getElementById('jadwal-hari-input').value;
+    var jamKe = document.getElementById('jadwal-jam-input').value;
+    var mapel = document.getElementById('jadwal-mapel-input').value;
+    var editIdx = document.getElementById('jadwal-edit-index').value;
+
+    if (!window.appState.jadwalMaster) window.appState.jadwalMaster = [];
+
+    var idx = editIdx !== '' ? parseInt(editIdx) : -1;
+
+    if (idx >= 0) {
+        window.appState.jadwalMaster[idx] = { classId: classId, hari: hari, jamKe: jamKe, mapel: mapel };
+        if (typeof showToast === 'function') showToast("Jadwal berhasil diperbarui.");
+    } else {
+        window.appState.jadwalMaster.push({ classId: classId, hari: hari, jamKe: jamKe, mapel: mapel });
+        if (typeof showToast === 'function') showToast("Jadwal baru berhasil ditambahkan.");
+    }
+
+    if (typeof saveAppState === 'function') saveAppState();
+    closeModalJadwal();
+    renderMasterJadwal();
+}
+
+function handleDeleteJadwal(index) {
+    if (confirm("Apakah Anda yakin ingin menghapus jadwal ini?")) {
+        window.appState.jadwalMaster.splice(index, 1);
+        if (typeof saveAppState === 'function') saveAppState();
+        renderMasterJadwal();
+        if (typeof showToast === 'function') showToast("Jadwal berhasil dihapus.");
+    }
+}
+
