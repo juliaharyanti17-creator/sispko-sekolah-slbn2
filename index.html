@@ -736,27 +736,25 @@ function togglePasswordVisibility(e) {
     </div>
 </div>
 <!-- ==================== MODAL TAMBAH/EDIT JADWAL ==================== -->
+<!-- ==================== MODAL BATCH JADWAL HARIAN ==================== -->
 <div id="modal-jadwal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100">
-        <div class="flex justify-between items-center border-b pb-3">
-            <h3 id="modal-jadwal-title" class="font-bold text-sm text-slate-800">Tambah Jadwal Pelajaran</h3>
+    <div class="bg-white rounded-3xl w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center border-b pb-3 shrink-0">
+            <h3 id="modal-jadwal-title" class="font-bold text-sm text-slate-800">Input Jadwal Harian Kelas</h3>
             <button onclick="closeModalJadwal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
         </div>
-        <form onsubmit="handleSaveJadwal(event)" class="space-y-3">
-            <input type="hidden" id="jadwal-edit-index" value="">
-            
-            <!-- Pilih Kelas -->
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Kelas</label>
-                <select id="jadwal-kelas-input" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                </select>
-            </div>
-
-            <!-- Pilih Hari & Jam Ke (Dengan Tombol Auto Increment Jam Berikutnya) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        
+        <div class="space-y-4 overflow-y-auto flex-1 pr-1">
+            <!-- Pilihan Kelas & Hari -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Hari</label>
-                    <select id="jadwal-hari-input" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Nama Kelas</label>
+                    <select id="batch-jadwal-kelas" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Hari Pelajaran</label>
+                    <select id="batch-jadwal-hari" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="Senin">Senin</option>
                         <option value="Selasa">Selasa</option>
                         <option value="Rabu">Rabu</option>
@@ -765,27 +763,26 @@ function togglePasswordVisibility(e) {
                         <option value="Sabtu">Sabtu</option>
                     </select>
                 </div>
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-xs font-bold text-slate-600">Jam Ke-</label>
-                        <button type="button" onclick="incrementJamPelajaran()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">+ Tambah Jam</button>
-                    </div>
-                    <input type="number" id="jadwal-jam-input" min="1" max="10" required value="1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+
+            <!-- Daftar Jam Pelajaran Dinamis -->
+            <div class="space-y-2.5">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Jam Mata Pelajaran</label>
+                    <button type="button" onclick="addBatchJamSlot()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Tambah Jam Berikutnya
+                    </button>
+                </div>
+                <!-- Kontainer baris jam -->
+                <div id="batch-jadwal-slots-container" class="space-y-2.5">
                 </div>
             </div>
+        </div>
 
-            <!-- Pilih Mata Pelajaran (Dropdown dari Data Master Mapel) -->
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">Mata Pelajaran</label>
-                <select id="jadwal-mapel-input" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                </select>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-3 border-t">
-                <button type="button" onclick="closeModalJadwal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Jadwal</button>
-            </div>
-        </form>
+        <div class="flex justify-end gap-2 pt-3 border-t shrink-0">
+            <button type="button" onclick="closeModalJadwal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+            <button type="button" onclick="handleSaveBatchJadwal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Seluruh Jadwal</button>
+        </div>
     </div>
 </div>
 
