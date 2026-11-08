@@ -752,21 +752,29 @@ function togglePasswordVisibility(e) {
                 </select>
             </div>
 
-            <!-- Pilihan Kelas Ampuan -->
-<div id="group-user-kelas" class="space-y-1.5">
-    <label class="block text-xs font-bold text-slate-700">Pilih Kelas Ampuan</label>
-    <!-- Tambahkan min-h-[120px] dan pastikan background putih agar kontras -->
-    <div id="user-form-kelas-checkboxes" class="p-3 bg-white border-2 border-slate-300 rounded-xl max-h-48 min-h-[120px] overflow-y-auto space-y-2 shadow-inner">
-        <!-- Checkbox kelas ter-render otomatis -->
+            <!-- Pilihan Kelas Ampuan (Dropdown Dinamis) -->
+<div id="group-user-kelas" class="space-y-2">
+    <div class="flex justify-between items-center">
+        <label class="block text-xs font-bold text-slate-700">Kelas Ampuan</label>
+        <button type="button" onclick="addUserKelasDropdown()" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer">
+            <i class="fa-solid fa-plus text-[10px]"></i> Tambah Kelas Lain
+        </button>
+    </div>
+    <div id="user-kelas-dropdowns-container" class="space-y-2">
+        <!-- Baris dropdown kelas akan ditambahkan secara dinamis oleh JavaScript -->
     </div>
 </div>
 
-<!-- Pilihan Mata Pelajaran Ampuan -->
-<div id="group-user-mapel" class="space-y-1.5">
-    <label class="block text-xs font-bold text-slate-700">Pilih Mata Pelajaran Ampuan</label>
-    <!-- Tambahkan min-h-[120px] dan pastikan background putih agar kontras -->
-    <div id="user-form-mapel-checkboxes" class="p-3 bg-white border-2 border-slate-300 rounded-xl max-h-48 min-h-[120px] overflow-y-auto space-y-2 shadow-inner">
-        <!-- Checkbox mapel ter-render otomatis -->
+<!-- Pilihan Mata Pelajaran Ampuan (Dropdown Dinamis) -->
+<div id="group-user-mapel" class="space-y-2 pt-2">
+    <div class="flex justify-between items-center">
+        <label class="block text-xs font-bold text-slate-700">Mata Pelajaran Ampuan</label>
+        <button type="button" onclick="addUserMapelDropdown()" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer">
+            <i class="fa-solid fa-plus text-[10px]"></i> Tambah Mapel Lain
+        </button>
+    </div>
+    <div id="user-mapel-dropdowns-container" class="space-y-2">
+        <!-- Baris dropdown mapel akan ditambahkan secara dinamis oleh JavaScript -->
     </div>
 </div>
 
