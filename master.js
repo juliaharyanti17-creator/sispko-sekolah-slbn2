@@ -1,5 +1,5 @@
 // ==========================================================================
-// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & BATCH JADWAL)
+// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & AMPUAN)
 // SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
@@ -34,7 +34,7 @@ function changeMasterLimit(type, selectElement) {
 }
 
 // ==========================================================================
-// 1. MANAJEMEN PENGGUNA / GURU
+// 1. MANAJEMEN PENGGUNA / GURU (DENGAN CHECKBOX AMPUAN)
 // ==========================================================================
 function renderMasterUsers() {
     var tbody = document.getElementById('master-users-table-body');
@@ -62,11 +62,14 @@ function renderMasterUsers() {
         var uId = u.id || u.username;
         var tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition";
+        
+        var ampuanText = "Kelas: " + (u.kelasAmpuan || 'ALL') + " | Mapel: " + (u.mapelAmpuan || 'ALL');
+
         tr.innerHTML = `
-            <td class="p-2 font-bold text-slate-800">${u.nama || u.username}<br><span class="text-[10px] text-slate-400 font-normal">Username: ${u.username}</span></td>
-            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-md text-[10px] font-bold">${(u.role || 'GURU').toUpperCase()}</span></td>
-            <td class="p-2 text-slate-600 text-[11px]">${u.kelasAmpuan || 'ALL'}</td>
-            <td class="p-2 text-center space-x-1">
+            <td class="p-2.5 font-bold text-slate-800">${u.nama || u.username}<br><span class="text-[10px] text-slate-400 font-normal">Username: ${u.username}</span></td>
+            <td class="p-2.5 text-center"><span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-md text-[10px] font-bold">${(u.role || 'GURU').toUpperCase()}</span></td>
+            <td class="p-2.5 text-slate-600 text-[11px]">${ampuanText}</td>
+            <td class="p-2.5 text-center space-x-1">
                 <button onclick="openModalUser('${uId}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
                 <button onclick="handleDeleteUser('${uId}')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
             </td>
@@ -75,6 +78,102 @@ function renderMasterUsers() {
     });
 
     renderMasterPaginationControls('user', users.length, page, limit);
+}
+
+function openModalUser(userId) {
+    var modal = document.getElementById('modal-user');
+    var title = document.getElementById('modal-user-title');
+    var inNama = document.getElementById('user-nama-input');
+    var inUser = document.getElementById('user-username-input');
+    var inPass = document.getElementById('user-password-input');
+    var inRole = document.getElementById('user-role-input');
+    var editId = document.getElementById('user-edit-id');
+    if (!modal) return;
+
+    // 1. Render Checkbox Kelas Ampuan
+    var kelasContainer = document.getElementById('user-form-kelas-checkboxes');
+    if (kelasContainer) {
+        kelasContainer.innerHTML = '';
+        var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
+        if (classesList.length === 0) {
+            kelasContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">Belum ada data kelas master.</span>';
+        } else {
+            classesList.forEach(function(c) {
+                var cVal = c.id || c.name || c.nama;
+                var cLabel = c.name || c.nama || c.id;
+                var lbl = document.createElement('label');
+                lbl.className = 'flex items-center gap-2 font-medium text-slate-700 cursor-pointer text-xs p-1 hover:bg-slate-100 rounded-lg transition';
+                lbl.innerHTML = '<input type="checkbox" name="user_kelas_opt" value="' + cVal + '" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"> <span>' + cLabel + '</span>';
+                kelasContainer.appendChild(lbl);
+            });
+        }
+    }
+
+    // 2. Render Checkbox Mapel Ampuan
+    var mapelContainer = document.getElementById('user-form-mapel-checkboxes');
+    if (mapelContainer) {
+        mapelContainer.innerHTML = '';
+        var subjectList = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
+        if (subjectList.length === 0) {
+            mapelContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">Belum ada data mata pelajaran.</span>';
+        } else {
+            subjectList.forEach(function(m) {
+                var mVal = typeof m === 'string' ? m : (m.id || m.name || m.nama);
+                var mLabel = typeof m === 'string' ? m : (m.name || m.nama || m.id);
+                var lbl = document.createElement('label');
+                lbl.className = 'flex items-center gap-2 font-medium text-slate-700 cursor-pointer text-xs p-1 hover:bg-slate-100 rounded-lg transition';
+                lbl.innerHTML = '<input type="checkbox" name="user_mapel_opt" value="' + mVal + '" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"> <span>' + mLabel + '</span>';
+                mapelContainer.appendChild(lbl);
+            });
+        }
+    }
+
+    if (userId) {
+        if (title) title.textContent = "Edit Data User / Guru";
+        var u = (window.appState.users || []).find(function(item) { return (item.id === userId || item.username === userId); });
+        if (u) {
+            if (inNama) inNama.value = u.nama || '';
+            if (inUser) inUser.value = u.username || '';
+            if (inPass) inPass.value = u.password || '';
+            if (inRole) inRole.value = (u.role || 'walikelas').toLowerCase();
+            if (editId) editId.value = u.id || u.username;
+
+            // Centang otomatis checkbox kelas jika ada
+            if (u.kelasAmpuan && u.kelasAmpuan !== 'ALL') {
+                var arrK = u.kelasAmpuan.split(',').map(function(s) { return s.trim(); });
+                document.querySelectorAll('input[name="user_kelas_opt"]').forEach(function(cb) {
+                    if (arrK.includes(cb.value)) cb.checked = true;
+                });
+            }
+
+            // Centang otomatis checkbox mapel jika ada
+            if (u.mapelAmpuan && u.mapelAmpuan !== 'ALL') {
+                var arrM = u.mapelAmpuan.split(',').map(function(s) { return s.trim(); });
+                document.querySelectorAll('input[name="user_mapel_opt"]').forEach(function(cb) {
+                    if (arrM.includes(cb.value)) cb.checked = true;
+                });
+            }
+        }
+    } else {
+        if (title) title.textContent = "Tambah User / Guru Baru";
+        if (inNama) inNama.value = '';
+        if (inUser) inUser.value = '';
+        if (inPass) inPass.value = '';
+        if (inRole) inRole.value = 'walikelas';
+        if (editId) editId.value = '';
+    }
+
+    if (typeof window.toggleUserClassSelect === 'function') {
+        window.toggleUserClassSelect();
+    }
+
+    modal.classList.remove('hidden');
+    modal.style.setProperty('display', 'flex', 'important');
+}
+
+function closeModalUser() {
+    var modal = document.getElementById('modal-user');
+    if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
 }
 
 function handleSaveUser(e) {
@@ -99,7 +198,6 @@ function handleSaveUser(e) {
 
     if (!window.appState.users) window.appState.users = [];
 
-    // Tentukan string ampuannya (jika admin/kepsek atau tidak memilih, jadikan 'ALL')
     var kelasAmpuanStr = (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || selectedKelas.length === 0) ? 'ALL' : selectedKelas.join(', ');
     var mapelAmpuanStr = (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || selectedMapel.length === 0) ? 'ALL' : selectedMapel.join(', ');
 
@@ -123,49 +221,6 @@ function handleSaveUser(e) {
             role: role,
             kelasAmpuan: kelasAmpuanStr,
             mapelAmpuan: mapelAmpuanStr
-        };
-        window.appState.users.push(newUser);
-        if (typeof showToast === 'function') showToast("User baru ditambahkan.");
-    }
-
-    if (typeof saveAppState === 'function') saveAppState();
-    closeModalUser();
-    renderAllMasterData();
-}
-
-function closeModalUser() {
-    var modal = document.getElementById('modal-user');
-    if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
-}
-
-function handleSaveUser(e) {
-    if (e) e.preventDefault();
-    var nama = document.getElementById('user-nama-input').value.trim();
-    var username = document.getElementById('user-username-input').value.trim();
-    var password = document.getElementById('user-password-input').value.trim();
-    var role = document.getElementById('user-role-input').value;
-    var editId = document.getElementById('user-edit-id').value;
-
-    if (!window.appState.users) window.appState.users = [];
-
-    if (editId) {
-        var u = window.appState.users.find(function(item) { return (item.id === editId || item.username === editId); });
-        if (u) {
-            u.nama = nama;
-            u.username = username;
-            u.password = password;
-            u.role = role;
-        }
-        if (typeof showToast === 'function') showToast("User berhasil diperbarui.");
-    } else {
-        var newUser = {
-            id: 'u_' + Date.now(),
-            nama: nama,
-            username: username,
-            password: password,
-            role: role,
-            kelasAmpuan: 'ALL',
-            mapelAmpuan: 'ALL'
         };
         window.appState.users.push(newUser);
         if (typeof showToast === 'function') showToast("User baru ditambahkan.");
