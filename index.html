@@ -715,12 +715,17 @@ function togglePasswordVisibility(e) {
 
 <!-- 1. MODAL TAMBAH/EDIT USER -->
 <div id="modal-user" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center border-b pb-3">
+    <!-- Pembungkus utama modal dengan batasan tinggi layar & flex column -->
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 flex flex-col max-h-[85vh] overflow-hidden">
+        
+        <!-- Header Modal (Tetap di atas) -->
+        <div class="flex justify-between items-center p-5 border-b shrink-0 bg-white">
             <h3 id="modal-user-title" class="font-bold text-sm text-slate-800">Tambah User / Guru Baru</h3>
-            <button onclick="closeModalUser()" class="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">&times;</button>
+            <button onclick="closeModalUser()" class="text-slate-400 hover:text-slate-600 text-base font-bold cursor-pointer w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100">&times;</button>
         </div>
-        <form onsubmit="handleSaveUser(event)" class="space-y-3">
+
+        <!-- Bagian Form yang Bisa Di-scroll (Scrollable Body) -->
+        <form onsubmit="handleSaveUser(event)" class="p-5 space-y-4 overflow-y-auto flex-1">
             <input type="hidden" id="user-edit-id" value="">
             
             <div>
@@ -740,13 +745,39 @@ function togglePasswordVisibility(e) {
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Role / Hak Akses</label>
-                <select id="user-role-input" onchange="toggleUserClassSelect()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <select id="user-role-input" onchange="toggleUserClassSelect()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white cursor-pointer">
                     <option value="walikelas">Wali Kelas</option>
                     <option value="gurumapel">Guru Mata Pelajaran (Mapel)</option>
                     <option value="kepsek">Kepala Sekolah</option>
                     <option value="admin">Administrator</option>
                 </select>
             </div>
+
+            <!-- Pilihan Kelas Ampuan dengan Box Scroll Sendiri -->
+            <div id="group-user-kelas" class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700">Pilih Kelas Ampuan</label>
+                <div id="user-form-kelas-checkboxes" class="p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-40 overflow-y-auto space-y-1.5">
+                    <!-- Checkbox kelas akan otomatis ter-render di sini -->
+                </div>
+            </div>
+
+            <!-- Pilihan Mata Pelajaran Ampuan dengan Box Scroll Sendiri -->
+            <div id="group-user-mapel" class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700">Pilih Mata Pelajaran Ampuan</label>
+                <div id="user-form-mapel-checkboxes" class="p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-40 overflow-y-auto space-y-1.5">
+                    <!-- Checkbox mapel akan otomatis ter-render di sini -->
+                </div>
+            </div>
+
+            <!-- Footer Tombol Aksi (Tetap di dalam area scroll form) -->
+            <div class="flex justify-end gap-2 pt-4 border-t">
+                <button type="button" onclick="closeModalUser()" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer transition">Batal</button>
+                <button type="submit" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition">Simpan User</button>
+            </div>
+        </form>
+
+    </div>
+</div>
 
             <!-- Pilihan Kelas Ampuan (Wajib Ada ID Ini Agar Checkbox Muncul) -->
             <div id="group-user-kelas" class="space-y-1.5">
