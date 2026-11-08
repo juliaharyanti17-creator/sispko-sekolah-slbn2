@@ -735,7 +735,6 @@ function togglePasswordVisibility(e) {
         </form>
     </div>
 </div>
-
 <!-- ==================== MODAL TAMBAH/EDIT JADWAL ==================== -->
 <div id="modal-jadwal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100">
@@ -745,11 +744,15 @@ function togglePasswordVisibility(e) {
         </div>
         <form onsubmit="handleSaveJadwal(event)" class="space-y-3">
             <input type="hidden" id="jadwal-edit-index" value="">
+            
+            <!-- Pilih Kelas -->
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Kelas</label>
                 <select id="jadwal-kelas-input" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                 </select>
             </div>
+
+            <!-- Pilih Hari & Jam Ke (Dengan Tombol Auto Increment Jam Berikutnya) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">Hari</label>
@@ -763,15 +766,21 @@ function togglePasswordVisibility(e) {
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Jam Ke-</label>
-                    <input type="number" id="jadwal-jam-input" min="1" max="10" required placeholder="Contoh: 1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-bold text-slate-600">Jam Ke-</label>
+                        <button type="button" onclick="incrementJamPelajaran()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">+ Tambah Jam</button>
+                    </div>
+                    <input type="number" id="jadwal-jam-input" min="1" max="10" required value="1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                 </div>
             </div>
+
+            <!-- Pilih Mata Pelajaran (Dropdown dari Data Master Mapel) -->
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Mata Pelajaran</label>
                 <select id="jadwal-mapel-input" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                 </select>
             </div>
+
             <div class="flex justify-end gap-2 pt-3 border-t">
                 <button type="button" onclick="closeModalJadwal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
                 <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Jadwal</button>
@@ -779,5 +788,6 @@ function togglePasswordVisibility(e) {
         </form>
     </div>
 </div>
+
 </body>
 </html>
