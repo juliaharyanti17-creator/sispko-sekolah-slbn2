@@ -15,6 +15,7 @@ window.switchTab = function(e, tabName) {
         window.applyRoleAccessControl();
     }
 
+    // Pastikan 'evaluasi' terdaftar di dalam array modules agar tab dapat dibuka
     var modules = ['presensi', 'jurnal', 'rekap', 'evaluasi', 'master'];
     
     modules.forEach(function(mod) {
@@ -171,7 +172,6 @@ window.renderPresensiForm = function() {
     if (typeof loadPresensiTable === 'function') loadPresensiTable();
 };
 
-// DIPERBAIKI: Mencegah dropdown ampuan hilang saat role diubah di modal user
 window.toggleUserClassSelect = function() {
     var groupKelas = document.getElementById('group-user-kelas');
     var groupMapel = document.getElementById('group-user-mapel');
