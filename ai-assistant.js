@@ -97,7 +97,6 @@ function roleBasedInspector(query) {
     var users = state.users || [];
     var subjects = state.subjects || [];
     var journals = state.journals || [];
-    var jadwal = state.jadwalMaster || [];
 
     // 1. Pertanyaan seputar Kepala Sekolah (Role: kepsek)
     if (lower.includes('kepala sekolah') || lower.includes('kepsek')) {
@@ -124,7 +123,9 @@ function roleBasedInspector(query) {
         });
 
         if (adminList.length === 0) return "Tidak ada user dengan role Administrator yang tercatat.";
-        var names = adminList.map(u => `<strong>${u.nama || u.username}</strong>`).join(', ');
+        var names = adminList.map(function(u) {
+            return `<strong>${u.nama || u.username}</strong>`;
+        }).join(', ');
         return `Pengguna yang memegang jabatan sebagai <strong>Administrator</strong> sistem adalah: ${names}.`;
     }
 
@@ -140,9 +141,9 @@ function roleBasedInspector(query) {
         return `Berikut adalah daftar seluruh pengguna beserta jabatan/role mereka di sistem:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1">${userSummary}</div>`;
     }
 
-    // 4. Pertanyaan Spesifik Ketunaan (Contoh: "Berapa murid autis?", "Cari siswa tunanetra")
+    // 4. Pertanyaan Spesifik Ketunaan
     var ketunaanKeywords = ['autis', 'netra', 'rungu', 'grahita', 'daksa', 'laras'];
-    var matchedKetunaan = ketunaanKeywords.find(k => lower.includes(k));
+    var matchedKetunaan = ketunaanKeywords.find(function(k) { return lower.includes(k); });
 
     if (matchedKetunaan || lower.includes('ketunaan') || lower.includes('disabilitas')) {
         if (students.length === 0) return "Belum ada data siswa terdaftar.";
@@ -170,9 +171,13 @@ function roleBasedInspector(query) {
     if (lower.includes('siswa') || lower.includes('murid') || lower.includes('anak') || lower.includes('cari')) {
         var keyword = lower.replace(/cari|siswa|murid|nama|tentang/g, '').trim();
         if (keyword && keyword.length > 1) {
-            var found = students.filter(s => (s.nama || s.name || '').toLowerCase().includes(keyword) || (s.nisn || '').toLowerCase().includes(keyword));
+            var found = students.filter(function(s) {
+                return (s.nama || s.name || '').toLowerCase().includes(keyword) || (s.nisn || '').toLowerCase().includes(keyword);
+            });
             if (found.length > 0) {
-                var res = found.map(s => `• <strong>${s.nama || s.name}</strong> (NISN: ${s.nisn || '-'}, Ketunaan: ${s.ketunaan || 'Umum'})`).join('<br>');
+                var res = found.map(function(s) {
+                    return `• <strong>${s.nama || s.name}</strong> (NISN: ${s.nisn || '-'}, Ketunaan: ${s.ketunaan || 'Umum'})`;
+                }).join('<br>');
                 return `Hasil pencarian siswa:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1">${res}</div>`;
             }
         }
@@ -182,14 +187,18 @@ function roleBasedInspector(query) {
     // 6. Pertanyaan seputar Mata Pelajaran
     if (lower.includes('mata pelajaran') || lower.includes('mapel') || lower.includes('pelajaran')) {
         if (subjects.length === 0) return "Belum ada mata pelajaran terdaftar.";
-        var mapelList = subjects.map((s, i) => `${i + 1}. ${typeof s === 'string' ? s : (s.name || s.nama)}`).join('<br>');
+        var mapelList = subjects.map(function(s, i) {
+            return `${i + 1}. ${typeof s === 'string' ? s : (s.name || s.nama)}`;
+        }).join('<br>');
         return `Daftar mata pelajaran aktif:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1">${mapelList}</div>`;
     }
 
     // 7. Pertanyaan seputar Jurnal KBM
     if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar')) {
         if (journals.length === 0) return "Belum ada laporan jurnal KBM yang masuk.";
-        var recent = journals.slice(-4).reverse().map(j => `• <strong>${j.tanggal}</strong> (${j.kelas || '-'} - ${j.mapel || '-'}): ${j.materi || '-'}`).join('<br>');
+        var recent = journals.slice(-4).reverse().map(function(j) {
+            return `• <strong>${j.tanggal}</strong> (${j.kelas || '-'} - ${j.mapel || '-'}): ${j.materi || '-'}`;
+        }).join('<br>');
         return `Tercatat ada ${journals.length} laporan jurnal KBM. Catatan terbaru:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1">${recent}</div>`;
     }
 
@@ -205,10 +214,10 @@ function roleBasedInspector(query) {
 
     // 9. Deep Fallback Universal Search
     var matchResults = [];
-    students.forEach(s => {
+    students.forEach(function(s) {
         if (JSON.stringify(s).toLowerCase().includes(lower)) matchResults.push(`Siswa: ${s.nama || s.name}`);
     });
-    users.forEach(u => {
+    users.forEach(function(u) {
         if (JSON.stringify(u).toLowerCase().includes(lower)) matchResults.push(`User: ${u.nama || u.username} (${u.role})`);
     });
 
