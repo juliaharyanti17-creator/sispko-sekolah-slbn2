@@ -401,7 +401,8 @@ window.toggleUserClassSelect = function() {
 };
 
 window.openModalUser = function(e) {
-    if (e && e.preventDefault) e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    
     var formNama = document.getElementById('user-form-nama');
     var formPass = document.getElementById('user-form-password');
     var formRole = document.getElementById('user-form-role');
@@ -410,6 +411,7 @@ window.openModalUser = function(e) {
     if (formPass) formPass.value = '';
     if (formRole) formRole.value = 'walikelas';
 
+    // Muat checkbox kelas dan mapel secara dinamis
     var kelasContainer = document.getElementById('user-form-kelas-checkboxes');
     if (kelasContainer) {
         kelasContainer.innerHTML = '';
@@ -450,10 +452,12 @@ window.openModalUser = function(e) {
         window.toggleUserClassSelect();
     }
 
+    // Tampilkan modal
     var modal = document.getElementById('modal-user');
     if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        modal.style.setProperty('display', 'flex', 'important');
     }
 };
 
