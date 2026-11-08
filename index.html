@@ -27,7 +27,7 @@
 <body class="bg-slate-100 font-sans text-slate-800 antialiased custom-scrollbar">
 
 <script>
-// Toggle Lihat Password
+// Toggle Lihat Password yang Aman
 function togglePasswordVisibility(e) {
   if (e) e.preventDefault();
   const pwdInput = document.getElementById('login-password') || document.getElementById('password');
@@ -90,7 +90,7 @@ function togglePasswordVisibility(e) {
 </div>
 
 <!-- ==================== SCREEN 2: MAIN APP ==================== -->
-<div id="screen-app" class="hidden min-h-screen bg-slate-100 flex-col md:flex-row">
+<div id="screen-app" class="hidden min-h-screen bg-slate-100 flex flex-col md:flex-row">
 <!-- Mobile Header Bar -->
 <div class="md:hidden bg-indigo-950 text-white p-4 flex items-center justify-between shadow-md sticky top-0 z-30 no-print">
 <div class="flex items-center gap-3">
@@ -466,7 +466,7 @@ function togglePasswordVisibility(e) {
             </div>
         </div>
 
-        <!-- 4. Master Siswa / Murid (Dengan Search Bar) -->
+        <!-- 4. Master Siswa / Murid -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
@@ -505,7 +505,7 @@ function togglePasswordVisibility(e) {
             </div>
         </div>
 
-        <!-- 5. Master Mata Pelajaran (Dengan Pagination) -->
+        <!-- 5. Master Mata Pelajaran -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5">
@@ -735,8 +735,8 @@ function togglePasswordVisibility(e) {
         </form>
     </div>
 </div>
-<!-- ==================== MODAL TAMBAH/EDIT JADWAL ==================== -->
-<!-- ==================== MODAL BATCH JADWAL HARIAN ==================== -->
+
+<!-- 6. MODAL BATCH JADWAL HARIAN -->
 <div id="modal-jadwal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
         <div class="flex justify-between items-center border-b pb-3 shrink-0">
@@ -745,7 +745,6 @@ function togglePasswordVisibility(e) {
         </div>
         
         <div class="space-y-4 overflow-y-auto flex-1 pr-1">
-            <!-- Pilihan Kelas & Hari -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">Nama Kelas</label>
@@ -765,7 +764,6 @@ function togglePasswordVisibility(e) {
                 </div>
             </div>
 
-            <!-- Daftar Jam Pelajaran Dinamis -->
             <div class="space-y-2.5">
                 <div class="flex justify-between items-center">
                     <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Jam Mata Pelajaran</label>
@@ -773,7 +771,6 @@ function togglePasswordVisibility(e) {
                         <i class="fa-solid fa-plus text-[10px]"></i> Tambah Jam Berikutnya
                     </button>
                 </div>
-                <!-- Kontainer baris jam -->
                 <div id="batch-jadwal-slots-container" class="space-y-2.5">
                 </div>
             </div>
