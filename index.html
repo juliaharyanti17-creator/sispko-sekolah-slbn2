@@ -725,17 +725,22 @@ function togglePasswordVisibility(e) {
             
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap & Gelar</label>
-                <input type="text" id="user-form-nama" required placeholder="Contoh: Ahmad, S.Pd" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <input type="text" id="user-nama-input" required placeholder="Contoh: Ahmad, S.Pd" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Username</label>
+                <input type="text" id="user-username-input" required placeholder="Contoh: ahmad" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Kata Sandi (Password)</label>
-                <input type="password" id="user-form-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <input type="password" id="user-password-input" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Role / Hak Akses</label>
-                <select id="user-form-role" onchange="toggleUserClassSelect()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <select id="user-role-input" onchange="toggleUserClassSelect()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                     <option value="walikelas">Wali Kelas</option>
                     <option value="gurumapel">Guru Mata Pelajaran (Mapel)</option>
                     <option value="kepsek">Kepala Sekolah</option>
@@ -745,9 +750,9 @@ function togglePasswordVisibility(e) {
 
             <!-- Pilihan Kelas Ampuan (Checkbox Dinamis) -->
             <div id="group-user-kelas" class="space-y-1.5">
-                <label class="block text-xs font-bold text-slate-700">Pilih Kelas Ampuan (Wali Kelas / Lintas Kelas)</label>
+                <label class="block text-xs font-bold text-slate-700">Pilih Kelas Ampuan</label>
                 <div id="user-form-kelas-checkboxes" class="p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-32 overflow-y-auto space-y-1.5">
-                    <!-- Dimuat dinamis oleh auth.js -->
+                    <!-- Dimuat dinamis oleh master.js / auth.js -->
                 </div>
             </div>
 
@@ -755,7 +760,7 @@ function togglePasswordVisibility(e) {
             <div id="group-user-mapel" class="space-y-1.5">
                 <label class="block text-xs font-bold text-slate-700">Pilih Mata Pelajaran Ampuan</label>
                 <div id="user-form-mapel-checkboxes" class="p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-32 overflow-y-auto space-y-1.5">
-                    <!-- Dimuat dinamis oleh auth.js -->
+                    <!-- Dimuat dinamis oleh master.js / auth.js -->
                 </div>
             </div>
 
@@ -766,7 +771,6 @@ function togglePasswordVisibility(e) {
         </form>
     </div>
 </div>
-
 <!-- 2. MODAL TAMBAH/EDIT KELAS -->
 <div id="modal-kelas" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl border border-slate-100">
