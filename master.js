@@ -853,42 +853,210 @@ function openModalJadwal(index) {
     if (subjects.length === 0) {
         selectMapel.innerHTML = '<option value="">-- Belum ada data mapel --</option>';
     } else {
-        subjects.forEach(function(s) {
-            var mapelNama = typeof s === 'string' ? s : (s.name || s.nama);
+// ==========================================================================
+// 7. MANAJEMEN MASTER JADWAL HARIAN (BATCH INPUT PER HARI)
+// ==========================================================================
+function renderMasterJadwal() {
+    var tbody = document.getElementById('master-jadwal-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!window.appState.jadwalMaster) {
+        window.appState.jadwalMaster = [];
+    }
+
+    var jadwal = window.appState.jadwalMaster;
+    if (jadwal.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data master jadwal pelajaran.</td></tr>';
+        return;
+    }
+
+    jadwal.forEach(function(j, idx) {
+        var namaKelas = typeof getClassName === 'function' ? getClassName(j.classId) : (j.classId || '-');
+        var tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+            <td class="p-2 text-center text-slate-500 font-bold">${idx + 1}</td>
+            <td class="p-2 font-bold text-slate-800">${namaKelas}</td>
+            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-md text-[10px] font-bold">${j.hari || '-'}</span></td>
+            <td class="p-2 text-center font-semibold text-slate-600">Jam Ke-${j.jamKe || '-'}</td>
+            <td class="p-2 text-slate-700 font-semibold">${j.mapel || '-'}</td>
+            <td class="p-2 text-center space-x-1">
+                <button onclick="openModalJadwal(${idx})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button onclick="handleDeleteJadwal(${idx})" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openModalJadwal(index) {
+    var modal = document.getElementById('modal-jadwal');
+    var title = document.getElementById('modal-jadwal-title');
+    var selectKelas = document.getElementById('batch-jadwal-kelas');
+    var selectHari = document.getElementById('batch-jadwal-hari');
+    var container = document.getElementById('batch-jadwal-slots-container');
+
+    if (!modal) return;
+
+    // 1. Populate dropdown Kelas
+    selectKelas.innerHTML = '';
+    var classes = window.appState.classes || [];
+    if (classes.length === 0) {
+        selectKelas.innerHTML = '<option value="">-- Belum ada data kelas --</option>';
+    } else {
+        classes.forEach(function(c) {
             var opt = document.createElement('option');
-            opt.value = mapelNama;
-            opt.textContent = mapelNama;
-            selectMapel.appendChild(opt);
+            opt.value = c.id;
+            opt.textContent = c.name || c.nama;
+            selectKelas.appendChild(opt);
         });
     }
 
-    // 3. Atur mode Edit atau Tambah Baru
+    container.innerHTML = '';
+
+    // 2. Cek apakah ini mode Edit atau Tambah Baru
     if (typeof index === 'number' && index >= 0) {
-        if (title) title.textContent = "Edit Jadwal Pelajaran";
-        var item = (window.appState.jadwalMaster || [])[index];
-        if (item) {
-            selectKelas.value = item.classId || '';
-            inputHari.value = item.hari || 'Senin';
-            inputJam.value = item.jamKe || '1';
-            selectMapel.value = item.mapel || '';
-            editIdx.value = index;
+        if (title) title.textContent = "Edit Jadwal Harian Kelas";
+        var targetItem = (window.appState.jadwalMaster || [])[index];
+        if (targetItem) {
+            selectKelas.value = targetItem.classId || '';
+            selectHari.value = targetItem.hari || 'Senin';
+
+            // Ambil semua jam untuk kelas dan hari tersebut
+            var existingForDay = (window.appState.jadwalMaster || []).filter(function(j) {
+                return j.classId === targetItem.classId && j.hari === targetItem.hari;
+            });
+            existingForDay.sort(function(a, b) { return parseInt(a.jamKe) - parseInt(b.jamKe); });
+
+            if (existingForDay.length > 0) {
+                existingForDay.forEach(function(item) {
+                    addBatchJamSlot(item.jamKe, item.mapel);
+                });
+            } else {
+                addBatchJamSlot(1, '');
+            }
         }
     } else {
-        if (title) title.textContent = "Tambah Jadwal Pelajaran";
-        inputJam.value = '1'; // Default mulai dari Jam Ke-1
-        editIdx.value = '';
+        if (title) title.textContent = "Input Jadwal Harian Kelas";
+        // Default berikan 2 baris awal (Jam ke-1 & Jam ke-2)
+        addBatchJamSlot(1, '');
+        addBatchJamSlot(2, '');
     }
 
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
 }
 
+function addBatchJamSlot(jamKe, selectedMapel) {
+    var container = document.getElementById('batch-jadwal-slots-container');
+    if (!container) return;
+
+    var currentCount = container.children.length + 1;
+    var jam = jamKe || currentCount;
+
+    var subjects = window.appState.subjects || [];
+    var optionsHtml = subjects.map(function(s) {
+        var mName = typeof s === 'string' ? s : (s.name || s.nama);
+        var selected = (mName === selectedMapel) ? 'selected' : '';
+        return `<option value="${mName}" ${selected}>${mName}</option>`;
+    }).join('');
+
+    if (optionsHtml === '') {
+        optionsHtml = '<option value="">-- Belum ada data mapel --</option>';
+    }
+
+    var rowDiv = document.createElement('div');
+    rowDiv.className = "flex items-center gap-2.5 p-3 bg-slate-50 border border-slate-200 rounded-2xl slot-row shadow-xs";
+    rowDiv.innerHTML = `
+        <div class="w-32 shrink-0 text-xs font-bold text-slate-700">
+            Jam Pelajaran ke-<span class="jam-label">${jam}</span>
+        </div>
+        <div class="flex-1">
+            <select class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 batch-mapel-select">
+                ${optionsHtml}
+            </select>
+        </div>
+        <button type="button" onclick="removeBatchJamSlot(this)" class="p-2.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl text-xs transition cursor-pointer" title="Hapus Jam">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(rowDiv);
+    reindexBatchSlots();
+}
+
+function removeBatchJamSlot(btn) {
+    var row = btn.closest('.slot-row');
+    if (row) {
+        row.remove();
+        reindexBatchSlots();
+    }
+}
+
+function reindexBatchSlots() {
+    var container = document.getElementById('batch-jadwal-slots-container');
+    if (!container) return;
+    var rows = container.querySelectorAll('.slot-row');
+    rows.forEach(function(row, idx) {
+        var label = row.querySelector('.jam-label');
+        if (label) {
+            label.textContent = idx + 1;
+        }
+    });
+}
+
+function handleSaveBatchJadwal() {
+    var classId = document.getElementById('batch-jadwal-kelas').value;
+    var hari = document.getElementById('batch-jadwal-hari').value;
+    var container = document.getElementById('batch-jadwal-slots-container');
+
+    if (!classId) {
+        alert("Pilih kelas terlebih dahulu!");
+        return;
+    }
+
+    var rows = container.querySelectorAll('.slot-row');
+    if (rows.length === 0) {
+        alert("Tambahkan minimal 1 jam pelajaran!");
+        return;
+    }
+
+    if (!window.appState.jadwalMaster) {
+        window.appState.jadwalMaster = [];
+    }
+
+    // Hapus data lama untuk kelas dan hari yang sama agar tergantikan dengan input batch terbaru
+    window.appState.jadwalMaster = window.appState.jadwalMaster.filter(function(j) {
+        return !(j.classId === classId && j.hari === hari);
+    });
+
+    // Masukkan baris-baris baru ke window.appState.jadwalMaster
+    rows.forEach(function(row, idx) {
+        var jamKe = idx + 1;
+        var mapelSelect = row.querySelector('.batch-mapel-select');
+        var mapel = mapelSelect ? mapelSelect.value : '';
+
+        if (mapel) {
+            window.appState.jadwalMaster.push({
+                classId: classId,
+                hari: hari,
+                jamKe: jamKe,
+                mapel: mapel
+            });
+        }
+    });
+
+    if (typeof saveAppState === 'function') saveAppState();
+    closeModalJadwal();
+    renderMasterJadwal();
+    if (typeof showToast === 'function') showToast("Jadwal harian berhasil disimpan.");
+}
+
 function handleDeleteJadwal(index) {
-    if (confirm("Apakah Anda yakin ingin menghapus jadwal ini?")) {
+    if (confirm("Apakah Anda yakin ingin menghapus entri jadwal ini?")) {
         window.appState.jadwalMaster.splice(index, 1);
         if (typeof saveAppState === 'function') saveAppState();
         renderMasterJadwal();
         if (typeof showToast === 'function') showToast("Jadwal berhasil dihapus.");
     }
 }
-
