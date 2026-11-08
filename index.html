@@ -897,5 +897,52 @@ function togglePasswordVisibility(e) {
     </div>
 </div>
 
+<!-- ==================== MODAL AI ASSISTANT SIMPATIK ==================== -->
+<div id="modal-ai-assistant" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 flex flex-col h-[600px] max-h-[90vh] overflow-hidden">
+        
+        <!-- Header Modal AI -->
+        <div class="bg-indigo-950 text-white p-4 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow">
+                    <i class="fa-solid fa-robot text-amber-300 text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-sm tracking-tight">AI Assistant SIMPATIK</h3>
+                    <p class="text-[10px] text-indigo-300 font-semibold">Smart Role-Based Agent & Deep Data Inspector</p>
+                </div>
+            </div>
+            <button type="button" onclick="toggleAIChatModal(event)" class="text-indigo-200 hover:text-white text-base font-bold w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Area Pesan Chat -->
+        <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+            <!-- Sambutan Awal AI -->
+            <div class="flex items-start gap-2.5">
+                <div class="w-7 h-7 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center shrink-0 font-bold text-[10px]">
+                    AI
+                </div>
+                <div class="bg-white p-3 rounded-2xl rounded-tl-sm border border-slate-200/80 shadow-xs text-slate-700 max-w-[85%] leading-relaxed space-y-1.5">
+                    <p>Halo! Saya adalah <strong>AI Assistant SIMPATIK SLBN 2 Pelaihari</strong>.</p>
+                    <p>Saya dapat membantu Anda memindai data siswa, rekap kelas, jurnal guru, hingga informasi role pengguna di sistem. Silakan ketik pertanyaan Anda!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Form Chat -->
+        <div class="p-3 bg-white border-t border-slate-100 shrink-0">
+            <form onsubmit="handleSendAIChat(event)" class="flex items-center gap-2">
+                <input type="text" id="ai-chat-input" placeholder="Tanyakan sesuatu (contoh: 'Siapa kepala sekolah?')..." autocomplete="off" class="flex-1 px-4 py-3 bg-slate-100 border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                <button type="submit" class="w-11 h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow flex items-center justify-center transition shrink-0 cursor-pointer">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>
