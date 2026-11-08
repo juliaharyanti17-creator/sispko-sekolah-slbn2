@@ -140,7 +140,7 @@ function openModalUser(userId) {
 
             // Centang otomatis checkbox kelas jika ada
             if (u.kelasAmpuan && u.kelasAmpuan !== 'ALL') {
-                var arrK = u.kelasAmpuan.split(',').map(function(s) { return s.trim(); });
+                var arrK = typeof u.kelasAmpuan === 'string' ? u.kelasAmpuan.split(',').map(function(s) { return s.trim(); }) : u.kelasAmpuan;
                 document.querySelectorAll('input[name="user_kelas_opt"]').forEach(function(cb) {
                     if (arrK.includes(cb.value)) cb.checked = true;
                 });
@@ -148,7 +148,7 @@ function openModalUser(userId) {
 
             // Centang otomatis checkbox mapel jika ada
             if (u.mapelAmpuan && u.mapelAmpuan !== 'ALL') {
-                var arrM = u.mapelAmpuan.split(',').map(function(s) { return s.trim(); });
+                var arrM = typeof u.mapelAmpuan === 'string' ? u.mapelAmpuan.split(',').map(function(s) { return s.trim(); }) : u.mapelAmpuan;
                 document.querySelectorAll('input[name="user_mapel_opt"]').forEach(function(cb) {
                     if (arrM.includes(cb.value)) cb.checked = true;
                 });
