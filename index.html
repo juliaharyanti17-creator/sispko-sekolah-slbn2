@@ -379,11 +379,125 @@ function togglePasswordVisibility(e) {
 
 <!-- MODUL 4: EVALUASI KEPSEK -->
 <section id="modul-evaluasi" class="hidden space-y-6">
-<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
-<h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-<i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
-</h2>
-</div>
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
+        <!-- Header Panel -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+            <div>
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear text-indigo-600"></i> Panel Evaluasi & Pengawasan Kepala Sekolah
+                </h2>
+                <p class="text-xs text-slate-500 font-medium mt-0.5">Monitoring aktivitas jurnal mengajar, supervisi akademik, dan rekapitulasi kehadiran.</p>
+            </div>
+            
+            <!-- Filter Rentang Tanggal & Preset -->
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                    <input type="date" id="eval-filter-start-date" onchange="updateEvaluasiDashboard()" class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <span class="text-xs text-slate-400 font-bold">s/d</span>
+                    <input type="date" id="eval-filter-end-date" onchange="updateEvaluasiDashboard()" class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-center gap-1">
+                    <button type="button" onclick="setPresetEvalRange('today')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-xl transition cursor-pointer">Hari Ini</button>
+                    <button type="button" onclick="setPresetEvalRange('this_week')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-xl transition cursor-pointer">Minggu Ini</button>
+                    <button type="button" onclick="setPresetEvalRange('this_month')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-xl transition cursor-pointer">Bulan Ini</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. Widget Statistik Ringkasan -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-indigo-50/70 border border-indigo-100 p-4 rounded-2xl flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow">
+                    <i class="fa-solid fa-book-open text-sm"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">Total Jurnal Periode Ini</div>
+                    <div id="eval-stat-total-jurnal" class="text-xl font-black text-indigo-950 mt-0.5">0</div>
+                </div>
+            </div>
+
+            <div class="bg-emerald-50/70 border border-emerald-100 p-4 rounded-2xl flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow">
+                    <i class="fa-solid fa-circle-check text-sm"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Sudah Disupervisi</div>
+                    <div id="eval-stat-sudah-supervisi" class="text-xl font-black text-emerald-950 mt-0.5">0</div>
+                </div>
+            </div>
+
+            <div class="bg-amber-50/70 border border-amber-100 p-4 rounded-2xl flex items-center gap-3">
+                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white shrink-0 shadow">
+                    <i class="fa-solid fa-clock text-sm"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Belum Disupervisi</div>
+                    <div id="eval-stat-belum-supervisi" class="text-xl font-black text-amber-950 mt-0.5">0</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center text-white shrink-0 shadow">
+                    <i class="fa-solid fa-users text-sm"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Akumulasi Kehadiran (H/S/I/A)</div>
+                    <div class="text-xs font-bold text-slate-800 mt-1">
+                        <span class="text-emerald-600" id="eval-stat-hadir">0</span> H | 
+                        <span class="text-amber-600" id="eval-stat-sakit">0</span> S | 
+                        <span class="text-blue-600" id="eval-stat-izin">0</span> I | 
+                        <span class="text-rose-600" id="eval-stat-alpa">0</span> A
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Sub-Section: Supervisi KBM & Daftar Jurnal Guru -->
+        <div id="eval-section-supervisi" class="space-y-3 pt-2">
+            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
+                <i class="fa-solid fa-eye text-indigo-600"></i> Supervisi KBM & Catatan Kepala Sekolah
+            </h3>
+            <div id="eval-jurnal-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Data Jurnal & Tombol Beri Supervisi akan dimuat dinamis di sini -->
+                <div class="p-4 bg-slate-50 text-center text-slate-400 font-medium rounded-2xl col-span-2">Memuat daftar jurnal mengajar...</div>
+            </div>
+        </div>
+
+        <!-- 3. Sub-Section: Tabel Rekap Real-Time Per Kelas -->
+        <div id="eval-section-kritis" class="space-y-3 pt-4 border-t">
+            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
+                <i class="fa-solid fa-triangle-exclamation text-indigo-600"></i> Rekapitulasi & Absensi Riil Per Kelas
+            </h3>
+            <div class="overflow-x-auto border border-slate-200 rounded-2xl bg-white">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 font-bold text-slate-700 border-b">
+                        <tr>
+                            <th class="p-3 text-center w-12">No</th>
+                            <th class="p-3">Nama Kelas</th>
+                            <th class="p-3 text-center">Total Murid</th>
+                            <th class="p-3 text-center text-emerald-700">Hadir</th>
+                            <th class="p-3 text-center text-amber-700">Sakit</th>
+                            <th class="p-3 text-center text-blue-700">Izin</th>
+                            <th class="p-3 text-center text-rose-700">Alpa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eval-realtime-kelas-tbody" class="divide-y divide-slate-100 font-medium">
+                        <tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data rekap kelas...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. Sub-Section: Grafik & Statistik Chart.js -->
+        <div id="eval-section-grafik" class="space-y-3 pt-4 border-t">
+            <h3 class="font-bold text-xs text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
+                <i class="fa-solid fa-chart-column text-indigo-600"></i> Grafik Status Supervisi Akademik
+            </h3>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-center h-64 relative">
+                <canvas id="evaluasi-chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
 </section>
 
 <!-- MODUL 5: DATA MASTER -->
