@@ -57,7 +57,7 @@ function updateEvaluasiWidgets() {
 
     var journals = (window.appState && window.appState.journals) ? window.appState.journals : [];
     var filteredJournals = journals.filter(function(j) {
-        return j.tanggal >= startDate && j.tanggal <= endDate;
+        return j.tanggal && j.tanggal >= startDate && j.tanggal <= endDate;
     });
 
     var totalJurnal = filteredJournals.length;
@@ -65,7 +65,8 @@ function updateEvaluasiWidgets() {
     var totalBelum = totalJurnal - totalSupervisi;
 
     var hadir = 0, sakit = 0, izin = 0, alpa = 0;
-    var activeStudentIds = (window.appState.students || []).map(function(s) { return s.id; });
+    var activeStudents = window.appState.students || [];
+    var activeStudentIds = activeStudents.map(function(s) { return String(s.id || s.nisn); });
     var presensiRecords = window.appState.presensiRecords || {};
 
     Object.keys(presensiRecords).forEach(function(key) {
@@ -75,7 +76,7 @@ function updateEvaluasiWidgets() {
             if (tgl >= startDate && tgl <= endDate) {
                 var recMap = presensiRecords[key] || {};
                 Object.keys(recMap).forEach(function(sId) {
-                    if (activeStudentIds.includes(sId)) {
+                    if (activeStudentIds.includes(String(sId))) {
                         var st = recMap[sId];
                         if (st === 'H' || st === 'Hadir') hadir++;
                         else if (st === 'S' || st === 'Sakit') sakit++;
@@ -97,7 +98,7 @@ function updateEvaluasiWidgets() {
     if (document.getElementById('eval-stat-alpa')) document.getElementById('eval-stat-alpa').innerText = alpa;
 }
 
-// 2. TABEL REKAP REAL-TIME PER KELAS KHUSUS KEPSEK (TANPA AKSI / KLIK)
+// 2. TABEL REKAP REAL-TIME PER KELAS KHUSUS KEPSEK
 function renderEvaluasiRealtimeKelasTable() {
     var tbody = document.getElementById('eval-realtime-kelas-tbody');
     if (!tbody) return;
@@ -119,11 +120,17 @@ function renderEvaluasiRealtimeKelasTable() {
     }
 
     classes.forEach(function(c, index) {
+        var cId = String(c.id || '').trim();
+        var cName = String(c.name || c.nama || '').trim().toLowerCase();
+
         var classStudents = students.filter(function(s) {
-            return s.classId === c.id || s.kelas === c.id || s.classId === c.name || s.kelas === c.name;
+            var sClassId = String(s.classId || s.kelas || '').trim();
+            var sClassName = String(s.className || s.namaKelas || '').trim().toLowerCase();
+            return sClassId === cId || sClassId === cName || sClassName === cName || sClassName.includes(cName);
         });
+
         var totalMurid = classStudents.length;
-        var studentIds = classStudents.map(function(s) { return s.id; });
+        var studentIds = classStudents.map(function(s) { return String(s.id || s.nisn); });
 
         var cHadir = 0, cSakit = 0, cIzin = 0, cAlpa = 0;
 
@@ -131,16 +138,16 @@ function renderEvaluasiRealtimeKelasTable() {
             var parts = key.split('_');
             if (parts.length >= 3) {
                 var tgl = parts[0];
-                var classIdMatch = parts.slice(1, parts.length - 1).join('_');
+                var classIdMatch = parts.slice(1, parts.length - 1).join('_').toLowerCase();
 
-                if ((classIdMatch === c.id || classIdMatch === c.name || classIdMatch === c.nama) && tgl >= startDate && tgl <= endDate) {
+                if ((classIdMatch === cId.toLowerCase() || classIdMatch === cName) && tgl >= startDate && tgl <= endDate) {
                     var recMap = presensiRecords[key] || {};
                     studentIds.forEach(function(sId) {
                         var st = recMap[sId];
                         if (st === 'H' || st === 'Hadir') cHadir++;
                         else if (st === 'S' || st === 'Sakit') cSakit++;
                         else if (st === 'I' || st === 'Izin') cIzin++;
-                        else cAlpa++; // Dianggap alpa jika tidak tercatat / kosong
+                        else cAlpa++; 
                     });
                 }
             }
@@ -176,7 +183,7 @@ function updateEvaluasiCharts() {
 
     var journals = (window.appState && window.appState.journals) ? window.appState.journals : [];
     var filteredJournals = journals.filter(function(j) {
-        return j.tanggal >= startDate && j.tanggal <= endDate;
+        return j.tanggal && j.tanggal >= startDate && j.tanggal <= endDate;
     });
 
     var sudahSupervisi = filteredJournals.filter(function(j) { return j.supervisi; }).length;
@@ -235,14 +242,14 @@ function renderEvaluasiSupervisiDashboard() {
             ? '<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full text-[10px]"><i class="fa-solid fa-check-circle mr-1"></i>Sudah Disupervisi</span>' 
             : '<span class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold rounded-full text-[10px]"><i class="fa-solid fa-clock mr-1"></i>Belum Disupervisi</span>';
 
-        var catatanSup = j.supervisi 
+        var catatanSup = j.supervisi && j.supervisi.catatanKepsek 
             ? '<div class="mt-2 p-2.5 bg-white border border-emerald-200 rounded-xl text-emerald-900 font-medium"><strong>Catatan & Ulasan Kepsek:</strong> "' + j.supervisi.catatanKepsek + '"</div>' 
             : '';
 
         var btnSupervisiKepsek = '';
         var currentUserRole = window.appState && window.appState.currentUser ? (window.appState.currentUser.role || '').toLowerCase() : '';
         
-        if (currentUserRole === 'kepsek' || currentUserRole === 'admin' || currentUserRole === 'kapala sekolah') {
+        if (currentUserRole === 'kepsek' || currentUserRole === 'admin' || currentUserRole === 'kepala sekolah') {
             btnSupervisiKepsek = `
                 <button type="button" onclick="openModalSupervisi(${realIndex})" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer flex items-center gap-1.5">
                     <i class="fa-solid fa-clipboard-check"></i> ${j.supervisi ? 'Edit Supervisi' : 'Beri Supervisi Sekarang'}
@@ -257,7 +264,7 @@ function renderEvaluasiSupervisiDashboard() {
             <div class="flex justify-between items-start">
                 <div>
                     <h4 class="font-bold text-slate-800 text-sm">${j.guru || 'Guru SLBN 2'}</h4>
-                    <p class="text-[11px] text-slate-500 font-semibold">${j.tanggal} | Kelas ${namaKelasFormatted} (${namaMapelFormatted})</p>
+                    <p class="text-[11px] text-slate-500 font-semibold">${j.tanggal || '-'} | Kelas ${namaKelasFormatted || '-'} (${namaMapelFormatted || '-'})</p>
                 </div>
                 ${statusBadge}
             </div>
