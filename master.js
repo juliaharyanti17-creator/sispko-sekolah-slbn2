@@ -858,7 +858,7 @@ function openModalJadwal(index) {
 // ==========================================================================
 function renderMasterJadwal() {
     var tbody = document.getElementById('master-jadwal-table-body');
-    if (!tbody) return;
+    if (!tbody) return; // Mencegah error jika elemen belum termuat di DOM
     tbody.innerHTML = '';
 
     if (!window.appState.jadwalMaster) {
