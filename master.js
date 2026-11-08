@@ -1,9 +1,8 @@
 // ==========================================================================
-// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & EDIT LENGKAP)
+// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & BATCH JADWAL)
 // SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
-// Variabel Pengaturan Pagination Master untuk Semua Bagian
 var masterPagination = {
     user: { page: 1, limit: 5 },
     kelas: { page: 1, limit: 5 },
@@ -18,14 +17,14 @@ function renderAllMasterData() {
     renderMasterKetunaan();
     renderMasterSiswa();
     renderMasterSubjects();
+    renderMasterJadwal();
 }
 
-// Fungsi Ubah Jumlah Baris per Halaman (Limit) untuk Semua Bagian
 function changeMasterLimit(type, selectElement) {
     var val = parseInt(selectElement.value);
     if (masterPagination[type]) {
         masterPagination[type].limit = val;
-        masterPagination[type].page = 1; // Reset ke halaman 1
+        masterPagination[type].page = 1;
         if (type === 'user') renderMasterUsers();
         if (type === 'kelas') renderMasterKelas();
         if (type === 'ketunaan') renderMasterKetunaan();
@@ -35,7 +34,7 @@ function changeMasterLimit(type, selectElement) {
 }
 
 // ==========================================================================
-// 1. MANAJEMEN PENGGUNA / GURU (DENGAN PAGINATION & EDIT)
+// 1. MANAJEMEN PENGGUNA / GURU
 // ==========================================================================
 function renderMasterUsers() {
     var tbody = document.getElementById('master-users-table-body');
@@ -164,7 +163,7 @@ function handleDeleteUser(userId) {
 }
 
 // ==========================================================================
-// 2. MANAJEMEN KELAS (DENGAN PAGINATION & EDIT)
+// 2. MANAJEMEN KELAS
 // ==========================================================================
 function renderMasterKelas() {
     var container = document.getElementById('master-kelas-list-container');
@@ -279,7 +278,7 @@ function handleDeleteClass(classId) {
 }
 
 // ==========================================================================
-// 3. MANAJEMEN KETUNAAN (DENGAN PAGINATION & EDIT)
+// 3. MANAJEMEN KETUNAAN
 // ==========================================================================
 function renderMasterKetunaan() {
     var tbody = document.getElementById('master-ketunaan-table-body');
@@ -403,7 +402,7 @@ var masterSiswaSearchKeyword = '';
 function handleSearchMasterSiswa(keyword) {
     masterSiswaSearchKeyword = keyword.trim().toLowerCase();
     if (masterPagination.siswa) {
-        masterPagination.siswa.page = 1; // Reset ke halaman 1 saat mengetik
+        masterPagination.siswa.page = 1;
     }
     renderMasterSiswa();
 }
@@ -415,7 +414,6 @@ function renderMasterSiswa() {
 
     var allStudents = (window.appState && window.appState.students) ? window.appState.students : [];
     
-    // Filter data berdasarkan keyword Nama atau NISN
     var students = allStudents.filter(function(s) {
         if (!masterSiswaSearchKeyword) return true;
         var nama = (s.nama || s.name || '').toLowerCase();
@@ -562,7 +560,7 @@ function handleDeleteStudent(studentId) {
 }
 
 // ==========================================================================
-// 5. HELPER PAGINATION UNIVERSAL UNTUK SEMUA BAGIAN MASTER
+// 5. HELPER PAGINATION UNIVERSAL
 // ==========================================================================
 function renderMasterPaginationControls(type, totalData, currentPage, limit) {
     var containerId = 'master-' + type + '-pagination-container';
@@ -639,9 +637,8 @@ function changeMasterPage(type, targetPage) {
     }
 }
 
-
 // ==========================================================================
-// 6. MANAJEMEN MASTER MATA PELAJARAN (DENGAN PAGINATION & EDIT)
+// 6. MANAJEMEN MASTER MATA PELAJARAN
 // ==========================================================================
 function renderMasterSubjects() {
     var tbody = document.getElementById('master-subjects-table-body');
@@ -774,91 +771,13 @@ function handleDeleteSubject(index) {
         if (typeof showToast === 'function') showToast("Mata pelajaran berhasil dihapus.");
     }
 }
+
 // ==========================================================================
-// 7. MANAJEMEN MASTER JADWAL HARIAN
+// 7. MANAJEMEN MASTER JADWAL HARIAN (BATCH INPUT)
 // ==========================================================================
 function renderMasterJadwal() {
     var tbody = document.getElementById('master-jadwal-table-body');
     if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (!window.appState.jadwalMaster) {
-        window.appState.jadwalMaster = [];
-    }
-
-    var jadwal = window.appState.jadwalMaster;
-    if (jadwal.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">Belum ada data master jadwal pelajaran.</td></tr>';
-        return;
-    }
-
-    jadwal.forEach(function(j, idx) {
-        var namaKelas = typeof getClassName === 'function' ? getClassName(j.classId) : (j.classId || '-');
-        var tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-            <td class="p-2 text-center text-slate-500 font-bold">${idx + 1}</td>
-            <td class="p-2 font-bold text-slate-800">${namaKelas}</td>
-            <td class="p-2 text-center"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-md text-[10px] font-bold">${j.hari || '-'}</span></td>
-            <td class="p-2 text-center font-semibold text-slate-600">Jam Ke-${j.jamKe || '-'}</td>
-            <td class="p-2 text-slate-700 font-semibold">${j.mapel || '-'}</td>
-            <td class="p-2 text-center space-x-1">
-                <button onclick="openModalJadwal(${idx})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>
-                <button onclick="handleDeleteJadwal(${idx})" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-// Fungsi untuk otomatis menaikkan nomor Jam Ke (Jam 1 -> Jam 2, dst.)
-function incrementJamPelajaran() {
-    var inputJam = document.getElementById('jadwal-jam-input');
-    if (inputJam) {
-        var currentVal = parseInt(inputJam.value) || 1;
-        if (currentVal < 10) {
-            inputJam.value = currentVal + 1;
-        }
-    }
-}
-
-function openModalJadwal(index) {
-    var modal = document.getElementById('modal-jadwal');
-    var title = document.getElementById('modal-jadwal-title');
-    var selectKelas = document.getElementById('jadwal-kelas-input');
-    var selectMapel = document.getElementById('jadwal-mapel-input');
-    var inputHari = document.getElementById('jadwal-hari-input');
-    var inputJam = document.getElementById('jadwal-jam-input');
-    var editIdx = document.getElementById('jadwal-edit-index');
-
-    if (!modal) return;
-
-    // 1. Isi dropdown Kelas dari window.appState.classes
-    selectKelas.innerHTML = '';
-    var classes = window.appState.classes || [];
-    if (classes.length === 0) {
-        selectKelas.innerHTML = '<option value="">-- Belum ada data kelas --</option>';
-    } else {
-        classes.forEach(function(c) {
-            var opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.name || c.nama;
-            selectKelas.appendChild(opt);
-        });
-    }
-
-    // 2. Isi dropdown Mata Pelajaran dari window.appState.subjects
-    selectMapel.innerHTML = '';
-    var subjects = window.appState.subjects || [];
-    if (subjects.length === 0) {
-        selectMapel.innerHTML = '<option value="">-- Belum ada data mapel --</option>';
-    } else {
-// ==========================================================================
-// 7. MANAJEMEN MASTER JADWAL HARIAN (BATCH INPUT PER HARI)
-// ==========================================================================
-function renderMasterJadwal() {
-    var tbody = document.getElementById('master-jadwal-table-body');
-    if (!tbody) return; // Mencegah error jika elemen belum termuat di DOM
     tbody.innerHTML = '';
 
     if (!window.appState.jadwalMaster) {
@@ -899,7 +818,6 @@ function openModalJadwal(index) {
 
     if (!modal) return;
 
-    // 1. Populate dropdown Kelas
     selectKelas.innerHTML = '';
     var classes = window.appState.classes || [];
     if (classes.length === 0) {
@@ -915,7 +833,6 @@ function openModalJadwal(index) {
 
     container.innerHTML = '';
 
-    // 2. Cek apakah ini mode Edit atau Tambah Baru
     if (typeof index === 'number' && index >= 0) {
         if (title) title.textContent = "Edit Jadwal Harian Kelas";
         var targetItem = (window.appState.jadwalMaster || [])[index];
@@ -923,7 +840,6 @@ function openModalJadwal(index) {
             selectKelas.value = targetItem.classId || '';
             selectHari.value = targetItem.hari || 'Senin';
 
-            // Ambil semua jam untuk kelas dan hari tersebut
             var existingForDay = (window.appState.jadwalMaster || []).filter(function(j) {
                 return j.classId === targetItem.classId && j.hari === targetItem.hari;
             });
@@ -939,13 +855,20 @@ function openModalJadwal(index) {
         }
     } else {
         if (title) title.textContent = "Input Jadwal Harian Kelas";
-        // Default berikan 2 baris awal (Jam ke-1 & Jam ke-2)
         addBatchJamSlot(1, '');
         addBatchJamSlot(2, '');
     }
 
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
+}
+
+function closeModalJadwal() {
+    var modal = document.getElementById('modal-jadwal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
 }
 
 function addBatchJamSlot(jamKe, selectedMapel) {
@@ -1025,12 +948,10 @@ function handleSaveBatchJadwal() {
         window.appState.jadwalMaster = [];
     }
 
-    // Hapus data lama untuk kelas dan hari yang sama agar tergantikan dengan input batch terbaru
     window.appState.jadwalMaster = window.appState.jadwalMaster.filter(function(j) {
         return !(j.classId === classId && j.hari === hari);
     });
 
-    // Masukkan baris-baris baru ke window.appState.jadwalMaster
     rows.forEach(function(row, idx) {
         var jamKe = idx + 1;
         var mapelSelect = row.querySelector('.batch-mapel-select');
