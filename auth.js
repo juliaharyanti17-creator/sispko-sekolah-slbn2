@@ -207,7 +207,6 @@ window.populateDropdowns = function() {
         userMapelArr = user.mapelAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
     }
 
-    // Filter ketat kelas berdasarkan hak ampunan guru (kecuali admin/kepsek)
     var allowedClasses = classes.filter(function(c) {
         if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL' || user.kelasAmpuan === '') {
             return true;
@@ -219,7 +218,6 @@ window.populateDropdowns = function() {
         });
     });
 
-    // Filter ketat mapel berdasarkan hak ampunan guru (kecuali admin/kepsek)
     var allowedSubjects = subjects.filter(function(s) {
         if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL' || user.mapelAmpuan === '') {
             return true;
@@ -458,9 +456,18 @@ window.closeModalUser = function(e) {
 
 window.handleSaveUser = function(e) {
     if (e && e.preventDefault) e.preventDefault();
-    var nama = document.getElementById('user-form-nama').value.trim();
-    var pass = document.getElementById('user-form-password').value.trim();
-    var role = document.getElementById('user-form-role').value;
+    var namaInput = document.getElementById('user-form-nama');
+    var passInput = document.getElementById('user-form-password');
+    var roleInput = document.getElementById('user-form-role');
+
+    if (!namaInput || !passInput) {
+        alert("Form input user tidak lengkap.");
+        return;
+    }
+
+    var nama = namaInput.value.trim();
+    var pass = passInput.value.trim();
+    var role = roleInput ? roleInput.value : 'walikelas';
 
     if (!nama || !pass) {
         alert("Nama lengkap dan password wajib diisi!");
