@@ -80,7 +80,6 @@ function renderMasterUsers() {
     renderMasterPaginationControls('user', users.length, page, limit);
 }
 
-// --- FUNGSI TAMBAH BARIS DROPDOWN KELAS AMPUAN ---
 function addUserKelasDropdown(selectedVal = '') {
     var container = document.getElementById('user-kelas-dropdowns-container');
     if (!container) return;
@@ -96,7 +95,7 @@ function addUserKelasDropdown(selectedVal = '') {
     });
 
     var rowDiv = document.createElement('div');
-    rowDiv.className = "flex items-center gap-2 user-kelas-row";
+    rowDiv.className = "flex items-center gap-2 user-kelas-row mb-2";
     rowDiv.innerHTML = `
         <select class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 user-kelas-select">
             ${optionsHtml}
@@ -108,7 +107,6 @@ function addUserKelasDropdown(selectedVal = '') {
     container.appendChild(rowDiv);
 }
 
-// --- FUNGSI TAMBAH BARIS DROPDOWN MAPEL AMPUAN ---
 function addUserMapelDropdown(selectedVal = '') {
     var container = document.getElementById('user-mapel-dropdowns-container');
     if (!container) return;
@@ -124,7 +122,7 @@ function addUserMapelDropdown(selectedVal = '') {
     });
 
     var rowDiv = document.createElement('div');
-    rowDiv.className = "flex items-center gap-2 user-mapel-row";
+    rowDiv.className = "flex items-center gap-2 user-mapel-row mb-2";
     rowDiv.innerHTML = `
         <select class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 user-mapel-select">
             ${optionsHtml}
@@ -136,12 +134,9 @@ function addUserMapelDropdown(selectedVal = '') {
     container.appendChild(rowDiv);
 }
 
-// --- FUNGSI HAPUS BARIS DROPDOWN ---
 function removeUserRow(btn) {
     var row = btn.closest('.user-kelas-row') || btn.closest('.user-mapel-row');
-    if (row) {
-        row.remove();
-    }
+    if (row) row.remove();
 }
 
 function openModalUser(userId) {
@@ -154,7 +149,6 @@ function openModalUser(userId) {
     var editId = document.getElementById('user-edit-id');
     if (!modal) return;
 
-    // Kosongkan container dropdown terlebih dahulu
     var kelasContainer = document.getElementById('user-kelas-dropdowns-container');
     var mapelContainer = document.getElementById('user-mapel-dropdowns-container');
     if (kelasContainer) kelasContainer.innerHTML = '';
@@ -170,7 +164,6 @@ function openModalUser(userId) {
             if (inRole) inRole.value = (u.role || 'walikelas').toLowerCase();
             if (editId) editId.value = u.id || u.username;
 
-            // Render dropdown kelas berdasarkan data yang tersimpan
             if (u.kelasAmpuan && u.kelasAmpuan !== 'ALL') {
                 var arrK = typeof u.kelasAmpuan === 'string' ? u.kelasAmpuan.split(',').map(function(s) { return s.trim(); }) : u.kelasAmpuan;
                 arrK.forEach(function(k) { addUserKelasDropdown(k); });
@@ -178,7 +171,6 @@ function openModalUser(userId) {
                 addUserKelasDropdown();
             }
 
-            // Render dropdown mapel berdasarkan data yang tersimpan
             if (u.mapelAmpuan && u.mapelAmpuan !== 'ALL') {
                 var arrM = typeof u.mapelAmpuan === 'string' ? u.mapelAmpuan.split(',').map(function(s) { return s.trim(); }) : u.mapelAmpuan;
                 arrM.forEach(function(m) { addUserMapelDropdown(m); });
@@ -194,7 +186,6 @@ function openModalUser(userId) {
         if (inRole) inRole.value = 'walikelas';
         if (editId) editId.value = '';
 
-        // Berikan masing-masing 1 baris kosong default
         addUserKelasDropdown();
         addUserMapelDropdown();
     }
@@ -220,7 +211,6 @@ function handleSaveUser(e) {
     var role = document.getElementById('user-role-input').value;
     var editId = document.getElementById('user-edit-id').value;
 
-    // Ambil nilai dari seluruh dropdown kelas dinamis
     var selectedKelas = [];
     document.querySelectorAll('.user-kelas-select').forEach(function(sel) {
         if (sel.value && !selectedKelas.includes(sel.value)) {
@@ -228,7 +218,6 @@ function handleSaveUser(e) {
         }
     });
 
-    // Ambil nilai dari seluruh dropdown mapel dinamis
     var selectedMapel = [];
     document.querySelectorAll('.user-mapel-select').forEach(function(sel) {
         if (sel.value && !selectedMapel.includes(sel.value)) {
@@ -246,7 +235,7 @@ function handleSaveUser(e) {
         if (u) {
             u.nama = nama;
             u.username = username;
-            if (password) u.password = password; // Hanya update password jika diisi
+            if (password) u.password = password;
             u.role = role;
             u.kelasAmpuan = kelasAmpuanStr;
             u.mapelAmpuan = mapelAmpuanStr;
@@ -513,15 +502,13 @@ function handleDeleteKetunaan(index) {
 }
 
 // ==========================================================================
-// 4. MANAJEMEN SISWA / MURID (DENGAN PENCARIAN & PAGINATION)
+// 4. MANAJEMEN SISWA / MURID
 // ==========================================================================
 var masterSiswaSearchKeyword = '';
 
 function handleSearchMasterSiswa(keyword) {
     masterSiswaSearchKeyword = keyword.trim().toLowerCase();
-    if (masterPagination.siswa) {
-        masterPagination.siswa.page = 1;
-    }
+    if (masterPagination.siswa) masterPagination.siswa.page = 1;
     renderMasterSiswa();
 }
 
@@ -1040,9 +1027,7 @@ function reindexBatchSlots() {
     var rows = container.querySelectorAll('.slot-row');
     rows.forEach(function(row, idx) {
         var label = row.querySelector('.jam-label');
-        if (label) {
-            label.textContent = idx + 1;
-        }
+        if (label) label.textContent = idx + 1;
     });
 }
 
