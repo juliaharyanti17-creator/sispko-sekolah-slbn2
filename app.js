@@ -184,3 +184,37 @@ window.toggleUserClassSelect = function() {
         groupMapel.classList.remove('hidden');
     }
 };
+
+// --------------------------------------------------------------------------
+// FUNGSI PENDUKUNG NAVIGASI SUB-MENU & SIDEBAR
+// --------------------------------------------------------------------------
+window.toggleSubMenu = function(submenuId, iconId, tabName, e) {
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+    }
+    var submenu = document.getElementById(submenuId);
+    var icon = document.getElementById(iconId);
+    
+    if (submenu) {
+        submenu.classList.toggle('hidden');
+    }
+    if (icon) {
+        icon.classList.toggle('rotate-180');
+    }
+    if (tabName) {
+        window.switchTab(null, tabName);
+    }
+};
+
+window.scrollToSubSection = function(e, tabName, sectionId) {
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+    }
+    window.switchTab(null, tabName);
+    setTimeout(function() {
+        var target = document.getElementById(sectionId);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 100);
+};
