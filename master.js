@@ -90,13 +90,13 @@ function openModalUser(userId) {
     var editId = document.getElementById('user-edit-id');
     if (!modal) return;
 
-    // 1. Render Checkbox Kelas Ampuan
+    // 1. Render Checkbox Kelas Ampuan Secara Dinamis
     var kelasContainer = document.getElementById('user-form-kelas-checkboxes');
     if (kelasContainer) {
         kelasContainer.innerHTML = '';
         var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
         if (classesList.length === 0) {
-            kelasContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">Belum ada data kelas master.</span>';
+            kelasContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">Belum ada data kelas master. Silakan tambahkan di Master Kelas terlebih dahulu.</span>';
         } else {
             classesList.forEach(function(c) {
                 var cVal = c.id || c.name || c.nama;
@@ -109,13 +109,13 @@ function openModalUser(userId) {
         }
     }
 
-    // 2. Render Checkbox Mapel Ampuan
+    // 2. Render Checkbox Mapel Ampuan Secara Dinamis
     var mapelContainer = document.getElementById('user-form-mapel-checkboxes');
     if (mapelContainer) {
         mapelContainer.innerHTML = '';
         var subjectList = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
         if (subjectList.length === 0) {
-            mapelContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">Belum ada data mata pelajaran.</span>';
+            mapelContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">Belum ada data mata pelajaran. Silakan tambahkan di Master Mapel terlebih dahulu.</span>';
         } else {
             subjectList.forEach(function(m) {
                 var mVal = typeof m === 'string' ? m : (m.id || m.name || m.nama);
@@ -206,7 +206,7 @@ function handleSaveUser(e) {
         if (u) {
             u.nama = nama;
             u.username = username;
-            u.password = password;
+            if (password) u.password = password; // Hanya update password jika diisi
             u.role = role;
             u.kelasAmpuan = kelasAmpuanStr;
             u.mapelAmpuan = mapelAmpuanStr;
@@ -217,7 +217,7 @@ function handleSaveUser(e) {
             id: 'u_' + Date.now(),
             nama: nama,
             username: username,
-            password: password,
+            password: password || '123456',
             role: role,
             kelasAmpuan: kelasAmpuanStr,
             mapelAmpuan: mapelAmpuanStr
