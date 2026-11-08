@@ -1,5 +1,5 @@
 // ==========================================================================
-// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION, FILTER, & AMPUAN)
+// MODUL KELOLA DATA MASTER SEKOLAH (DENGAN PAGINATION & DROPDOWN AMPUAN DINAMIS)
 // SIMPATIK SLBN 2 PELAIHARI
 // ==========================================================================
 
@@ -34,7 +34,7 @@ function changeMasterLimit(type, selectElement) {
 }
 
 // ==========================================================================
-// 1. MANAJEMEN PENGGUNA / GURU (DENGAN CHECKBOX AMPUAN)
+// 1. MANAJEMEN PENGGUNA / GURU (DENGAN DROPDOWN DINAMIS AMPUAN)
 // ==========================================================================
 function renderMasterUsers() {
     var tbody = document.getElementById('master-users-table-body');
@@ -80,6 +80,70 @@ function renderMasterUsers() {
     renderMasterPaginationControls('user', users.length, page, limit);
 }
 
+// --- FUNGSI TAMBAH BARIS DROPDOWN KELAS AMPUAN ---
+function addUserKelasDropdown(selectedVal = '') {
+    var container = document.getElementById('user-kelas-dropdowns-container');
+    if (!container) return;
+
+    var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
+    var optionsHtml = '<option value="">-- Pilih Kelas --</option>';
+    
+    classesList.forEach(function(c) {
+        var cVal = c.id || c.name || c.nama;
+        var cLabel = c.name || c.nama || c.id;
+        var isSelected = (String(cVal) === String(selectedVal)) ? 'selected' : '';
+        optionsHtml += '<option value="' + cVal + '" ' + isSelected + '>' + cLabel + '</option>';
+    });
+
+    var rowDiv = document.createElement('div');
+    rowDiv.className = "flex items-center gap-2 user-kelas-row";
+    rowDiv.innerHTML = `
+        <select class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 user-kelas-select">
+            ${optionsHtml}
+        </select>
+        <button type="button" onclick="removeUserRow(this)" class="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl text-xs transition cursor-pointer" title="Hapus Baris">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(rowDiv);
+}
+
+// --- FUNGSI TAMBAH BARIS DROPDOWN MAPEL AMPUAN ---
+function addUserMapelDropdown(selectedVal = '') {
+    var container = document.getElementById('user-mapel-dropdowns-container');
+    if (!container) return;
+
+    var subjectList = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
+    var optionsHtml = '<option value="">-- Pilih Mata Pelajaran --</option>';
+    
+    subjectList.forEach(function(m) {
+        var mVal = typeof m === 'string' ? m : (m.id || m.name || m.nama);
+        var mLabel = typeof m === 'string' ? m : (m.name || m.nama || m.id);
+        var isSelected = (String(mVal) === String(selectedVal)) ? 'selected' : '';
+        optionsHtml += '<option value="' + mVal + '" ' + isSelected + '>' + mLabel + '</option>';
+    });
+
+    var rowDiv = document.createElement('div');
+    rowDiv.className = "flex items-center gap-2 user-mapel-row";
+    rowDiv.innerHTML = `
+        <select class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 user-mapel-select">
+            ${optionsHtml}
+        </select>
+        <button type="button" onclick="removeUserRow(this)" class="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl text-xs transition cursor-pointer" title="Hapus Baris">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(rowDiv);
+}
+
+// --- FUNGSI HAPUS BARIS DROPDOWN ---
+function removeUserRow(btn) {
+    var row = btn.closest('.user-kelas-row') || btn.closest('.user-mapel-row');
+    if (row) {
+        row.remove();
+    }
+}
+
 function openModalUser(userId) {
     var modal = document.getElementById('modal-user');
     var title = document.getElementById('modal-user-title');
@@ -90,43 +154,11 @@ function openModalUser(userId) {
     var editId = document.getElementById('user-edit-id');
     if (!modal) return;
 
-    // 1. Render Checkbox Kelas Ampuan Secara Dinamis
-    var kelasContainer = document.getElementById('user-form-kelas-checkboxes');
-    if (kelasContainer) {
-        kelasContainer.innerHTML = '';
-        var classesList = (window.appState && window.appState.classes) ? window.appState.classes : [];
-        if (classesList.length === 0) {
-            kelasContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">Belum ada data kelas master. Silakan tambahkan di Master Kelas terlebih dahulu.</span>';
-        } else {
-            classesList.forEach(function(c) {
-                var cVal = c.id || c.name || c.nama;
-                var cLabel = c.name || c.nama || c.id;
-                var lbl = document.createElement('label');
-                lbl.className = 'flex items-center gap-2 font-medium text-slate-700 cursor-pointer text-xs p-1 hover:bg-slate-100 rounded-lg transition';
-                lbl.innerHTML = '<input type="checkbox" name="user_kelas_opt" value="' + cVal + '" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"> <span>' + cLabel + '</span>';
-                kelasContainer.appendChild(lbl);
-            });
-        }
-    }
-
-    // 2. Render Checkbox Mapel Ampuan Secara Dinamis
-    var mapelContainer = document.getElementById('user-form-mapel-checkboxes');
-    if (mapelContainer) {
-        mapelContainer.innerHTML = '';
-        var subjectList = (window.appState && window.appState.subjects) ? window.appState.subjects : [];
-        if (subjectList.length === 0) {
-            mapelContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">Belum ada data mata pelajaran. Silakan tambahkan di Master Mapel terlebih dahulu.</span>';
-        } else {
-            subjectList.forEach(function(m) {
-                var mVal = typeof m === 'string' ? m : (m.id || m.name || m.nama);
-                var mLabel = typeof m === 'string' ? m : (m.name || m.nama || m.id);
-                var lbl = document.createElement('label');
-                lbl.className = 'flex items-center gap-2 font-medium text-slate-700 cursor-pointer text-xs p-1 hover:bg-slate-100 rounded-lg transition';
-                lbl.innerHTML = '<input type="checkbox" name="user_mapel_opt" value="' + mVal + '" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"> <span>' + mLabel + '</span>';
-                mapelContainer.appendChild(lbl);
-            });
-        }
-    }
+    // Kosongkan container dropdown terlebih dahulu
+    var kelasContainer = document.getElementById('user-kelas-dropdowns-container');
+    var mapelContainer = document.getElementById('user-mapel-dropdowns-container');
+    if (kelasContainer) kelasContainer.innerHTML = '';
+    if (mapelContainer) mapelContainer.innerHTML = '';
 
     if (userId) {
         if (title) title.textContent = "Edit Data User / Guru";
@@ -138,20 +170,20 @@ function openModalUser(userId) {
             if (inRole) inRole.value = (u.role || 'walikelas').toLowerCase();
             if (editId) editId.value = u.id || u.username;
 
-            // Centang otomatis checkbox kelas jika ada
+            // Render dropdown kelas berdasarkan data yang tersimpan
             if (u.kelasAmpuan && u.kelasAmpuan !== 'ALL') {
                 var arrK = typeof u.kelasAmpuan === 'string' ? u.kelasAmpuan.split(',').map(function(s) { return s.trim(); }) : u.kelasAmpuan;
-                document.querySelectorAll('input[name="user_kelas_opt"]').forEach(function(cb) {
-                    if (arrK.includes(cb.value)) cb.checked = true;
-                });
+                arrK.forEach(function(k) { addUserKelasDropdown(k); });
+            } else {
+                addUserKelasDropdown();
             }
 
-            // Centang otomatis checkbox mapel jika ada
+            // Render dropdown mapel berdasarkan data yang tersimpan
             if (u.mapelAmpuan && u.mapelAmpuan !== 'ALL') {
                 var arrM = typeof u.mapelAmpuan === 'string' ? u.mapelAmpuan.split(',').map(function(s) { return s.trim(); }) : u.mapelAmpuan;
-                document.querySelectorAll('input[name="user_mapel_opt"]').forEach(function(cb) {
-                    if (arrM.includes(cb.value)) cb.checked = true;
-                });
+                arrM.forEach(function(m) { addUserMapelDropdown(m); });
+            } else {
+                addUserMapelDropdown();
             }
         }
     } else {
@@ -161,6 +193,10 @@ function openModalUser(userId) {
         if (inPass) inPass.value = '';
         if (inRole) inRole.value = 'walikelas';
         if (editId) editId.value = '';
+
+        // Berikan masing-masing 1 baris kosong default
+        addUserKelasDropdown();
+        addUserMapelDropdown();
     }
 
     if (typeof window.toggleUserClassSelect === 'function') {
@@ -184,16 +220,20 @@ function handleSaveUser(e) {
     var role = document.getElementById('user-role-input').value;
     var editId = document.getElementById('user-edit-id').value;
 
-    // Ambil pilihan checkbox kelas ampuan yang dicentang
+    // Ambil nilai dari seluruh dropdown kelas dinamis
     var selectedKelas = [];
-    document.querySelectorAll('input[name="user_kelas_opt"]:checked').forEach(function(cb) {
-        selectedKelas.push(cb.value);
+    document.querySelectorAll('.user-kelas-select').forEach(function(sel) {
+        if (sel.value && !selectedKelas.includes(sel.value)) {
+            selectedKelas.push(sel.value);
+        }
     });
 
-    // Ambil pilihan checkbox mata pelajaran ampuan yang dicentang
+    // Ambil nilai dari seluruh dropdown mapel dinamis
     var selectedMapel = [];
-    document.querySelectorAll('input[name="user_mapel_opt"]:checked').forEach(function(cb) {
-        selectedMapel.push(cb.value);
+    document.querySelectorAll('.user-mapel-select').forEach(function(sel) {
+        if (sel.value && !selectedMapel.includes(sel.value)) {
+            selectedMapel.push(sel.value);
+        }
     });
 
     if (!window.appState.users) window.appState.users = [];
