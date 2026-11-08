@@ -149,7 +149,7 @@ window.refreshCurrentTabUI = function() {
         } else if (window.currentActiveTab === 'jurnal' && typeof renderJurnalTable === 'function') {
             renderJurnalTable();
         } else if (window.currentActiveTab === 'master' && typeof renderAllMasterData === 'function') {
-            renderAllMasterData(); // <--- Pastikan baris ini ada di sini!
+            renderAllMasterData();
         } else if (window.currentActiveTab === 'rekap' && typeof renderRekapModule === 'function') {
             renderRekapModule();
         } else if (window.currentActiveTab === 'evaluasi' && typeof updateEvaluasiDashboard === 'function') {
@@ -159,6 +159,7 @@ window.refreshCurrentTabUI = function() {
         console.error("Gagal memperbarui UI Tab:", err);
     }
 };
+
 window.toggleMobileSidebar = function(e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     var sidebar = document.getElementById('sidebar-nav');
@@ -275,6 +276,7 @@ function renderClassList() {
     });
 }
 
+// DIPERBAIKI: renderUserList disesuaikan untuk membaca properti kelasAmpuan & mapelAmpuan dari master.js
 function renderUserList() {
     var tableBody = document.getElementById('master-users-table-body') || document.getElementById('userTableBody');
     if (!tableBody) return;
@@ -283,24 +285,23 @@ function renderUserList() {
     var users = window.appState.users || [];
 
     if (users.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400">Belum ada data user.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada data user.</td></tr>';
         return;
     }
 
     users.forEach(function(u) {
-        var userKelas = u.classId || u.kelas || '';
-        var namaKelasUser = userKelas.startsWith('c_') && typeof getClassName === 'function' ? getClassName(userKelas) : (userKelas || '-');
+        var uId = u.id || u.username;
+        var ampuanText = "Kelas: " + (u.kelasAmpuan || 'ALL') + " | Mapel: " + (u.mapelAmpuan || 'ALL');
 
         var tr = document.createElement('tr');
         tr.className = "border-b hover:bg-slate-50 text-xs";
         tr.innerHTML = 
-            '<td class="p-2 font-semibold">' + (u.nama || u.username || '-') + '</td>' +
-            '<td class="p-2 text-center uppercase text-[10px] font-bold text-indigo-600">' + (u.role || 'Guru') + '</td>' +
-            '<td class="p-2">' + namaKelasUser + '</td>' +
-            '<td class="p-2 text-center"><span class="text-emerald-500 font-bold text-xs">Aktif</span></td>' +
-            '<td class="p-2 text-center space-x-1">' +
-                '<button onclick="editUser(\'' + (u.id || u.username) + '\')" class="bg-amber-500 text-white px-2 py-1 rounded text-xs hover:bg-amber-600 cursor-pointer">Edit</button>' +
-                '<button onclick="deleteUser(\'' + (u.id || u.username) + '\')" class="bg-rose-500 text-white px-2 py-1 rounded text-xs hover:bg-rose-600 cursor-pointer">Hapus</button>' +
+            '<td class="p-2.5 font-bold text-slate-800">' + (u.nama || u.username) + '<br><span class="text-[10px] text-slate-400 font-normal">Username: ' + u.username + '</span></td>' +
+            '<td class="p-2.5 text-center"><span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-md text-[10px] font-bold">' + (u.role || 'GURU').toUpperCase() + '</span></td>' +
+            '<td class="p-2.5 text-slate-600 text-[11px]">' + ampuanText + '</td>' +
+            '<td class="p-2.5 text-center space-x-1">' +
+                '<button onclick="openModalUser(\'' + uId + '\')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-pen"></i> Edit</button>' +
+                '<button onclick="handleDeleteUser(\'' + uId + '\')" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-trash"></i> Hapus</button>' +
             '</td>';
         tableBody.appendChild(tr);
     });
@@ -347,25 +348,6 @@ window.editClass = function(classId) {
         if (typeof populateDropdowns === 'function') populateDropdowns();
         alert("✓ Nama kelas berhasil diperbarui!");
     }
-};
-
-window.editUser = function(userId) {
-    var users = window.appState.users || [];
-    var targetUser = users.find(function(u) { return (u.id === userId || u.username === userId); });
-    if (!targetUser) return;
-
-    var newNama = prompt("Ubah Nama Guru / Pengguna:", targetUser.nama || targetUser.username || '');
-    if (newNama === null) return;
-
-    var newRole = prompt("Ubah Role (admin / guru / kepsek):", targetUser.role || 'guru');
-    if (newRole === null) return;
-
-    targetUser.nama = newNama.trim();
-    targetUser.role = newRole.trim().toLowerCase();
-
-    if (typeof saveAppState === 'function') saveAppState();
-    renderAllMasterData();
-    alert("✓ Data pengguna/guru berhasil diperbarui!");
 };
 
 window.editStudent = function(studentId) {
