@@ -748,19 +748,19 @@ function togglePasswordVisibility(e) {
                 </select>
             </div>
 
-            <!-- Pilihan Kelas Ampuan (Checkbox Dinamis) -->
+            <!-- Pilihan Kelas Ampuan (Wajib Ada ID Ini Agar Checkbox Muncul) -->
             <div id="group-user-kelas" class="space-y-1.5">
                 <label class="block text-xs font-bold text-slate-700">Pilih Kelas Ampuan</label>
                 <div id="user-form-kelas-checkboxes" class="p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-32 overflow-y-auto space-y-1.5">
-                    <!-- Dimuat dinamis oleh master.js / auth.js -->
+                    <!-- Checkbox kelas akan otomatis ter-render di sini oleh JavaScript -->
                 </div>
             </div>
 
-            <!-- Pilihan Mata Pelajaran Ampuan (Checkbox Dinamis) -->
+            <!-- Pilihan Mata Pelajaran Ampuan (Wajib Ada ID Ini Agar Checkbox Muncul) -->
             <div id="group-user-mapel" class="space-y-1.5">
                 <label class="block text-xs font-bold text-slate-700">Pilih Mata Pelajaran Ampuan</label>
                 <div id="user-form-mapel-checkboxes" class="p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-32 overflow-y-auto space-y-1.5">
-                    <!-- Dimuat dinamis oleh master.js / auth.js -->
+                    <!-- Checkbox mapel akan otomatis ter-render di sini oleh JavaScript -->
                 </div>
             </div>
 
@@ -771,7 +771,8 @@ function togglePasswordVisibility(e) {
         </form>
     </div>
 </div>
-<!-- 2. MODAL TAMBAH/EDIT KELAS -->
+  
+  <!-- 2. MODAL TAMBAH/EDIT KELAS -->
 <div id="modal-kelas" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl border border-slate-100">
         <div class="flex justify-between items-center border-b pb-3">
