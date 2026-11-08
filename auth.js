@@ -190,7 +190,7 @@ function applyRoleAccessControl() {
     }
 }
 
-// --- 4. HELPER DROPDOWN AUTO-FILTER BERDASARKAN AMPUAN ---
+// --- 4. HELPER DROPDOWN AUTO-FILTER OTOMATIS BERDASARKAN AMPUAN (WALI KELAS VS GURU MAPEL) ---
 window.populateDropdowns = function() {
     var user = (window.appState && window.appState.currentUser) ? window.appState.currentUser : { role: 'admin' };
     var role = (user.role || '').toLowerCase();
@@ -207,8 +207,11 @@ window.populateDropdowns = function() {
         userMapelArr = user.mapelAmpuan.split(',').map(function(s) { return s.trim().toLowerCase(); });
     }
 
+    // ATURAN 1: PENYARINGAN KELAS
+    // - Admin, Kepsek, & Guru Mapel (gurumapel): Dapat mengakses SEMUA KELAS (lintas kelas).
+    // - Wali Kelas (walikelas): Hanya dapat mengakses kelas yang menjadi ampuannya saja.
     var allowedClasses = classes.filter(function(c) {
-        if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL' || user.kelasAmpuan === '') {
+        if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || role === 'gurumapel' || role === 'guru mapel' || !user.kelasAmpuan || user.kelasAmpuan === 'ALL') {
             return true;
         }
         var cId = (c.id || '').toLowerCase();
@@ -218,8 +221,11 @@ window.populateDropdowns = function() {
         });
     });
 
+    // ATURAN 2: PENYARINGAN MATA PELAJARAN
+    // - Admin & Kepsek: Dapat mengakses semua mapel.
+    // - Wali Kelas & Guru Mapel: Hanya dapat mengakses mapel yang diampunya saja.
     var allowedSubjects = subjects.filter(function(s) {
-        if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL' || user.mapelAmpuan === '') {
+        if (role === 'admin' || role === 'kepsek' || role === 'kepala sekolah' || !user.mapelAmpuan || user.mapelAmpuan === 'ALL') {
             return true;
         }
         var sId = (s.id || '').toLowerCase();
@@ -229,6 +235,7 @@ window.populateDropdowns = function() {
         });
     });
 
+    // Terapkan pilihan ke elemen dropdown Presensi dan Jurnal
     fillSelectOptions('presensi-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
     fillSelectOptions('presensi-mapel-select', allowedSubjects, '-- Pilih Mapel --', false);
     fillSelectOptions('jurnal-kelas-select', allowedClasses, '-- Pilih Kelas --', false);
@@ -354,10 +361,15 @@ window.renderMasterUsersTable = function() {
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100 text-xs";
         
         var roleBadge = '';
-        if (u.role === 'admin') roleBadge = '<span class="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-rose-200">Admin</span>';
-        else if (u.role === 'kepsek') roleBadge = '<span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-purple-200">Kepsek</span>';
-        else if (u.role === 'walikelas') roleBadge = '<span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-indigo-200">Wali Kelas</span>';
-        else roleBadge = '<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-emerald-200">Guru Mapel</span>';
+        if (u.role === 'admin') {
+            roleBadge = '<span class="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-rose-200"><i class="fa-solid fa-shield-halved mr-1"></i>Admin</span>';
+        } else if (u.role === 'kepsek' || u.role === 'kepala sekolah') {
+            roleBadge = '<span class="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-purple-200"><i class="fa-solid fa-user-tie mr-1"></i>Kepsek</span>';
+        } else if (u.role === 'walikelas') {
+            roleBadge = '<span class="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-blue-200"><i class="fa-solid fa-school mr-1"></i>Wali Kelas</span>';
+        } else {
+            roleBadge = '<span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-emerald-200"><i class="fa-solid fa-book-open mr-1"></i>Guru Mapel</span>';
+        }
 
         var kAmpuan = u.kelasAmpuan || '-';
         var mAmpuan = u.mapelAmpuan || '-';
