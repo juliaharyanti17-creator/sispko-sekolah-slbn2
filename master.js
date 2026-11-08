@@ -811,6 +811,17 @@ function renderMasterJadwal() {
     });
 }
 
+// Fungsi untuk otomatis menaikkan nomor Jam Ke (Jam 1 -> Jam 2, dst.)
+function incrementJamPelajaran() {
+    var inputJam = document.getElementById('jadwal-jam-input');
+    if (inputJam) {
+        var currentVal = parseInt(inputJam.value) || 1;
+        if (currentVal < 10) {
+            inputJam.value = currentVal + 1;
+        }
+    }
+}
+
 function openModalJadwal(index) {
     var modal = document.getElementById('modal-jadwal');
     var title = document.getElementById('modal-jadwal-title');
@@ -822,25 +833,36 @@ function openModalJadwal(index) {
 
     if (!modal) return;
 
-    // Isi opsi dropdown Kelas
+    // 1. Isi dropdown Kelas dari window.appState.classes
     selectKelas.innerHTML = '';
-    (window.appState.classes || []).forEach(function(c) {
-        var opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.name || c.nama;
-        selectKelas.appendChild(opt);
-    });
+    var classes = window.appState.classes || [];
+    if (classes.length === 0) {
+        selectKelas.innerHTML = '<option value="">-- Belum ada data kelas --</option>';
+    } else {
+        classes.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name || c.nama;
+            selectKelas.appendChild(opt);
+        });
+    }
 
-    // Isi opsi dropdown Mata Pelajaran
+    // 2. Isi dropdown Mata Pelajaran dari window.appState.subjects
     selectMapel.innerHTML = '';
-    (window.appState.subjects || []).forEach(function(s) {
-        var mapelNama = typeof s === 'string' ? s : (s.name || s.nama);
-        var opt = document.createElement('option');
-        opt.value = mapelNama;
-        opt.textContent = mapelNama;
-        selectMapel.appendChild(opt);
-    });
+    var subjects = window.appState.subjects || [];
+    if (subjects.length === 0) {
+        selectMapel.innerHTML = '<option value="">-- Belum ada data mapel --</option>';
+    } else {
+        subjects.forEach(function(s) {
+            var mapelNama = typeof s === 'string' ? s : (s.name || s.nama);
+            var opt = document.createElement('option');
+            opt.value = mapelNama;
+            opt.textContent = mapelNama;
+            selectMapel.appendChild(opt);
+        });
+    }
 
+    // 3. Atur mode Edit atau Tambah Baru
     if (typeof index === 'number' && index >= 0) {
         if (title) title.textContent = "Edit Jadwal Pelajaran";
         var item = (window.appState.jadwalMaster || [])[index];
@@ -852,46 +874,13 @@ function openModalJadwal(index) {
             editIdx.value = index;
         }
     } else {
-        if (title) title.textContent = "Tambah Jadwal Pelajaran Baru";
-        inputJam.value = '1';
+        if (title) title.textContent = "Tambah Jadwal Pelajaran";
+        inputJam.value = '1'; // Default mulai dari Jam Ke-1
         editIdx.value = '';
     }
 
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
-}
-
-function closeModalJadwal() {
-    var modal = document.getElementById('modal-jadwal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
-    }
-}
-
-function handleSaveJadwal(e) {
-    if (e) e.preventDefault();
-    var classId = document.getElementById('jadwal-kelas-input').value;
-    var hari = document.getElementById('jadwal-hari-input').value;
-    var jamKe = document.getElementById('jadwal-jam-input').value;
-    var mapel = document.getElementById('jadwal-mapel-input').value;
-    var editIdx = document.getElementById('jadwal-edit-index').value;
-
-    if (!window.appState.jadwalMaster) window.appState.jadwalMaster = [];
-
-    var idx = editIdx !== '' ? parseInt(editIdx) : -1;
-
-    if (idx >= 0) {
-        window.appState.jadwalMaster[idx] = { classId: classId, hari: hari, jamKe: jamKe, mapel: mapel };
-        if (typeof showToast === 'function') showToast("Jadwal berhasil diperbarui.");
-    } else {
-        window.appState.jadwalMaster.push({ classId: classId, hari: hari, jamKe: jamKe, mapel: mapel });
-        if (typeof showToast === 'function') showToast("Jadwal baru berhasil ditambahkan.");
-    }
-
-    if (typeof saveAppState === 'function') saveAppState();
-    closeModalJadwal();
-    renderMasterJadwal();
 }
 
 function handleDeleteJadwal(index) {
