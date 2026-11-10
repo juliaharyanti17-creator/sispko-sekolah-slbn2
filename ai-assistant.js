@@ -148,6 +148,7 @@ function roleBasedInspector(query) {
     }
 
     // 4. Pengecekan Kehadiran / Absensi (Hadir, Sakit, Izin, Alpa)
+        // 4. Pengecekan Kehadiran / Absensi (Hadir, Sakit, Izin, Alpa)
     if (lower.includes('hadir') || lower.includes('sakit') || lower.includes('izin') || lower.includes('alpa') || lower.includes('alpha') || lower.includes('kehadiran') || lower.includes('absensi')) {
         
         var targetStatus = '';
@@ -158,7 +159,7 @@ function roleBasedInspector(query) {
 
         var matchedItems = [];
 
-        // Periksa data dari array 'presensi'
+        // A. Cek dari window.appState.presensi
         if (Array.isArray(presensiList) && presensiList.length > 0) {
             presensiList.forEach(function(p) {
                 var st = (p.status || p.keterangan || '').toLowerCase();
@@ -173,42 +174,54 @@ function roleBasedInspector(query) {
             });
         }
 
-        // Periksa data dari objek 'presensiRecords'
-        if (presensiRecords && typeof presensiRecords === 'object') {
+        // B. Cek dari window.appState.presensiRecords
+        if (presensiRecords && typeof presensiRecords === 'object' && Object.keys(presensiRecords).length > 0) {
             for (var key in presensiRecords) {
                 var recordVal = presensiRecords[key];
-                if (recordVal) {
-                    if (typeof recordVal === 'object') {
-                        for (var subKey in recordVal) {
-                            var item = recordVal[subKey];
-                            var st = (item.status || item.keterangan || '').toLowerCase();
-                            if (!targetStatus || st.includes(targetStatus)) {
-                                var foundS = students.find(function(s) { return s.id == subKey || s.nisn == subKey; });
-                                matchedItems.push({
-                                    nama: foundS ? (foundS.nama || foundS.name) : (item.nama || subKey),
-                                    status: st || 'hadir',
-                                    tanggal: key,
-                                    kelas: '-'
-                                });
-                            }
+                if (recordVal && typeof recordVal === 'object') {
+                    for (var subKey in recordVal) {
+                        var item = recordVal[subKey];
+                        var st = (item.status || item.keterangan || '').toLowerCase();
+                        if (!targetStatus || st.includes(targetStatus)) {
+                            var foundS = students.find(function(s) { return s.id == subKey || s.nisn == subKey; });
+                            matchedItems.push({
+                                nama: foundS ? (foundS.nama || foundS.name) : (item.nama || subKey),
+                                status: st || 'hadir',
+                                tanggal: key,
+                                kelas: '-'
+                            });
                         }
                     }
                 }
             }
         }
 
+        // C. Fallback: Jika data state kosong, hitung estimasi dari status default / data master siswa
+        if (matchedItems.length === 0 && students.length > 0) {
+            students.forEach(function(s) {
+                var st = (s.statusKehadiran || s.status || s.keterangan || 'hadir').toLowerCase();
+                if (!targetStatus || st.includes(targetStatus)) {
+                    matchedItems.push({
+                        nama: s.nama || s.name,
+                        status: st,
+                        tanggal: 'Hari Ini (Master)',
+                        kelas: resolveClassName(s.classId || s.kelas)
+                    });
+                }
+            });
+        }
+
         if (matchedItems.length > 0) {
             var listHtml = matchedItems.map(function(m, idx) {
-                return `${idx + 1}. <strong>${m.nama}</strong> — Status: <span class="uppercase font-semibold text-indigo-600">${m.status}</span> (${m.tanggal})`;
+                return `${idx + 1}. <strong>${m.nama}</strong> — Status: <span class="uppercase font-semibold text-indigo-600">${m.status}</span> (${m.tanggal}, Kelas: ${m.kelas})`;
             }).join('<br>');
 
-            return `Ditemukan <strong>${matchedItems.length} catatan</strong>${targetStatus ? ' dengan status <strong>' + targetStatus.toUpperCase() + '</strong>' : ''}:<br>` +
+            return `Ditemukan <strong>${matchedItems.length} data</strong>${targetStatus ? ' dengan status <strong>' + targetStatus.toUpperCase() + '</strong>' : ''}:<br>` +
                    `<div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${listHtml}</div>`;
         }
 
-        return `⚠️ Belum ada data catatan presensi (${targetStatus ? targetStatus.toUpperCase() : 'Hadir/Izin/Sakit/Alpa'}) yang terekam di dalam <code>window.appState.presensi</code> atau <code>presensiRecords</code> saat ini.`;
+        return `⚠️ Belum ada data catatan presensi yang tersimpan di sistem untuk saat ini.`;
     }
-
     // 5. Ketunaan / Disabilitas Siswa
     var ketunaanKeywords = ['autis', 'netra', 'rungu', 'grahita', 'daksa', 'laras'];
     var matchedKetunaan = ketunaanKeywords.find(function(k) { return lower.includes(k); });
