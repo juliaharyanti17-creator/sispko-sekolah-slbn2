@@ -1,6 +1,6 @@
 // ==========================================================================
-// AI-ASSISTANT.JS - Smart Role-Based Agent & Deep Data Inspector (Enhanced v3)
-// SIMANTAP - SLBN 2 PELAIHARI
+// AI-ASSISTANT.JS - Smart Role-Based Agent & Deep Data Inspector (SIMANTAP v5)
+// SLBN 2 PELAIHARI
 // ==========================================================================
 
 window.toggleAIChatModal = function(e) {
@@ -90,7 +90,7 @@ window.handleSendAIChat = function(e, presetText) {
 };
 
 /**
- * Mesin Inspeksi Berbasis Role & Data Menyeluruh (SIMANTAP)
+ * Mesin Inspeksi Berbasis Role & Deep Data Inspector (SIMANTAP v5)
  */
 function roleBasedInspector(query) {
     var lower = query.toLowerCase();
@@ -102,8 +102,9 @@ function roleBasedInspector(query) {
     var subjects = state.subjects || [];
     var journals = state.journals || [];
     
-    // Ambil data absensi dari berbagai kemungkinan key state
-    var attendances = state.attendances || state.absensi || state.kehadiran || state.dataAbsensi || [];
+    // Tangkap data presensi dari appState (presensi & presensiRecords)
+    var presensiList = state.presensi || [];
+    var presensiRecords = state.presensiRecords || {};
 
     // Helper untuk mendapatkan nama kelas yang aman
     function resolveClassName(cId) {
@@ -119,15 +120,11 @@ function roleBasedInspector(query) {
             return role === 'kepsek' || role === 'kepala sekolah' || (u.jabatan && u.jabatan.toLowerCase().includes('kepala sekolah'));
         });
 
-        if (kepsekList.length === 0) {
-            return "Belum ada user yang diatur dengan role <strong>Kepala Sekolah (Kepsek)</strong> di data master pengguna.";
-        }
-
+        if (kepsekList.length === 0) return "Belum ada user dengan role Kepala Sekolah tercatat.";
         var listNamaKepsek = kepsekList.map(function(u) {
             return `🔹 <strong>${u.nama || u.username}</strong> (Username: <code>${u.username}</code>)`;
         }).join('<br>');
-
-        return `Berdasarkan data sistem SIMANTAP, yang menjabat sebagai <strong>Kepala Sekolah</strong> di SLBN 2 Pelaihari:<br>${listNamaKepsek}`;
+        return `Berdasarkan data sistem SIMANTAP, Kepala Sekolah:<br>${listNamaKepsek}`;
     }
 
     // 2. Administrator / Admin
@@ -135,63 +132,81 @@ function roleBasedInspector(query) {
         var adminList = users.filter(function(u) {
             return (u.role || '').toLowerCase() === 'admin';
         });
-
-        if (adminList.length === 0) return "Tidak ada user dengan role Administrator yang tercatat.";
-        var names = adminList.map(function(u) {
-            return `🔸 <strong>${u.nama || u.username}</strong>`;
-        }).join('<br>');
-        return `Pengguna yang memegang hak akses <strong>Administrator</strong>:<br>${names}`;
+        if (adminList.length === 0) return "Tidak ada user dengan role Administrator.";
+        var names = adminList.map(function(u) { return `🔸 <strong>${u.nama || u.username}</strong>`; }).join('<br>');
+        return `Pengguna Administrator:<br>${names}`;
     }
 
-    // 3. Guru / Wali Kelas & Distribusi Role
+    // 3. Guru / Wali Kelas
     if (lower.includes('guru') || lower.includes('wali kelas') || lower.includes('pengajar') || lower.includes('staff')) {
-        if (users.length === 0) return "Belum ada data user/pengguna terdaftar.";
-
+        if (users.length === 0) return "Belum ada data user terdaftar.";
         var userSummary = users.map(function(u) {
             var roleFormatted = (u.role || 'Guru').toUpperCase();
             return `• <strong>${u.nama || u.username}</strong> <span class="text-xs bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-medium">${roleFormatted}</span>`;
         }).join('<br>');
-
-        return `Daftar seluruh pengguna beserta jabatan/role di sistem (${users.length} akun):<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${userSummary}</div>`;
+        return `Daftar seluruh pengguna (${users.length} akun):<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${userSummary}</div>`;
     }
 
     // 4. Pengecekan Kehadiran / Absensi (Hadir, Sakit, Izin, Alpa)
     if (lower.includes('hadir') || lower.includes('sakit') || lower.includes('izin') || lower.includes('alpa') || lower.includes('alpha') || lower.includes('kehadiran') || lower.includes('absensi')) {
-        if (attendances.length === 0) {
-            // Fallback jika log absensi terpisah kosong, hitung estimasi status dari entri master siswa
-            var statusCount = { hadir: 0, sakit: 0, izin: 0, alpa: 0 };
-            students.forEach(function(s) {
-                var st = (s.statusKehadiran || s.keterangan || s.status || 'hadir').toLowerCase();
-                if (statusCount[st] !== undefined) statusCount[st]++;
-                else statusCount.hadir++;
-            });
-
-            return `📊 <strong>Rekapitulasi Kehadiran Siswa (SIMANTAP):</strong><br>` +
-                   `<div class="grid grid-cols-2 gap-2 mt-2 text-xs">` +
-                   `<div class="p-2 bg-emerald-50 rounded-lg border border-emerald-100">✅ <strong>Hadir:</strong> ${statusCount.hadir} anak</div>` +
-                   `<div class="p-2 bg-blue-50 rounded-lg border border-blue-100">🤒 <strong>Sakit:</strong> ${statusCount.sakit} anak</div>` +
-                   `<div class="p-2 bg-amber-50 rounded-lg border border-amber-100">📋 <strong>Izin:</strong> ${statusCount.izin} anak</div>` +
-                   `<div class="p-2 bg-rose-50 rounded-lg border border-rose-100">❌ <strong>Alpa:</strong> ${statusCount.alpa} anak</div>` +
-                   `</div>`;
-        }
-
-        var targetStatus = 'hadir';
+        
+        var targetStatus = '';
         if (lower.includes('sakit')) targetStatus = 'sakit';
         else if (lower.includes('izin')) targetStatus = 'izin';
         else if (lower.includes('alpa') || lower.includes('alpha')) targetStatus = 'alpa';
+        else if (lower.includes('hadir')) targetStatus = 'hadir';
 
-        var filteredAtt = attendances.filter(function(a) {
-            var st = (a.status || a.keterangan || '').toLowerCase();
-            return st.includes(targetStatus);
-        });
+        var matchedItems = [];
 
-        var listAtt = filteredAtt.map(function(a, idx) {
-            var sName = a.namaSiswa || a.nama || 'Siswa';
-            return `${idx + 1}. <strong>${sName}</strong> — Tanggal: ${a.tanggal || 'Hari ini'} (${a.kelas || '-'})`;
-        }).join('<br>');
+        // Periksa data dari array 'presensi'
+        if (Array.isArray(presensiList) && presensiList.length > 0) {
+            presensiList.forEach(function(p) {
+                var st = (p.status || p.keterangan || '').toLowerCase();
+                if (!targetStatus || st.includes(targetStatus)) {
+                    matchedItems.push({
+                        nama: p.namaSiswa || p.nama || p.studentName || 'Siswa',
+                        status: st || 'hadir',
+                        tanggal: p.tanggal || p.date || 'Hari ini',
+                        kelas: resolveClassName(p.classId || p.kelas)
+                    });
+                }
+            });
+        }
 
-        return `Ditemukan <strong>${filteredAtt.length} siswa</strong> dengan status <strong>${targetStatus.toUpperCase()}</strong>:<br>` +
-               `<div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${listAtt || 'Tidak ada catatan untuk status ini.'}</div>`;
+        // Periksa data dari objek 'presensiRecords'
+        if (presensiRecords && typeof presensiRecords === 'object') {
+            for (var key in presensiRecords) {
+                var recordVal = presensiRecords[key];
+                if (recordVal) {
+                    if (typeof recordVal === 'object') {
+                        for (var subKey in recordVal) {
+                            var item = recordVal[subKey];
+                            var st = (item.status || item.keterangan || '').toLowerCase();
+                            if (!targetStatus || st.includes(targetStatus)) {
+                                var foundS = students.find(function(s) { return s.id == subKey || s.nisn == subKey; });
+                                matchedItems.push({
+                                    nama: foundS ? (foundS.nama || foundS.name) : (item.nama || subKey),
+                                    status: st || 'hadir',
+                                    tanggal: key,
+                                    kelas: '-'
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (matchedItems.length > 0) {
+            var listHtml = matchedItems.map(function(m, idx) {
+                return `${idx + 1}. <strong>${m.nama}</strong> — Status: <span class="uppercase font-semibold text-indigo-600">${m.status}</span> (${m.tanggal})`;
+            }).join('<br>');
+
+            return `Ditemukan <strong>${matchedItems.length} catatan</strong>${targetStatus ? ' dengan status <strong>' + targetStatus.toUpperCase() + '</strong>' : ''}:<br>` +
+                   `<div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${listHtml}</div>`;
+        }
+
+        return `⚠️ Belum ada data catatan presensi (${targetStatus ? targetStatus.toUpperCase() : 'Hadir/Izin/Sakit/Alpa'}) yang terekam di dalam <code>window.appState.presensi</code> atau <code>presensiRecords</code> saat ini.`;
     }
 
     // 5. Ketunaan / Disabilitas Siswa
@@ -200,24 +215,16 @@ function roleBasedInspector(query) {
 
     if (matchedKetunaan || lower.includes('ketunaan') || lower.includes('disabilitas')) {
         if (students.length === 0) return "Belum ada data siswa terdaftar.";
-
-        if (matchedKetunaan) {
-            var filteredStudents = students.filter(function(s) {
-                var ket = (s.ketunaan || s.jenisKetunaan || '').toLowerCase();
-                return ket.includes(matchedKetunaan);
-            });
-
-            if (filteredStudents.length === 0) {
-                return `Tidak ditemukan siswa dengan kategori ketunaan <strong>${matchedKetunaan.toUpperCase()}</strong>.`;
-            }
-
-            var listSiswa = filteredStudents.map(function(s, idx) {
-                var cName = resolveClassName(s.classId || s.kelas);
-                return `${idx + 1}. <strong>${s.nama || s.name}</strong> — Kelas: ${cName} (NISN: ${s.nisn || '-'})`;
-            }).join('<br>');
-
-            return `Ditemukan <strong>${filteredStudents.length} murid</strong> dengan kategori <strong>${matchedKetunaan.toUpperCase()}</strong>:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${listSiswa}</div>`;
-        }
+        var filteredStudents = students.filter(function(s) {
+            var ket = (s.ketunaan || s.jenisKetunaan || s.disabilitas || '').toLowerCase();
+            return ket.includes(matchedKetunaan);
+        });
+        if (filteredStudents.length === 0) return `Tidak ditemukan siswa kategori <strong>${matchedKetunaan.toUpperCase()}</strong>.`;
+        var listSiswa = filteredStudents.map(function(s, idx) {
+            var cName = resolveClassName(s.classId || s.kelas);
+            return `${idx + 1}. <strong>${s.nama || s.name}</strong> — Kelas: ${cName}`;
+        }).join('<br>');
+        return `Ditemukan <strong>${filteredStudents.length} murid</strong> kategori <strong>${matchedKetunaan.toUpperCase()}</strong>:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${listSiswa}</div>`;
     }
 
     // 6. Pencarian Siswa Umum
@@ -232,12 +239,12 @@ function roleBasedInspector(query) {
             if (found.length > 0) {
                 var res = found.map(function(s) {
                     var cName = resolveClassName(s.classId || s.kelas);
-                    return `• <strong>${s.nama || s.name}</strong> (NISN: ${s.nisn || '-'}, Kelas: ${cName}, Ketunaan: ${s.ketunaan || 'Umum'})`;
+                    return `• <strong>${s.nama || s.name}</strong> (NISN: ${s.nisn || '-'}, Kelas: ${cName})`;
                 }).join('<br>');
                 return `Hasil pencarian siswa:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs space-y-1">${res}</div>`;
             }
         }
-        return `Total terdapat <strong>${students.length} murid</strong> terdaftar di dalam ${classes.length} rombongan belajar (kelas) aktif.`;
+        return `Total terdapat <strong>${students.length} murid</strong> terdaftar di dalam ${classes.length} rombongan belajar aktif.`;
     }
 
     // 7. Mata Pelajaran
@@ -252,45 +259,41 @@ function roleBasedInspector(query) {
 
     // 8. Jurnal KBM
     if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar')) {
-        if (journals.length === 0) return "Belum ada laporan jurnal KBM yang tercatat.";
+        if (journals.length === 0) return "Belum ada laporan jurnal KBM.";
         var recent = journals.slice(-5).reverse().map(function(j) {
             return `• <strong>${j.tanggal || 'Hari ini'}</strong> (${j.kelas || '-'} | ${j.mapel || '-'}): ${j.materi || '-'}`;
         }).join('<br>');
-        return `Tercatat total <strong>${journals.length} laporan jurnal KBM</strong>. 5 Aktivitas terbaru:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs space-y-1">${recent}</div>`;
+        return `Total <strong>${journals.length} laporan jurnal KBM</strong>. 5 Terbaru:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs space-y-1">${recent}</div>`;
     }
 
-    // 9. Ringkasan Keseluruhan / Statistik
-    if (lower.includes('rekap') || lower.includes('ringkasan') || lower.includes('statistik') || lower.includes('laporan') || lower.includes('info')) {
+    // 9. Statistik Umum
+    if (lower.includes('rekap') || lower.includes('ringkasan') || lower.includes('statistik') || lower.includes('info')) {
         return `📊 <strong>Ringkasan Eksekutif SIMANTAP SLBN 2 Pelaihari:</strong><br>` +
                `<div class="grid grid-cols-2 gap-2 mt-2 text-xs">` +
-               `<div class="p-2 bg-indigo-50 rounded-lg border border-indigo-100">🏫 <strong>Kelas:</strong> ${classes.length} rombel</div>` +
-               `<div class="p-2 bg-purple-50 rounded-lg border border-purple-100">👨‍🎓 <strong>Siswa:</strong> ${students.length} anak</div>` +
-               `<div class="p-2 bg-emerald-50 rounded-lg border border-emerald-100">👥 <strong>Pengguna:</strong> ${users.length} akun</div>` +
-               `<div class="p-2 bg-amber-50 rounded-lg border border-amber-100">📚 <strong>Jurnal KBM:</strong> ${journals.length} laporan</div>` +
+               `<div class="p-2 bg-indigo-50 rounded-lg border">🏫 <strong>Kelas:</strong> ${classes.length} rombel</div>` +
+               `<div class="p-2 bg-purple-50 rounded-lg border">👨‍🎓 <strong>Siswa:</strong> ${students.length} anak</div>` +
+               `<div class="p-2 bg-emerald-50 rounded-lg border">👥 <strong>Pengguna:</strong> ${users.length} akun</div>` +
+               `<div class="p-2 bg-amber-50 rounded-lg border">📚 <strong>Jurnal KBM:</strong> ${journals.length} laporan</div>` +
                `</div>`;
     }
 
-    // 10. Deep Fallback Universal Search
+    // 10. Deep Fallback Universal
     var matchResults = [];
     students.forEach(function(s) {
         if (JSON.stringify(s).toLowerCase().includes(lower)) matchResults.push(`Siswa: ${s.nama || s.name}`);
     });
-    users.forEach(function(u) {
-        if (JSON.stringify(u).toLowerCase().includes(lower)) matchResults.push(`User: ${u.nama || u.username} (${u.role})`);
-    });
 
     if (matchResults.length > 0) {
-        return `Hasil penelusuran mendalam SIMANTAP:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs">${matchResults.slice(0, 5).join('<br>')}</div>`;
+        return `Hasil penelusuran mendalam:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs">${matchResults.slice(0, 5).join('<br>')}</div>`;
     }
 
-    // 11. Default Suggester dengan Chip Interaktif
-    return `Saya telah memindai seluruh data SIMANTAP (${students.length} siswa, ${users.length} user, ${classes.length} kelas). Namun saya kurang menangkap maksud dari "<em>${escapeHtml(query)}</em>".<br><br>` +
+    // 11. Suggester Default
+    return `Saya telah memindai seluruh data SIMANTAP (${students.length} siswa, ${users.length} user, ${presensiList.length} data presensi). Namun saya kurang menangkap maksud dari "<em>${escapeHtml(query)}</em>".<br><br>` +
            `Coba pilih topik cepat di bawah ini:<br>` +
            `<div class="flex flex-wrap gap-1.5 mt-2">` +
-           `<button onclick="handleSendAIChat(event, 'Berapa siswa yang hadir, sakit, dan alpa?')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">📋 Rekap Kehadiran</button>` +
+           `<button onclick="handleSendAIChat(event, 'Berapa siswa yang izin dan alpa?')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">📋 Siswa Izin & Alpa</button>` +
            `<button onclick="handleSendAIChat(event, 'Tampilkan ringkasan statistik sekolah')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">📊 Statistik Sekolah</button>` +
            `<button onclick="handleSendAIChat(event, 'Siapa kepala sekolah?')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">👤 Kepala Sekolah</button>` +
-           `<button onclick="handleSendAIChat(event, 'Berapa murid autis?')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">🧒 Siswa Autis</button>` +
            `</div>`;
 }
 
