@@ -192,6 +192,50 @@ function roleBasedInspector(query) {
                             });
                         }
                     }
+    // 4. Pengecekan Kehadiran / Absensi (Hadir, Sakit, Izin, Alpa)
+    if (lower.includes('hadir') || lower.includes('sakit') || lower.includes('izin') || lower.includes('alpa') || lower.includes('alpha') || lower.includes('kehadiran') || lower.includes('absensi')) {
+        
+        var targetStatus = '';
+        if (lower.includes('sakit')) targetStatus = 'sakit';
+        else if (lower.includes('izin')) targetStatus = 'izin';
+        else if (lower.includes('alpa') || lower.includes('alpha')) targetStatus = 'alpa';
+        else if (lower.includes('hadir')) targetStatus = 'hadir';
+
+        var matchedItems = [];
+
+        // A. Cek dari window.appState.presensi
+        if (Array.isArray(presensiList) && presensiList.length > 0) {
+            presensiList.forEach(function(p) {
+                var st = (p.status || p.keterangan || '').toLowerCase();
+                if (!targetStatus || st.includes(targetStatus)) {
+                    matchedItems.push({
+                        nama: p.namaSiswa || p.nama || p.studentName || 'Siswa',
+                        status: st || 'hadir',
+                        tanggal: p.tanggal || p.date || 'Hari ini',
+                        kelas: resolveClassName(p.classId || p.kelas)
+                    });
+                }
+            });
+        }
+
+        // B. Cek dari window.appState.presensiRecords
+        if (presensiRecords && typeof presensiRecords === 'object' && Object.keys(presensiRecords).length > 0) {
+            for (var key in presensiRecords) {
+                var recordVal = presensiRecords[key];
+                if (recordVal && typeof recordVal === 'object') {
+                    for (var subKey in recordVal) {
+                        var item = recordVal[subKey];
+                        var st = (item.status || item.keterangan || '').toLowerCase();
+                        if (!targetStatus || st.includes(targetStatus)) {
+                            var foundS = students.find(function(s) { return s.id == subKey || s.nisn == subKey; });
+                            matchedItems.push({
+                                nama: foundS ? (foundS.nama || foundS.name) : (item.nama || subKey),
+                                status: st || 'hadir',
+                                tanggal: key,
+                                kelas: '-'
+                            });
+                        }
+                    }
                 }
             }
         }
