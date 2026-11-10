@@ -1,6 +1,6 @@
 // ==========================================================================
-// AI-ASSISTANT.JS - Smart Role-Based Agent & Deep Data Inspector (Enhanced v2)
-// SIMPATIK SLBN 2 PELAIHARI
+// AI-ASSISTANT.JS - Smart Role-Based Agent & Deep Data Inspector (Enhanced v3)
+// SIMANTAP - SLBN 2 PELAIHARI
 // ==========================================================================
 
 window.toggleAIChatModal = function(e) {
@@ -61,7 +61,7 @@ window.handleSendAIChat = function(e, presetText) {
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Memindai data SIMPATIK secara mendalam...</span>
+            <span>Memindai data SIMANTAP secara mendalam...</span>
         </div>
     `;
     msgContainer.appendChild(typingIndicator);
@@ -90,7 +90,7 @@ window.handleSendAIChat = function(e, presetText) {
 };
 
 /**
- * Mesin Inspeksi Berbasis Role & Data Menyeluruh (Enhanced)
+ * Mesin Inspeksi Berbasis Role & Data Menyeluruh (SIMANTAP)
  */
 function roleBasedInspector(query) {
     var lower = query.toLowerCase();
@@ -101,6 +101,9 @@ function roleBasedInspector(query) {
     var users = state.users || [];
     var subjects = state.subjects || [];
     var journals = state.journals || [];
+    
+    // Ambil data absensi dari berbagai kemungkinan key state
+    var attendances = state.attendances || state.absensi || state.kehadiran || state.dataAbsensi || [];
 
     // Helper untuk mendapatkan nama kelas yang aman
     function resolveClassName(cId) {
@@ -124,7 +127,7 @@ function roleBasedInspector(query) {
             return `🔹 <strong>${u.nama || u.username}</strong> (Username: <code>${u.username}</code>)`;
         }).join('<br>');
 
-        return `Berdasarkan data sistem, yang menjabat sebagai <strong>Kepala Sekolah</strong> di SLBN 2 Pelaihari:<br>${listNamaKepsek}`;
+        return `Berdasarkan data sistem SIMANTAP, yang menjabat sebagai <strong>Kepala Sekolah</strong> di SLBN 2 Pelaihari:<br>${listNamaKepsek}`;
     }
 
     // 2. Administrator / Admin
@@ -152,7 +155,46 @@ function roleBasedInspector(query) {
         return `Daftar seluruh pengguna beserta jabatan/role di sistem (${users.length} akun):<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${userSummary}</div>`;
     }
 
-    // 4. Ketunaan / Disabilitas Siswa
+    // 4. Pengecekan Kehadiran / Absensi (Hadir, Sakit, Izin, Alpa)
+    if (lower.includes('hadir') || lower.includes('sakit') || lower.includes('izin') || lower.includes('alpa') || lower.includes('alpha') || lower.includes('kehadiran') || lower.includes('absensi')) {
+        if (attendances.length === 0) {
+            // Fallback jika log absensi terpisah kosong, hitung estimasi status dari entri master siswa
+            var statusCount = { hadir: 0, sakit: 0, izin: 0, alpa: 0 };
+            students.forEach(function(s) {
+                var st = (s.statusKehadiran || s.keterangan || s.status || 'hadir').toLowerCase();
+                if (statusCount[st] !== undefined) statusCount[st]++;
+                else statusCount.hadir++;
+            });
+
+            return `📊 <strong>Rekapitulasi Kehadiran Siswa (SIMANTAP):</strong><br>` +
+                   `<div class="grid grid-cols-2 gap-2 mt-2 text-xs">` +
+                   `<div class="p-2 bg-emerald-50 rounded-lg border border-emerald-100">✅ <strong>Hadir:</strong> ${statusCount.hadir} anak</div>` +
+                   `<div class="p-2 bg-blue-50 rounded-lg border border-blue-100">🤒 <strong>Sakit:</strong> ${statusCount.sakit} anak</div>` +
+                   `<div class="p-2 bg-amber-50 rounded-lg border border-amber-100">📋 <strong>Izin:</strong> ${statusCount.izin} anak</div>` +
+                   `<div class="p-2 bg-rose-50 rounded-lg border border-rose-100">❌ <strong>Alpa:</strong> ${statusCount.alpa} anak</div>` +
+                   `</div>`;
+        }
+
+        var targetStatus = 'hadir';
+        if (lower.includes('sakit')) targetStatus = 'sakit';
+        else if (lower.includes('izin')) targetStatus = 'izin';
+        else if (lower.includes('alpa') || lower.includes('alpha')) targetStatus = 'alpa';
+
+        var filteredAtt = attendances.filter(function(a) {
+            var st = (a.status || a.keterangan || '').toLowerCase();
+            return st.includes(targetStatus);
+        });
+
+        var listAtt = filteredAtt.map(function(a, idx) {
+            var sName = a.namaSiswa || a.nama || 'Siswa';
+            return `${idx + 1}. <strong>${sName}</strong> — Tanggal: ${a.tanggal || 'Hari ini'} (${a.kelas || '-'})`;
+        }).join('<br>');
+
+        return `Ditemukan <strong>${filteredAtt.length} siswa</strong> dengan status <strong>${targetStatus.toUpperCase()}</strong>:<br>` +
+               `<div class="p-2.5 bg-slate-50 rounded-xl border mt-1 space-y-1 text-xs max-h-48 overflow-y-auto">${listAtt || 'Tidak ada catatan untuk status ini.'}</div>`;
+    }
+
+    // 5. Ketunaan / Disabilitas Siswa
     var ketunaanKeywords = ['autis', 'netra', 'rungu', 'grahita', 'daksa', 'laras'];
     var matchedKetunaan = ketunaanKeywords.find(function(k) { return lower.includes(k); });
 
@@ -178,7 +220,7 @@ function roleBasedInspector(query) {
         }
     }
 
-    // 5. Pencarian Siswa Umum
+    // 6. Pencarian Siswa Umum
     if (lower.includes('siswa') || lower.includes('murid') || lower.includes('anak') || lower.includes('cari')) {
         var keyword = lower.replace(/cari|siswa|murid|nama|tentang/g, '').trim();
         if (keyword && keyword.length > 1) {
@@ -198,7 +240,7 @@ function roleBasedInspector(query) {
         return `Total terdapat <strong>${students.length} murid</strong> terdaftar di dalam ${classes.length} rombongan belajar (kelas) aktif.`;
     }
 
-    // 6. Mata Pelajaran
+    // 7. Mata Pelajaran
     if (lower.includes('mata pelajaran') || lower.includes('mapel') || lower.includes('pelajaran')) {
         if (subjects.length === 0) return "Belum ada mata pelajaran terdaftar.";
         var mapelList = subjects.map(function(s, i) {
@@ -208,7 +250,7 @@ function roleBasedInspector(query) {
         return `Daftar Mata Pelajaran Aktif:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs max-h-40 overflow-y-auto">${mapelList}</div>`;
     }
 
-    // 7. Jurnal KBM
+    // 8. Jurnal KBM
     if (lower.includes('jurnal') || lower.includes('kbm') || lower.includes('mengajar')) {
         if (journals.length === 0) return "Belum ada laporan jurnal KBM yang tercatat.";
         var recent = journals.slice(-5).reverse().map(function(j) {
@@ -217,9 +259,9 @@ function roleBasedInspector(query) {
         return `Tercatat total <strong>${journals.length} laporan jurnal KBM</strong>. 5 Aktivitas terbaru:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs space-y-1">${recent}</div>`;
     }
 
-    // 8. Ringkasan Keseluruhan / Statistik
+    // 9. Ringkasan Keseluruhan / Statistik
     if (lower.includes('rekap') || lower.includes('ringkasan') || lower.includes('statistik') || lower.includes('laporan') || lower.includes('info')) {
-        return `📊 <strong>Ringkasan Eksekutif SIMPATIK SLBN 2 Pelaihari:</strong><br>` +
+        return `📊 <strong>Ringkasan Eksekutif SIMANTAP SLBN 2 Pelaihari:</strong><br>` +
                `<div class="grid grid-cols-2 gap-2 mt-2 text-xs">` +
                `<div class="p-2 bg-indigo-50 rounded-lg border border-indigo-100">🏫 <strong>Kelas:</strong> ${classes.length} rombel</div>` +
                `<div class="p-2 bg-purple-50 rounded-lg border border-purple-100">👨‍🎓 <strong>Siswa:</strong> ${students.length} anak</div>` +
@@ -228,7 +270,7 @@ function roleBasedInspector(query) {
                `</div>`;
     }
 
-    // 9. Deep Fallback Universal Search
+    // 10. Deep Fallback Universal Search
     var matchResults = [];
     students.forEach(function(s) {
         if (JSON.stringify(s).toLowerCase().includes(lower)) matchResults.push(`Siswa: ${s.nama || s.name}`);
@@ -238,17 +280,17 @@ function roleBasedInspector(query) {
     });
 
     if (matchResults.length > 0) {
-        return `Hasil penelusuran mendalam:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs">${matchResults.slice(0, 5).join('<br>')}</div>`;
+        return `Hasil penelusuran mendalam SIMANTAP:<br><div class="p-2.5 bg-slate-50 rounded-xl border mt-1 text-xs">${matchResults.slice(0, 5).join('<br>')}</div>`;
     }
 
-    // 10. Default Suggester dengan Chip Interaktif
-    return `Saya telah memindai seluruh data SIMPATIK (${students.length} siswa, ${users.length} user, ${classes.length} kelas). Namun saya kurang menangkap maksud dari "<em>${escapeHtml(query)}</em>".<br><br>` +
+    // 11. Default Suggester dengan Chip Interaktif
+    return `Saya telah memindai seluruh data SIMANTAP (${students.length} siswa, ${users.length} user, ${classes.length} kelas). Namun saya kurang menangkap maksud dari "<em>${escapeHtml(query)}</em>".<br><br>` +
            `Coba pilih topik cepat di bawah ini:<br>` +
            `<div class="flex flex-wrap gap-1.5 mt-2">` +
+           `<button onclick="handleSendAIChat(event, 'Berapa siswa yang hadir, sakit, dan alpa?')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">📋 Rekap Kehadiran</button>` +
            `<button onclick="handleSendAIChat(event, 'Tampilkan ringkasan statistik sekolah')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">📊 Statistik Sekolah</button>` +
            `<button onclick="handleSendAIChat(event, 'Siapa kepala sekolah?')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">👤 Kepala Sekolah</button>` +
            `<button onclick="handleSendAIChat(event, 'Berapa murid autis?')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">🧒 Siswa Autis</button>` +
-           `<button onclick="handleSendAIChat(event, 'Siapa saja guru yang bertugas?')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-200 transition">👩‍🏫 Daftar Guru</button>` +
            `</div>`;
 }
 
