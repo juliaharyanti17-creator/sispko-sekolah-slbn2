@@ -1,5 +1,5 @@
 // ==========================================================================
-// AI-ASSISTANT.JS - Smart Role-Based Agent & Deep Data Inspector (SIMANTAP v5)
+// AI-ASSISTANT.JS - Smart Role-Based Agent & Deep Data Inspector (SIMANTAP v6)
 // SLBN 2 PELAIHARI
 // ==========================================================================
 
@@ -90,7 +90,7 @@ window.handleSendAIChat = function(e, presetText) {
 };
 
 /**
- * Mesin Inspeksi Berbasis Role & Deep Data Inspector (SIMANTAP v5)
+ * Mesin Inspeksi Berbasis Role & Deep Data Inspector (SIMANTAP v6)
  */
 function roleBasedInspector(query) {
     var lower = query.toLowerCase();
@@ -102,7 +102,7 @@ function roleBasedInspector(query) {
     var subjects = state.subjects || [];
     var journals = state.journals || [];
     
-    // Tangkap data presensi dari appState (presensi & presensiRecords)
+    // Tangkap data presensi dari appState (presensi & presensiRecords)[span_2](start_span)[span_2](end_span)
     var presensiList = state.presensi || [];
     var presensiRecords = state.presensiRecords || {};
 
@@ -148,7 +148,6 @@ function roleBasedInspector(query) {
     }
 
     // 4. Pengecekan Kehadiran / Absensi (Hadir, Sakit, Izin, Alpa)
-        // 4. Pengecekan Kehadiran / Absensi (Hadir, Sakit, Izin, Alpa)
     if (lower.includes('hadir') || lower.includes('sakit') || lower.includes('izin') || lower.includes('alpa') || lower.includes('alpha') || lower.includes('kehadiran') || lower.includes('absensi')) {
         
         var targetStatus = '';
@@ -159,7 +158,7 @@ function roleBasedInspector(query) {
 
         var matchedItems = [];
 
-        // A. Cek dari window.appState.presensi
+        // A. Cek dari window.appState.presensi[span_3](start_span)[span_3](end_span)
         if (Array.isArray(presensiList) && presensiList.length > 0) {
             presensiList.forEach(function(p) {
                 var st = (p.status || p.keterangan || '').toLowerCase();
@@ -174,51 +173,7 @@ function roleBasedInspector(query) {
             });
         }
 
-        // B. Cek dari window.appState.presensiRecords
-        if (presensiRecords && typeof presensiRecords === 'object' && Object.keys(presensiRecords).length > 0) {
-            for (var key in presensiRecords) {
-                var recordVal = presensiRecords[key];
-                if (recordVal && typeof recordVal === 'object') {
-                    for (var subKey in recordVal) {
-                        var item = recordVal[subKey];
-                        var st = (item.status || item.keterangan || '').toLowerCase();
-                        if (!targetStatus || st.includes(targetStatus)) {
-                            var foundS = students.find(function(s) { return s.id == subKey || s.nisn == subKey; });
-                            matchedItems.push({
-                                nama: foundS ? (foundS.nama || foundS.name) : (item.nama || subKey),
-                                status: st || 'hadir',
-                                tanggal: key,
-                                kelas: '-'
-                            });
-                        }
-                    }
-    // 4. Pengecekan Kehadiran / Absensi (Hadir, Sakit, Izin, Alpa)
-    if (lower.includes('hadir') || lower.includes('sakit') || lower.includes('izin') || lower.includes('alpa') || lower.includes('alpha') || lower.includes('kehadiran') || lower.includes('absensi')) {
-        
-        var targetStatus = '';
-        if (lower.includes('sakit')) targetStatus = 'sakit';
-        else if (lower.includes('izin')) targetStatus = 'izin';
-        else if (lower.includes('alpa') || lower.includes('alpha')) targetStatus = 'alpa';
-        else if (lower.includes('hadir')) targetStatus = 'hadir';
-
-        var matchedItems = [];
-
-        // A. Cek dari window.appState.presensi
-        if (Array.isArray(presensiList) && presensiList.length > 0) {
-            presensiList.forEach(function(p) {
-                var st = (p.status || p.keterangan || '').toLowerCase();
-                if (!targetStatus || st.includes(targetStatus)) {
-                    matchedItems.push({
-                        nama: p.namaSiswa || p.nama || p.studentName || 'Siswa',
-                        status: st || 'hadir',
-                        tanggal: p.tanggal || p.date || 'Hari ini',
-                        kelas: resolveClassName(p.classId || p.kelas)
-                    });
-                }
-            });
-        }
-
-        // B. Cek dari window.appState.presensiRecords
+        // B. Cek dari window.appState.presensiRecords[span_4](start_span)[span_4](end_span)
         if (presensiRecords && typeof presensiRecords === 'object' && Object.keys(presensiRecords).length > 0) {
             for (var key in presensiRecords) {
                 var recordVal = presensiRecords[key];
@@ -240,7 +195,7 @@ function roleBasedInspector(query) {
             }
         }
 
-        // C. Fallback: Jika data state kosong, hitung estimasi dari status default / data master siswa
+        // C. Fallback: Jika log presensi kosong, hitung dari data master siswa
         if (matchedItems.length === 0 && students.length > 0) {
             students.forEach(function(s) {
                 var st = (s.statusKehadiran || s.status || s.keterangan || 'hadir').toLowerCase();
@@ -248,7 +203,7 @@ function roleBasedInspector(query) {
                     matchedItems.push({
                         nama: s.nama || s.name,
                         status: st,
-                        tanggal: 'Hari Ini (Master)',
+                        tanggal: 'Master Siswa',
                         kelas: resolveClassName(s.classId || s.kelas)
                     });
                 }
@@ -266,6 +221,7 @@ function roleBasedInspector(query) {
 
         return `⚠️ Belum ada data catatan presensi yang tersimpan di sistem untuk saat ini.`;
     }
+
     // 5. Ketunaan / Disabilitas Siswa
     var ketunaanKeywords = ['autis', 'netra', 'rungu', 'grahita', 'daksa', 'laras'];
     var matchedKetunaan = ketunaanKeywords.find(function(k) { return lower.includes(k); });
