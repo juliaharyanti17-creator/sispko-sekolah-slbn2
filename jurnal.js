@@ -122,7 +122,7 @@ async function handleSaveJurnal(e) {
     var lampiranUrl = '';
     var namaFile = '';
     
-    // Validasi & Pemrosesan File PDF (Maksimal 2MB agar tidak membebani database/storage lokal)
+    // Validasi & Pemrosesan File PDF (Maksimal 2MB)
     if (filePdfInput && filePdfInput.files && filePdfInput.files[0]) {
         var file = filePdfInput.files[0];
         if (file.size > 2 * 1024 * 1024) {
@@ -186,12 +186,14 @@ function handleDeleteJurnal(index) {
     if (typeof showToast === 'function') showToast("Jurnal berhasil dihapus.");
 }
 
+// BUKA MODAL SUPERVISI KEPSEK (Diberikan fallback pencarian elemen ID)
 function openModalSupervisi(index) {
+    if (!appState.journals || !appState.journals[index]) return;
     var j = appState.journals[index];
-    if (!j) return;
 
-    document.getElementById('supervisi-jurnal-id').value = index;
-    
+    var idEl = document.getElementById('supervisi-jurnal-id');
+    if (idEl) idEl.value = index;
+
     var infoBox = document.getElementById('supervisi-target-info');
     if (infoBox) {
         infoBox.innerHTML = 
@@ -200,14 +202,16 @@ function openModalSupervisi(index) {
             '<div><strong>Materi:</strong> ' + (j.materi || '-') + '</div>';
     }
 
-    var mediaEl = document.getElementById('supervisi-aspek-media');
-    var catatanEl = document.getElementById('supervisi-catatan-kepsek');
+    // Pencarian fleksibel untuk ID status/aspek
+    var mediaEl = document.getElementById('supervisi-aspek-media') || document.getElementById('supervisi-status');
+    // Pencarian fleksibel untuk ID catatan
+    var catatanEl = document.getElementById('supervisi-catatan-kepsek') || document.getElementById('supervisi-catatan');
 
     if (j.supervisi) {
-        if (mediaEl) mediaEl.value = j.supervisi.penilaianMedia || 'Sangat Baik';
+        if (mediaEl) mediaEl.value = j.supervisi.penilaianMedia || 'Disetujui';
         if (catatanEl) catatanEl.value = j.supervisi.catatanKepsek || '';
     } else {
-        if (mediaEl) mediaEl.value = 'Sangat Baik';
+        if (mediaEl) mediaEl.value = 'Disetujui';
         if (catatanEl) catatanEl.value = '';
     }
 
@@ -218,7 +222,8 @@ function openModalSupervisi(index) {
     }
 }
 
-function closeModalSupervisi() {
+function closeModalSupervisi(e) {
+    if (e) e.preventDefault();
     var modal = document.getElementById('modal-supervisi');
     if (modal) {
         modal.classList.add('hidden');
@@ -226,21 +231,30 @@ function closeModalSupervisi() {
     }
 }
 
+// SIMPAN SUPERVISI KEPSEK
 function handleSaveSupervisi(e) {
     if (e) e.preventDefault();
 
     var idField = document.getElementById('supervisi-jurnal-id');
-    if (!idField) return;
+    if (!idField || idField.value === '') return;
 
     var index = parseInt(idField.value);
-    var penilaianMedia = document.getElementById('supervisi-aspek-media')?.value || 'Sangat Baik';
-    var catatanKepsek = document.getElementById('supervisi-catatan-kepsek')?.value.trim() || '';
+    if (isNaN(index) || !appState.journals || !appState.journals[index]) return;
 
-    if (!appState.journals[index]) return;
+    var mediaEl = document.getElementById('supervisi-aspek-media') || document.getElementById('supervisi-status');
+    var catatanEl = document.getElementById('supervisi-catatan-kepsek') || document.getElementById('supervisi-catatan');
+
+    var penilaianMedia = mediaEl ? mediaEl.value : 'Disetujui';
+    var catatanKepsek = catatanEl ? catatanEl.value.trim() : '';
+
+    var currentEvaluator = "Maisyanti Disi Fatimah, S.Pd.I., M.Pd";
+    if (appState.currentUser && appState.currentUser.nama) {
+        currentEvaluator = appState.currentUser.nama;
+    }
 
     appState.journals[index].supervisi = {
         tanggalSupervisi: new Date().toISOString().split('T')[0],
-        evaluator: "Maisyanti Disi Fatimah, S.Pd.I., M.Pd",
+        evaluator: currentEvaluator,
         penilaianMedia: penilaianMedia,
         catatanKepsek: catatanKepsek
     };
@@ -255,16 +269,17 @@ function handleSaveSupervisi(e) {
 }
 
 function showHasilSupervisi(index) {
+    if (!appState.journals || !appState.journals[index]) return;
     var j = appState.journals[index];
     if (!j || !j.supervisi) return;
 
     var sup = j.supervisi;
     alert(
         "--- HASIL SUPERVISI AKADEMIK ---\n" +
-        "Evaluator: " + sup.evaluator + "\n" +
-        "Tanggal: " + sup.tanggalSupervisi + "\n" +
-        "Penilaian Media: " + sup.penilaianMedia + "\n\n" +
-        "Catatan Pembinaan Ibu Kepsek:\n\"" + sup.catatanKepsek + "\""
+        "Evaluator: " + (sup.evaluator || 'Kepala Sekolah') + "\n" +
+        "Tanggal: " + (sup.tanggalSupervisi || '-') + "\n" +
+        "Status/Penilaian: " + (sup.penilaianMedia || '-') + "\n\n" +
+        "Catatan Pembinaan:\n\"" + (sup.catatanKepsek || 'Tidak ada catatan.') + "\""
     );
 }
 
