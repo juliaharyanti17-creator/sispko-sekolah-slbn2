@@ -146,7 +146,6 @@ function saveSessionAndEnterApp(userObj) {
     if (typeof renderPresensiForm === 'function') renderPresensiForm();
     if (typeof showToast === 'function') showToast("Selamat datang, " + (userObj.nama || userObj.username) + "!");
 }
-
 // --- 3. LOGIKA HAK AKSES ROLE MENU (RBAC FINAL) ---
 function applyRoleAccessControl() {
     var currentUser = window.appState && window.appState.currentUser ? window.appState.currentUser : null;
@@ -168,6 +167,7 @@ function applyRoleAccessControl() {
         target.style.display = isVisible ? '' : 'none';
     }
 
+    // Default: Tampilkan semua
     setVisibility(btnPresensi, true);
     setVisibility(btnJurnal, true);
     setVisibility(btnRekap, true);
@@ -176,17 +176,31 @@ function applyRoleAccessControl() {
     if (btnAiAssistant) btnAiAssistant.style.display = '';
 
     if (role === 'admin') {
+        // Admin: Akses All Menu
         return;
     } 
     else if (role === 'kepsek' || role === 'kepala sekolah') {
+        // Kepsek: Hanya tab Evaluasi Kepsek dan Rekap Laporan
         setVisibility(btnPresensi, false);
         setVisibility(btnJurnal, false);
         setVisibility(btnMaster, false);
+        
+        // Auto switch tab default ke evaluasi jika login sebagai kepsek
+        if (typeof window.switchTab === 'function') {
+            window.switchTab(null, 'evaluasi');
+        }
     } 
     else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
+        // Guru Wali Kelas & Guru Mapel: Hanya Presensi Murid dan Jurnal & Supervisi
+        setVisibility(btnRekap, false);
         setVisibility(btnEvaluasi, false);
         setVisibility(btnMaster, false);
         if (btnAiAssistant) btnAiAssistant.style.display = 'none';
+
+        // Auto switch tab default ke presensi jika login sebagai guru
+        if (typeof window.switchTab === 'function') {
+            window.switchTab(null, 'presensi');
+        }
     }
 }
 
