@@ -176,7 +176,7 @@ function applyRoleAccessControl() {
     if (btnAiAssistant) btnAiAssistant.style.display = '';
 
     if (role === 'admin') {
-        // Admin: Akses All Menu
+        // Admin: Akses Semua Tab tanpa melakukan auto-switch tab yang memicu rekursi
         return;
     } 
     else if (role === 'kepsek' || role === 'kepala sekolah') {
@@ -184,11 +184,6 @@ function applyRoleAccessControl() {
         setVisibility(btnPresensi, false);
         setVisibility(btnJurnal, false);
         setVisibility(btnMaster, false);
-        
-        // Auto switch tab default ke evaluasi jika login sebagai kepsek
-        if (typeof window.switchTab === 'function') {
-            window.switchTab(null, 'evaluasi');
-        }
     } 
     else if (role === 'walikelas' || role === 'gurumapel' || role === 'guru' || role === 'guru mapel') {
         // Guru Wali Kelas & Guru Mapel: Hanya Presensi Murid dan Jurnal & Supervisi
@@ -196,11 +191,6 @@ function applyRoleAccessControl() {
         setVisibility(btnEvaluasi, false);
         setVisibility(btnMaster, false);
         if (btnAiAssistant) btnAiAssistant.style.display = 'none';
-
-        // Auto switch tab default ke presensi jika login sebagai guru
-        if (typeof window.switchTab === 'function') {
-            window.switchTab(null, 'presensi');
-        }
     }
 }
 
