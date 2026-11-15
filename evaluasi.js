@@ -236,15 +236,41 @@ function renderEvaluasiSupervisiDashboard() {
     reversedJournals.forEach(function(j) {
         var realIndex = journals.indexOf(j);
         var card = document.createElement('div');
-        card.className = "bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs";
+        card.className = "bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 text-xs";
 
         var statusBadge = j.supervisi 
             ? '<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full text-[10px]"><i class="fa-solid fa-check-circle mr-1"></i>Sudah Disupervisi</span>' 
             : '<span class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold rounded-full text-[10px]"><i class="fa-solid fa-clock mr-1"></i>Belum Disupervisi</span>';
 
         var catatanSup = j.supervisi && j.supervisi.catatanKepsek 
-            ? '<div class="mt-2 p-2.5 bg-white border border-emerald-200 rounded-xl text-emerald-900 font-medium"><strong>Catatan & Ulasan Kepsek:</strong> "' + j.supervisi.catatanKepsek + '"</div>' 
+            ? '<div class="p-2.5 bg-white border border-emerald-200 rounded-xl text-emerald-900 font-medium"><strong>Catatan & Ulasan Kepsek:</strong> "' + j.supervisi.catatanKepsek + '"</div>' 
             : '';
+
+        // --- RENDER BUKTI DUKUNG / LAMPIRAN ---
+        var buktiDukungHtml = '';
+        var hasLampiran = false;
+        var lampiranContent = '<div class="flex flex-wrap items-center gap-2 pt-1">';
+
+        var filePdfVal = j.filePdf || j.pdfUrl || j.lampiran || j.file;
+        if (filePdfVal) {
+            hasLampiran = true;
+            lampiranContent += '<a href="' + filePdfVal + '" target="_blank" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold transition inline-flex items-center gap-1.5 border border-rose-200"><i class="fa-solid fa-file-pdf text-rose-500"></i> Lihat Lampiran PDF</a>';
+        }
+
+        var linkVideoVal = j.linkVideo || j.videoUrl || j.urlVideo;
+        if (linkVideoVal) {
+            hasLampiran = true;
+            lampiranContent += '<a href="' + linkVideoVal + '" target="_blank" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl font-bold transition inline-flex items-center gap-1.5 border border-emerald-200"><i class="fa-brands fa-google-drive text-emerald-600"></i> Buka Link Video</a>';
+        }
+
+        lampiranContent += '</div>';
+
+        if (hasLampiran) {
+            buktiDukungHtml = '<div class="bg-white p-3 rounded-xl border border-slate-200 space-y-1"><span class="font-bold text-slate-600 text-[11px] uppercase tracking-wider block"><i class="fa-solid fa-paperclip text-indigo-600 mr-1"></i> Bukti Dukung / Lampiran Guru:</span>' + lampiranContent + '</div>';
+        } else {
+            buktiDukungHtml = '<div class="text-[11px] text-slate-400 italic"><i class="fa-solid fa-circle-info mr-1"></i> Tidak ada lampiran bukti dukung pada jurnal ini.</div>';
+        }
+        // -------------------------------------
 
         var btnSupervisiKepsek = '';
         var currentUserRole = window.appState && window.appState.currentUser ? (window.appState.currentUser.role || '').toLowerCase() : '';
@@ -268,9 +294,14 @@ function renderEvaluasiSupervisiDashboard() {
                 </div>
                 ${statusBadge}
             </div>
-            <p class="text-slate-700 bg-white p-2.5 rounded-xl border border-slate-100">${j.materi || '-'}</p>
+            <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-1">
+                <span class="font-bold text-slate-600 text-[11px] uppercase tracking-wider block"><i class="fa-solid fa-book-open text-indigo-600 mr-1"></i> Ringkasan Materi KBM:</span>
+                <p class="text-slate-700 leading-relaxed">${j.materi || '-'}</p>
+            </div>
+            ${buktiDukungHtml}
             ${catatanSup}
-            <div class="pt-2 flex justify-end">
+            <div class="pt-2 flex justify-between items-center">
+                <span class="text-[10px] text-slate-400 font-semibold">ID Jurnal: #${realIndex + 1}</span>
                 ${btnSupervisiKepsek}
             </div>
         `;
