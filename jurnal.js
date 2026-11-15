@@ -53,7 +53,7 @@ function renderJurnalList() {
             if (p.length === 3) tglFormatted = p[2] + '/' + p[1] + '/' + p[0];
         }
 
-        // Pengecekan fleksibel untuk lampiran PDF & Video (Mendukung berbagai penamaan properti)
+        // Pengecekan fleksibel untuk lampiran PDF & Video
         var pdfUrl = j.lampiranFile || j.filePdf || j.pdfUrl || j.lampiran;
         var btnPdf = pdfUrl 
             ? '<a href="' + pdfUrl + '" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg font-bold text-[10px] hover:bg-rose-100 transition" title="Buka PDF"><i class="fa-solid fa-file-pdf"></i> PDF</a>' 
@@ -95,11 +95,21 @@ function renderJurnalList() {
     });
 }
 
+// FUNGSI SIMPAN JURNAL DENGAN PENCEGAHAN DOUBLE SUBMIT & AKUN AKTIF OTOMATIS
 async function handleSaveJurnal(e) {
-    if (e) e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Debounce / Cegah klik ganda beruntun
+    var submitBtn = document.querySelector('#form-jurnal-mengajar button[type="submit"]');
+    if (submitBtn) {
+        if (submitBtn.dataset.isSubmitting === 'true') return;
+        submitBtn.dataset.isSubmitting = 'true';
+    }
 
     var tglInput = document.getElementById('jurnal-tanggal');
-    var guruInput = document.getElementById('jurnal-guru');
     var kelasInput = document.getElementById('jurnal-kelas-select');
     var mapelInput = document.getElementById('jurnal-mapel-select');
     var materiInput = document.getElementById('jurnal-materi');
@@ -107,7 +117,6 @@ async function handleSaveJurnal(e) {
     var linkVideoInput = document.getElementById('jurnal-link-video');
 
     var tgl = tglInput ? tglInput.value : '';
-    var guru = guruInput ? guruInput.value.trim() : '';
     var classId = kelasInput ? kelasInput.value : '';
     var mapel = mapelInput ? mapelInput.value : '';
     var materi = materiInput ? materiInput.value.trim() : '';
@@ -115,11 +124,14 @@ async function handleSaveJurnal(e) {
 
     if (!tgl || !materi) {
         alert("Tanggal dan Aktivitas Pembelajaran wajib diisi!");
+        if (submitBtn) submitBtn.dataset.isSubmitting = 'false';
         return;
     }
 
-    if (!guru && appState.currentUser) {
-        guru = appState.currentUser.nama || appState.currentUser.username;
+    // Ambil nama guru secara otomatis dari akun yang sedang aktif login
+    var activeTeacherName = "Guru SLBN 2 Pelaihari";
+    if (window.appState && window.appState.currentUser) {
+        activeTeacherName = window.appState.currentUser.nama || window.appState.currentUser.username || activeTeacherName;
     }
 
     var lampiranUrl = '';
@@ -130,6 +142,7 @@ async function handleSaveJurnal(e) {
         var file = filePdfInput.files[0];
         if (file.size > 2 * 1024 * 1024) {
             alert("Ukuran file terlalu besar! Harap unggah file PDF berukuran maksimal 2 MB.");
+            if (submitBtn) submitBtn.dataset.isSubmitting = 'false';
             return;
         }
         namaFile = file.name;
@@ -143,7 +156,7 @@ async function handleSaveJurnal(e) {
     var newJurnal = {
         id: "j_" + Date.now(),
         tanggal: tgl,
-        guru: guru || "Guru SLBN 2 Pelaihari",
+        guru: activeTeacherName, // Terisi otomatis sesuai akun login
         classId: classId,
         mapel: mapel,
         materi: materi,
@@ -154,19 +167,31 @@ async function handleSaveJurnal(e) {
         createdAt: new Date().toISOString()
     };
 
-    if (!appState.journals) appState.journals = [];
-    appState.journals.push(newJurnal);
+    if (!window.appState.journals) window.appState.journals = [];
+    window.appState.journals.push(newJurnal);
 
     if (typeof saveAppState === 'function') saveAppState();
     if (typeof saveJournalsData === 'function') saveJournalsData();
 
-    if (materiInput) materiInput.value = '';
-    if (filePdfInput) filePdfInput.value = '';
-    if (linkVideoInput) linkVideoInput.value = '';
+    // Reset Form
+    if (document.getElementById('form-jurnal-mengajar')) {
+        document.getElementById('form-jurnal-mengajar').reset();
+    }
+    if (tglInput) tglInput.value = new Date().toISOString().split('T')[0];
+    if (document.getElementById('jurnal-guru')) {
+        document.getElementById('jurnal-guru').value = activeTeacherName;
+    }
 
     renderJurnalList();
     if (typeof renderEvaluasiSupervisiDashboard === 'function') renderEvaluasiSupervisiDashboard();
     if (typeof showToast === 'function') showToast("Jurnal mengajar berhasil disimpan!");
+
+    // Lepaskan flag submitting setelah jeda
+    if (submitBtn) {
+        setTimeout(function() {
+            submitBtn.dataset.isSubmitting = 'false';
+        }, 500);
+    }
 }
 
 function handleDeleteJurnal(index) {
@@ -284,10 +309,14 @@ function showHasilSupervisi(index) {
     );
 }
 
+// Inisialisasi event listener form dengan pencegahan duplikasi ganda
 document.addEventListener('DOMContentLoaded', function() {
     var formJurnal = document.getElementById('form-jurnal-mengajar');
     if (formJurnal) {
-        formJurnal.addEventListener('submit', handleSaveJurnal);
+        // Hapus atribut onsubmit di HTML agar tidak terjadi double trigger, 
+        // cukup gunakan addEventListener yang aman di sini.
+        formJurnal.removeAttribute('onsubmit');
+        formJurnal.onsubmit = handleSaveJurnal;
     }
     renderJurnalList();
 });
