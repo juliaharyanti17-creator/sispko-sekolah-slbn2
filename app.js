@@ -59,6 +59,7 @@ window.switchTab = function(e, tabName) {
 
 document.addEventListener('DOMContentLoaded', function() {
     initAppEvents();
+    renderNotificationsUI();
 });
 
 function initAppEvents() {
@@ -257,7 +258,7 @@ function renderNotificationsUI() {
     var currentNama = (currentUser.nama || currentUser.username || '').toLowerCase();
     var notifications = (window.appState && window.appState.notifications) ? window.appState.notifications : [];
 
-    // FILTER CERDAS & FLEKSIBEL UNTUK AKUN GURU, KEPSEK, & ADMIN
+    // FILTER KHUSUS: Kepsek hanya melihat target kepsek, Guru hanya melihat target namanya sendiri
     var myNotifs = notifications.filter(function(n) {
         if (!n) return false;
         var target = String(n.target || '').trim().toLowerCase();
@@ -265,14 +266,15 @@ function renderNotificationsUI() {
         if (currentRole === 'admin') return true;
         
         if ((currentRole === 'kepsek' || currentRole === 'kepala sekolah') && 
-            (target === 'kepsek' || target === 'kepala sekolah' || target === 'admin' || target === 'semua')) {
+            (target === 'kepsek' || target === 'kepala sekolah' || target === 'admin')) {
             return true;
         }
         
-        // Pencocokan fleksibel untuk guru (mendukung nama lengkap, sebagian nama, atau role umum)
+        // Pencocokan spesifik untuk akun guru pembuat jurnal yang disupervisi
         if (currentRole === 'walikelas' || currentRole === 'gurumapel' || currentRole === 'guru') {
-            if (target === 'guru' || target === 'semua') return true;
-            if (currentNama && (target.includes(currentNama) || currentNama.includes(target))) return true;
+            if (target === currentNama || target.includes(currentNama) || currentNama.includes(target)) {
+                return true;
+            }
         }
         
         return false;
@@ -351,7 +353,7 @@ function markAllNotificationsAsRead() {
             isMatch = true;
         } else if ((currentRole === 'kepsek' || currentRole === 'kepala sekolah') && (target === 'kepsek' || target === 'kepala sekolah' || target === 'admin')) {
             isMatch = true;
-        } else if (target.includes(currentNama) || currentNama.includes(target) || target === 'guru' || target === 'semua') {
+        } else if (target === currentNama || target.includes(currentNama) || currentNama.includes(target)) {
             isMatch = true;
         }
 
@@ -376,8 +378,3 @@ document.addEventListener('click', function(e) {
         dropdown.classList.add('hidden');
     }
 });
-
-document.addEventListener('DOMContentLoaded', function() {
-    renderNotificationsUI();
-});
-
