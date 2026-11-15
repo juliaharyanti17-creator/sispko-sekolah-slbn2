@@ -1,5 +1,5 @@
 // ==========================================================================
-// Modul Autentikasi, Sesi, & Role Access Control - SIMPATIK SLBN 2 PELAIHARI
+// Modul Autentikasi, Sesi, & Role Access Control - SIMANTAP SLBN 2 PELAIHARI
 // ==========================================================================
 
 // Fungsi Toggle Mobile Sidebar
@@ -285,7 +285,7 @@ window.getClassName = function(classId) {
 // --- 5. LOGOUT & UTILITIES ---
 function handleLogout(e) {
     if (e) e.preventDefault();
-    if (!confirm("Apakah Anda yakin ingin keluar dari aplikasi SIMPATIK?")) return;
+    if (!confirm("Apakah Anda yakin ingin keluar dari aplikasi SIMANTAP?")) return;
 
     localStorage.removeItem('sispko_session_user');
     if (window.appState) window.appState.currentUser = null;
