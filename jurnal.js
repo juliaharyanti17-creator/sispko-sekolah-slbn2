@@ -100,6 +100,8 @@ async function handleSaveJurnal(e) {
     if (e && typeof e.preventDefault === 'function') {
         e.preventDefault();
         e.stopPropagation();
+     // Kirim notifikasi ke Kepala Sekolah
+addSystemNotification('kepsek', 'Jurnal Mengajar Baru', activeTeacherName + ' telah mengunggah jurnal mengajar baru untuk Kelas ' + classId);   
     }
 
     // Debounce / Cegah klik ganda beruntun
