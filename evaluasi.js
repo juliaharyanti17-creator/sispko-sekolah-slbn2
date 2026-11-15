@@ -309,7 +309,7 @@ function renderEvaluasiSupervisiDashboard() {
     });
 }
 
-// TAMBAHAN: KIRIM NOTIFIKASI OTOMATIS SAAT KEPSEK MENYIMPAN SUPERVISI
+// SIMPAN SUPERVISI KEPSEK & KIRIM NOTIFIKASI KHUSUS KE PEMBUAT JURNAL
 function handleSaveSupervisi(e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
 
@@ -337,13 +337,13 @@ function handleSaveSupervisi(e) {
         catatanKepsek: catatanKepsek
     };
 
-    // KIRIM NOTIFIKASI KE GURU YANG BERSANGKUTAN
+    // KIRIM NOTIFIKASI KHUSUS HANYA KEPADA GURU PEMBUAT JURNAL
     var targetGuru = window.appState.journals[index].guru;
     if (typeof addSystemNotification === 'function') {
         addSystemNotification(
             targetGuru, 
             'Supervisi Akademik Baru', 
-            'Kepala Sekolah telah memberikan catatan supervisi pada jurnal KBM Anda.'
+            'Kepala Sekolah (' + currentEvaluator + ') telah memberikan catatan supervisi pada jurnal KBM Anda.'
         );
     }
 
