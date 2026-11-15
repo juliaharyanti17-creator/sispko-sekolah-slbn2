@@ -246,12 +246,12 @@ function renderEvaluasiSupervisiDashboard() {
             ? '<div class="p-2.5 bg-white border border-emerald-200 rounded-xl text-emerald-900 font-medium"><strong>Catatan & Ulasan Kepsek:</strong> "' + j.supervisi.catatanKepsek + '"</div>' 
             : '';
 
-        // --- RENDER BUKTI DUKUNG / LAMPIRAN ---
+        // --- RENDER BUKTI DUKUNG / LAMPIRAN (MENCAKUP lampiranFile) ---
         var buktiDukungHtml = '';
         var hasLampiran = false;
         var lampiranContent = '<div class="flex flex-wrap items-center gap-2 pt-1">';
 
-        var filePdfVal = j.filePdf || j.pdfUrl || j.lampiran || j.file;
+        var filePdfVal = j.lampiranFile || j.filePdf || j.pdfUrl || j.lampiran || j.file;
         if (filePdfVal) {
             hasLampiran = true;
             lampiranContent += '<a href="' + filePdfVal + '" target="_blank" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold transition inline-flex items-center gap-1.5 border border-rose-200"><i class="fa-solid fa-file-pdf text-rose-500"></i> Lihat Lampiran PDF</a>';
@@ -270,7 +270,7 @@ function renderEvaluasiSupervisiDashboard() {
         } else {
             buktiDukungHtml = '<div class="text-[11px] text-slate-400 italic"><i class="fa-solid fa-circle-info mr-1"></i> Tidak ada lampiran bukti dukung pada jurnal ini.</div>';
         }
-        // -------------------------------------
+        // -------------------------------------------------------------
 
         var btnSupervisiKepsek = '';
         var currentUserRole = window.appState && window.appState.currentUser ? (window.appState.currentUser.role || '').toLowerCase() : '';
