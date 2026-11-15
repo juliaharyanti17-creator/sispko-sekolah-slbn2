@@ -219,34 +219,33 @@ window.scrollToSubSection = function(e, tabName, sectionId) {
     }, 100);
 };
 
-
 // ==========================================================================
-// MODUL NOTIFIKASI OTOMATIS REAL-TIME (SIMANTAP)
+// MODUL NOTIFIKASI OTOMATIS & PENGELOLAAN UI (SIMANTAP)
 // ==========================================================================
 
-function addSystemNotification(targetRoleOrUser, title, message) {
+function addSystemNotification(targetRoleOrUser, title, message, referenceId) {
     if (!window.appState) window.appState = {};
     if (!window.appState.notifications) window.appState.notifications = [];
 
     var newNotif = {
         id: "notif_" + Date.now(),
-        target: String(targetRoleOrUser).trim().toLowerCase(), // Target: 'kepsek' atau nama guru
+        target: String(targetRoleOrUser || '').trim().toLowerCase(),
         title: title,
         message: message,
-        read: false,
+        referenceId: referenceId || '',
+        read: false, // Status awal belum terbaca
         createdAt: new Date().toISOString()
     };
 
     window.appState.notifications.push(newNotif);
     
-    // Simpan permanen ke localStorage agar tidak hilang saat refresh
+    // Simpan permanen ke localStorage
     if (typeof saveAppState === 'function') {
         saveAppState();
     } else {
         localStorage.setItem('sispko_app_state', JSON.stringify(window.appState));
     }
     
-    // Perbarui tampilan badge & dropdown seketika
     renderNotificationsUI();
 }
 
@@ -258,17 +257,28 @@ function renderNotificationsUI() {
     var currentNama = (currentUser.nama || currentUser.username || '').toLowerCase();
     var notifications = (window.appState && window.appState.notifications) ? window.appState.notifications : [];
 
-    // Filter cerdas: Admin melihat semua, Kepsek melihat target kepsek, Guru melihat target namanya sendiri
+    // FILTER CERDAS & FLEKSIBEL UNTUK AKUN GURU, KEPSEK, & ADMIN
     var myNotifs = notifications.filter(function(n) {
         if (!n) return false;
-        var target = (n.target || '').toLowerCase();
+        var target = String(n.target || '').trim().toLowerCase();
+        
         if (currentRole === 'admin') return true;
-        if ((currentRole === 'kepsek' || currentRole === 'kepala sekolah') && (target === 'kepsek' || target === 'kepala sekolah' || target === 'admin')) return true;
-        if (target.includes(currentNama) || currentNama.includes(target)) return true;
+        
+        if ((currentRole === 'kepsek' || currentRole === 'kepala sekolah') && 
+            (target === 'kepsek' || target === 'kepala sekolah' || target === 'admin' || target === 'semua')) {
+            return true;
+        }
+        
+        // Pencocokan fleksibel untuk guru (mendukung nama lengkap, sebagian nama, atau role umum)
+        if (currentRole === 'walikelas' || currentRole === 'gurumapel' || currentRole === 'guru') {
+            if (target === 'guru' || target === 'semua') return true;
+            if (currentNama && (target.includes(currentNama) || currentNama.includes(target))) return true;
+        }
+        
         return false;
     });
 
-    // Hitung pesan yang belum dibaca (unread)
+    // Hitung jumlah pesan yang belum dibaca untuk badge angka merah
     var unreadList = myNotifs.filter(function(n) { return !n.read; });
     var badge = document.getElementById('notif-badge');
     if (badge) {
@@ -284,6 +294,7 @@ function renderNotificationsUI() {
     if (!container) return;
     container.innerHTML = '';
 
+    // Ambil 10 notifikasi terbaru
     var recentNotifs = myNotifs.slice().reverse().slice(0, 10);
 
     if (recentNotifs.length === 0) {
@@ -332,16 +343,33 @@ function markAllNotificationsAsRead() {
     var notifications = (window.appState && window.appState.notifications) ? window.appState.notifications : [];
 
     notifications.forEach(function(n) {
-        var target = (n.target || '').toLowerCase();
-        if (currentRole === 'admin' || ((currentRole === 'kepsek' || currentRole === 'kepala sekolah') && target.includes('kepsek')) || target.includes(currentNama)) {
+        if (!n) return;
+        var target = String(n.target || '').trim().toLowerCase();
+        
+        var isMatch = false;
+        if (currentRole === 'admin') {
+            isMatch = true;
+        } else if ((currentRole === 'kepsek' || currentRole === 'kepala sekolah') && (target === 'kepsek' || target === 'kepala sekolah' || target === 'admin')) {
+            isMatch = true;
+        } else if (target.includes(currentNama) || currentNama.includes(target) || target === 'guru' || target === 'semua') {
+            isMatch = true;
+        }
+
+        if (isMatch) {
             n.read = true;
         }
     });
 
-    if (typeof saveAppState === 'function') saveAppState();
+    if (typeof saveAppState === 'function') {
+        saveAppState();
+    } else {
+        localStorage.setItem('sispko_app_state', JSON.stringify(window.appState));
+    }
+    
     renderNotificationsUI();
 }
 
+// Tutup dropdown jika mengklik area di luar
 document.addEventListener('click', function(e) {
     var dropdown = document.getElementById('notif-dropdown');
     if (dropdown && !dropdown.contains(e.target) && !e.target.closest('button[onclick*="toggleNotificationDropdown"]')) {
@@ -352,3 +380,4 @@ document.addEventListener('click', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     renderNotificationsUI();
 });
+
