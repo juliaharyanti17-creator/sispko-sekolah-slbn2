@@ -100,8 +100,6 @@ async function handleSaveJurnal(e) {
     if (e && typeof e.preventDefault === 'function') {
         e.preventDefault();
         e.stopPropagation();
-     // Kirim notifikasi ke Kepala Sekolah
-addSystemNotification('kepsek', 'Jurnal Mengajar Baru', activeTeacherName + ' telah mengunggah jurnal mengajar baru untuk Kelas ' + classId);   
     }
 
     // Debounce / Cegah klik ganda beruntun
@@ -171,6 +169,16 @@ addSystemNotification('kepsek', 'Jurnal Mengajar Baru', activeTeacherName + ' te
 
     if (!window.appState.journals) window.appState.journals = [];
     window.appState.journals.push(newJurnal);
+
+    // KIRIM NOTIFIKASI OTOMATIS KE KEPALA SEKOLAH
+    if (typeof addSystemNotification === 'function') {
+        var nama KelasFormatted = typeof getClassName === 'function' ? getClassName(classId) : classId;
+        addSystemNotification(
+            'kepsek', 
+            'Jurnal Mengajar Baru', 
+            activeTeacherName + ' telah mengunggah jurnal mengajar baru untuk Kelas ' + namaKelasFormatted
+        );
+    }
 
     if (typeof saveAppState === 'function') saveAppState();
     if (typeof saveJournalsData === 'function') saveJournalsData();
@@ -259,7 +267,7 @@ function closeModalSupervisi(e) {
     }
 }
 
-// SIMPAN SUPERVISI KEPSEK
+// SIMPAN SUPERVISI KEPSEK & KIRIM NOTIFIKASI KE GURU
 function handleSaveSupervisi(e) {
     if (e) e.preventDefault();
 
@@ -286,6 +294,16 @@ function handleSaveSupervisi(e) {
         penilaianMedia: penilaianMedia,
         catatanKepsek: catatanKepsek
     };
+
+    // KIRIM NOTIFIKASI OTOMATIS KE GURU YANG BERSANGKUTAN
+    var targetGuru = window.appState.journals[index].guru;
+    if (typeof addSystemNotification === 'function') {
+        addSystemNotification(
+            targetGuru, 
+            'Supervisi Akademik Baru', 
+            'Kepala Sekolah (' + currentEvaluator + ') telah memberikan catatan supervisi pada jurnal KBM Anda.'
+        );
+    }
 
     if (typeof saveAppState === 'function') saveAppState();
     if (typeof saveJournalsData === 'function') saveJournalsData();
@@ -315,8 +333,6 @@ function showHasilSupervisi(index) {
 document.addEventListener('DOMContentLoaded', function() {
     var formJurnal = document.getElementById('form-jurnal-mengajar');
     if (formJurnal) {
-        // Hapus atribut onsubmit di HTML agar tidak terjadi double trigger, 
-        // cukup gunakan addEventListener yang aman di sini.
         formJurnal.removeAttribute('onsubmit');
         formJurnal.onsubmit = handleSaveJurnal;
     }
