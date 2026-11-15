@@ -79,13 +79,14 @@ function togglePasswordVisibility(e) {
           </button>
         </div>
       </div>
-  <!-- Tambahkan di dalam form login index.html (setelah input password) -->
-<div class="flex items-center justify-between text-xs pt-1">
-  <label class="flex items-center gap-2 cursor-pointer text-slate-600 font-medium">
-    <input type="checkbox" id="login-remember" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
-    <span>Ingat Kata Sandi Saya</span>
-  </label>
-</div>
+
+      <div class="flex items-center justify-between text-xs pt-1">
+        <label class="flex items-center gap-2 cursor-pointer text-slate-600 font-medium">
+          <input type="checkbox" id="login-remember" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+          <span>Ingat Kata Sandi Saya</span>
+        </label>
+      </div>
+
       <div class="space-y-2 pt-2">
         <button type="submit" class="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg hover:shadow-indigo-500/30 transition flex items-center justify-center gap-2 cursor-pointer">
           <i class="fa-solid fa-right-to-bracket"></i> Masuk Aplikasi
@@ -127,35 +128,39 @@ function togglePasswordVisibility(e) {
 </div>
 </div>
 
-<!-- User Info Badge -->
-<div class="bg-indigo-900/60 rounded-2xl p-3.5 mb-6 border border-indigo-800/50 flex items-center gap-3">
-<div class="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center text-white font-bold shrink-0">
-<i class="fa-solid fa-user-check"></i>
-</div>
-<div class="overflow-hidden">
-<div id="user-display-name" class="font-bold text-xs truncate text-white">-</div>
-<div id="user-display-role" class="text-[10px] text-indigo-300 font-semibold tracking-wider">ROLE</div>
-</div>
-</div>
-<!-- Tombol Notifikasi Header -->
-<div class="relative">
-  <button type="button" onclick="toggleNotificationDropdown(event)" class="relative p-2.5 bg-indigo-900/40 hover:bg-indigo-900/80 text-white rounded-xl transition cursor-pointer flex items-center justify-center">
-    <i class="fa-solid fa-bell text-sm"></i>
-    <!-- Badge Angka Notifikasi Belum Dibaca -->
-    <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
-  </button>
+<!-- User Info Badge & Tombol Lonceng Terintegrasi -->
+<div class="bg-indigo-900/60 rounded-2xl p-3.5 mb-6 border border-indigo-800/50 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-3 overflow-hidden">
+        <div class="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center text-white font-bold shrink-0">
+            <i class="fa-solid fa-user-check"></i>
+        </div>
+        <div class="overflow-hidden">
+            <div id="user-display-name" class="font-bold text-xs truncate text-white">-</div>
+            <div id="user-display-role" class="text-[10px] text-indigo-300 font-semibold tracking-wider">ROLE</div>
+        </div>
+    </div>
 
-  <!-- Dropdown Kotak Notifikasi -->
-  <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
-    <div class="p-3 bg-indigo-950 text-white flex justify-between items-center text-xs font-bold">
-      <span class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-amber-300"></i> Notifikasi Sistem</span>
-      <button type="button" onclick="markAllNotificationsAsRead()" class="text-[10px] text-indigo-200 hover:text-white underline cursor-pointer">Tandai Dibaca</button>
+    <!-- Tombol Notifikasi & Dropdown -->
+    <div class="relative shrink-0">
+        <button type="button" onclick="toggleNotificationDropdown(event)" class="relative p-2.5 bg-indigo-900/80 hover:bg-indigo-800 text-white rounded-xl transition cursor-pointer flex items-center justify-center">
+            <i class="fa-solid fa-bell text-sm"></i>
+            <!-- Badge Angka Notifikasi Belum Dibaca -->
+            <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
+        </button>
+
+        <!-- Dropdown Kotak Notifikasi -->
+        <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden text-slate-800">
+            <div class="p-3 bg-indigo-950 text-white flex justify-between items-center text-xs font-bold">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-amber-300"></i> Notifikasi Sistem</span>
+                <button type="button" onclick="markAllNotificationsAsRead()" class="text-[10px] text-indigo-200 hover:text-white underline cursor-pointer">Tandai Dibaca</button>
+            </div>
+            <div id="notif-list-container" class="max-h-72 overflow-y-auto divide-y divide-slate-100 text-xs">
+                <div class="p-4 text-center text-slate-400 font-medium">Tidak ada notifikasi baru.</div>
+            </div>
+        </div>
     </div>
-    <div id="notif-list-container" class="max-h-72 overflow-y-auto divide-y divide-slate-100 text-xs">
-      <div class="p-4 text-center text-slate-400 font-medium">Tidak ada notifikasi baru.</div>
-    </div>
-  </div>
 </div>
+
 <!-- Navigasi Utama -->
 <nav class="space-y-2 flex-1 overflow-y-auto pr-1">
 <button id="tab-btn-presensi" onclick="switchTab(event, 'presensi')" class="tab-btn w-full px-3.5 py-3 rounded-2xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all duration-300 transform scale-[1.02] cursor-pointer">
@@ -763,7 +768,6 @@ function togglePasswordVisibility(e) {
                 <label class="block text-xs font-bold text-slate-600 mb-1">
                     Kata Sandi (Password) <span id="password-hint" class="text-[10px] text-slate-400 font-normal"></span>
                 </label>
-                <!-- Atribut required dihapus dari HTML agar tidak memblokir saat Mode Edit -->
                 <input type="password" id="user-password-input" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
             </div>
 
@@ -777,31 +781,27 @@ function togglePasswordVisibility(e) {
                 </select>
             </div>
 
-            <!-- Pilihan Kelas Ampuan (Dropdown Dinamis) -->
-<div id="group-user-kelas" class="space-y-2">
-    <div class="flex justify-between items-center">
-        <label class="block text-xs font-bold text-slate-700">Kelas Ampuan</label>
-        <button type="button" onclick="addUserKelasDropdown()" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer">
-            <i class="fa-solid fa-plus text-[10px]"></i> Tambah Kelas Lain
-        </button>
-    </div>
-    <div id="user-kelas-dropdowns-container" class="space-y-2">
-        <!-- Baris dropdown kelas akan ditambahkan secara dinamis oleh JavaScript -->
-    </div>
-</div>
+            <!-- Pilihan Kelas Ampuan -->
+            <div id="group-user-kelas" class="space-y-2">
+                <div class="flex justify-between items-center">
+                    <label class="block text-xs font-bold text-slate-700">Kelas Ampuan</label>
+                    <button type="button" onclick="addUserKelasDropdown()" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Tambah Kelas Lain
+                    </button>
+                </div>
+                <div id="user-kelas-dropdowns-container" class="space-y-2"></div>
+            </div>
 
-<!-- Pilihan Mata Pelajaran Ampuan (Dropdown Dinamis) -->
-<div id="group-user-mapel" class="space-y-2 pt-2">
-    <div class="flex justify-between items-center">
-        <label class="block text-xs font-bold text-slate-700">Mata Pelajaran Ampuan</label>
-        <button type="button" onclick="addUserMapelDropdown()" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer">
-            <i class="fa-solid fa-plus text-[10px]"></i> Tambah Mapel Lain
-        </button>
-    </div>
-    <div id="user-mapel-dropdowns-container" class="space-y-2">
-        <!-- Baris dropdown mapel akan ditambahkan secara dinamis oleh JavaScript -->
-    </div>
-</div>
+            <!-- Pilihan Mata Pelajaran Ampuan -->
+            <div id="group-user-mapel" class="space-y-2 pt-2">
+                <div class="flex justify-between items-center">
+                    <label class="block text-xs font-bold text-slate-700">Mata Pelajaran Ampuan</label>
+                    <button type="button" onclick="addUserMapelDropdown()" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Tambah Mapel Lain
+                    </button>
+                </div>
+                <div id="user-mapel-dropdowns-container" class="space-y-2"></div>
+            </div>
 
             <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
                 <button type="button" onclick="closeModalUser()" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer transition">Batal</button>
@@ -946,8 +946,7 @@ function togglePasswordVisibility(e) {
                         <i class="fa-solid fa-plus text-[10px]"></i> Tambah Jam Berikutnya
                     </button>
                 </div>
-                <div id="batch-jadwal-slots-container" class="space-y-2.5">
-                </div>
+                <div id="batch-jadwal-slots-container" class="space-y-2.5"></div>
             </div>
         </div>
 
@@ -973,7 +972,7 @@ function togglePasswordVisibility(e) {
                 </div>
             </div>
             <button type="button" onclick="toggleAIChatModal(event)" class="text-indigo-200 hover:text-white text-base font-bold w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer">
-                <i class="fa-solid fa-robot text-amber-300"></i> AI Assistant SIMANTAP
+                &times;
             </button>
         </div>
 
