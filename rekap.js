@@ -1,6 +1,6 @@
 // ==========================================================================
 // MODUL REKAPITULASI LAPORAN PRESENSI & JURNAL KBM
-// SIMPATIK SLBN 2 PELAIHARI (DENGAN RANGKUMAN HARIAN & RINCIAN PER MAPEL)
+// SIMPATIK SLBN 2 PELAIHARI (DENGAN RANGKUMAN HARIAN, RINCIAN PER MAPEL, & TOTAL)
 // ==========================================================================
 
 function renderRekapModule() {
@@ -56,7 +56,7 @@ function populateRekapKelasDropdown() {
     if (currentVal) selectKelas.value = currentVal;
 }
 
-// 1. RENDER TABEL REKAPITULASI PRESENSI HARIAN & INTERAKTIF KLIK
+// 1. RENDER TABEL REKAPITULASI PRESENSI HARIAN & BARIS TOTAL DI BAWAH
 function renderRekapPresensiTable() {
     var tbody = document.getElementById('rekap-table-presensi-body');
     var periodLabel = document.getElementById('rekap-presensi-period-label');
@@ -78,7 +78,6 @@ function renderRekapPresensiTable() {
     var students = window.appState.students || [];
     var presensiRecords = window.appState.presensiRecords || {};
 
-    // Filter kelas berdasarkan pilihan / role
     var targetClasses = classes.filter(function(c) {
         if (selectedKelasId !== 'ALL' && c.id !== selectedKelasId && c.name !== selectedKelasId) return false;
         return true;
@@ -90,6 +89,14 @@ function renderRekapPresensiTable() {
     }
 
     var no = 1;
+    
+    // Variabel Akumulasi untuk Baris Total Keseluruhan
+    var grandTotalMurid = 0;
+    var grandTotalHadir = 0;
+    var grandTotalIzin = 0;
+    var grandTotalSakit = 0;
+    var grandTotalAlpa = 0;
+
     targetClasses.forEach(function(c) {
         var classStudents = students.filter(function(s) {
             return s.classId === c.id || s.kelas === c.id || s.classId === c.name || s.kelas === c.name;
@@ -141,6 +148,13 @@ function renderRekapPresensiTable() {
         
         var persentaseHadir = (totalMurid * hariEfektif) > 0 ? Math.round((totalHadir / (totalMurid * hariEfektif)) * 100) : 0;
 
+        // Akumulasikan ke Grand Total
+        grandTotalMurid += totalMurid;
+        grandTotalHadir += avgHadir;
+        grandTotalIzin += avgIzin;
+        grandTotalSakit += avgSakit;
+        grandTotalAlpa += avgAlpa;
+
         // Baris Utama Rekap Kelas
         var tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100 cursor-pointer";
@@ -176,6 +190,22 @@ function renderRekapPresensiTable() {
         `;
         tbody.appendChild(trDetail);
     });
+
+    // --- BARIS TOTAL KESELURUHAN DI BAGIAN BAWAH ---
+    var overallPersentase = grandTotalMurid > 0 ? Math.round((grandTotalHadir / grandTotalMurid) * 100) : 0;
+    
+    var trTotal = document.createElement('tr');
+    trTotal.className = "bg-indigo-950 text-white font-bold text-xs border-t-2 border-indigo-900";
+    trTotal.innerHTML = `
+        <td colspan="2" class="p-3 text-right uppercase tracking-wider">TOTAL KESELURUHAN:</td>
+        <td class="p-3 text-center text-white">${grandTotalMurid}</td>
+        <td class="p-3 text-center text-emerald-300">${grandTotalHadir}</td>
+        <td class="p-3 text-center text-blue-300">${grandTotalIzin}</td>
+        <td class="p-3 text-center text-amber-300">${grandTotalSakit}</td>
+        <td class="p-3 text-center text-rose-300">${grandTotalAlpa}</td>
+        <td class="p-3 text-center"><span class="px-2.5 py-1 bg-indigo-800 text-indigo-100 rounded-lg text-[11px]">${overallPersentase}%</span></td>
+    `;
+    tbody.appendChild(trTotal);
 }
 
 // Fungsi Interaktif Klik untuk Membuka Rincian Per Sesi Beserta Nama Murid & Status Presensi
