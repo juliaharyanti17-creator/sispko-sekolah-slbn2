@@ -19,7 +19,6 @@ function toggleMobileSidebar(e) {
     }
 }
 
-// --- 1. HANDLE LOGIN UTAMA ---
 function handleLogin(e) {
     if (e && typeof e.preventDefault === 'function') {
         e.preventDefault();
@@ -27,6 +26,7 @@ function handleLogin(e) {
 
     var usernameInput = document.getElementById('login-nama');
     var passwordInput = document.getElementById('login-password');
+    var rememberCheckbox = document.getElementById('login-remember');
 
     if (!usernameInput || !passwordInput) return;
 
@@ -38,9 +38,11 @@ function handleLogin(e) {
         return;
     }
 
-    // A. Fallback Administrator Sistem
+    var matchedUser = null;
+
+    // A. Cek Administrator Sistem
     if ((inputUser === 'admin' || inputUser === 'administrator') && (inputPass === 'admin' || inputPass === 'admin123' || inputPass === '123456')) {
-        var adminUser = {
+        matchedUser = {
             id: "u_admin_default",
             username: "admin",
             nama: "Administrator Sistem",
@@ -48,13 +50,10 @@ function handleLogin(e) {
             kelasAmpuan: "ALL",
             mapelAmpuan: "ALL"
         };
-        saveSessionAndEnterApp(adminUser);
-        return;
     }
-
-    // B. Fallback Kepala Sekolah (Maisyanti Disi Fatimah, S.Pd.I., M.Pd)
-    if ((inputUser === 'kepsek' || inputUser === 'maisyanti') && (inputPass === 'kepsek' || inputPass === '123456' || inputPass === 'admin')) {
-        var kepsekUser = {
+    // B. Cek Kepala Sekolah
+    else if ((inputUser === 'kepsek' || inputUser === 'maisyanti') && (inputPass === 'kepsek' || inputPass === '123456' || inputPass === 'admin')) {
+        matchedUser = {
             id: "u_kepsek_default",
             username: "kepsek",
             nama: "Maisyanti Disi Fatimah, S.Pd.I., M.Pd",
@@ -62,40 +61,41 @@ function handleLogin(e) {
             kelasAmpuan: "ALL",
             mapelAmpuan: "ALL"
         };
-        saveSessionAndEnterApp(kepsekUser);
-        return;
     }
+    // C. Cek Database Pengguna (appState.users)
+    else {
+        var usersList = (window.appState && window.appState.users) ? window.appState.users : [];
+        var found = usersList.find(function(u) {
+            if (!u) return false;
+            return (u.username || u.nama || '').toLowerCase() === inputUser;
+        });
 
-    // C. Pencocokan Data Pengguna dari Database (appState.users)
-    var usersList = (window.appState && window.appState.users) ? window.appState.users : [];
-    
-    var matchedUser = usersList.find(function(u) {
-        if (!u) return false;
-        var uname = (u.username || u.nama || '').toLowerCase();
-        return uname === inputUser;
-    });
-
-    if (matchedUser) {
-        var userPassword = matchedUser.password || '123456';
-        if (inputPass === userPassword || inputPass === '123456' || inputPass === 'admin') {
-            saveSessionAndEnterApp(matchedUser);
-            return;
-        } else {
-            alert("Kata sandi yang Anda masukkan salah!");
-            return;
+        if (found) {
+            var userPassword = found.password || '123456';
+            if (inputPass === userPassword || inputPass === '123456' || inputPass === 'admin') {
+                matchedUser = found;
+            } else {
+                alert("Kata sandi yang Anda masukkan salah!");
+                return;
+            }
         }
     }
 
-    alert("Akun tidak ditemukan! Gunakan username 'admin' dengan password 'admin' untuk masuk sebagai Administrator.");
-}
+    if (matchedUser) {
+        // SIMPAN / HAPUS KREDENSIAL BERDASARKAN CHECKBOX "INGAT SAYA"
+        if (rememberCheckbox && rememberCheckbox.checked) {
+            localStorage.setItem('simantap_saved_user', inputUser);
+            localStorage.setItem('simantap_saved_pass', inputPass);
+        } else {
+            localStorage.removeItem('simantap_saved_user');
+            localStorage.removeItem('simantap_saved_pass');
+        }
 
-// Global hook untuk form submit di HTML
-window.executeFormLogin = function(e) {
-    if (e && typeof e.preventDefault === 'function') {
-        e.preventDefault();
+        saveSessionAndEnterApp(matchedUser);
+    } else {
+        alert("Akun tidak ditemukan!");
     }
-    handleLogin(e);
-};
+}
 
 // --- 2. SESI & PENGATURAN TAMPILAN BERDASARKAN ROLE ---
 function saveSessionAndEnterApp(userObj) {
@@ -540,6 +540,41 @@ window.handleDeleteUser = function(idx) {
 
 // Inisialisasi Sesi Login saat pertama muat
 document.addEventListener('DOMContentLoaded', function() {
+    if (!window.appState) window.appState = {};
+    var savedSession = localStorage.getItem('sispko_session_user');
+    if (savedSession) {
+        try {
+            window.appState.currentUser = JSON.parse(savedSession);
+            setTimeout(function() {
+                applyRoleAccessControl();
+                if (typeof window.populateDropdowns === 'function') {
+                    window.populateDropdowns();
+                }
+                if (typeof window.renderMasterUsersTable === 'function') {
+                    window.renderMasterUsersTable();
+                
+                }
+            }, 300);
+        } catch(e) {}
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Cek apakah ada kredensial tersimpan
+    var savedUser = localStorage.getItem('simantap_saved_user');
+    var savedPass = localStorage.getItem('simantap_saved_pass');
+
+    if (savedUser && savedPass) {
+        var usernameInput = document.getElementById('login-nama');
+        var passwordInput = document.getElementById('login-password');
+        var rememberCheckbox = document.getElementById('login-remember');
+
+        if (usernameInput) usernameInput.value = savedUser;
+        if (passwordInput) passwordInput.value = savedPass;
+        if (rememberCheckbox) rememberCheckbox.checked = true;
+    }
+
+    // 2. Cek Sesi Aktif
     if (!window.appState) window.appState = {};
     var savedSession = localStorage.getItem('sispko_session_user');
     if (savedSession) {
