@@ -137,7 +137,25 @@ function togglePasswordVisibility(e) {
 <div id="user-display-role" class="text-[10px] text-indigo-300 font-semibold tracking-wider">ROLE</div>
 </div>
 </div>
+<!-- Tombol Notifikasi Header -->
+<div class="relative">
+  <button type="button" onclick="toggleNotificationDropdown(event)" class="relative p-2.5 bg-indigo-900/40 hover:bg-indigo-900/80 text-white rounded-xl transition cursor-pointer flex items-center justify-center">
+    <i class="fa-solid fa-bell text-sm"></i>
+    <!-- Badge Angka Notifikasi Belum Dibaca -->
+    <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
+  </button>
 
+  <!-- Dropdown Kotak Notifikasi -->
+  <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+    <div class="p-3 bg-indigo-950 text-white flex justify-between items-center text-xs font-bold">
+      <span class="flex items-center gap-1.5"><i class="fa-solid fa-bell text-amber-300"></i> Notifikasi Sistem</span>
+      <button type="button" onclick="markAllNotificationsAsRead()" class="text-[10px] text-indigo-200 hover:text-white underline cursor-pointer">Tandai Dibaca</button>
+    </div>
+    <div id="notif-list-container" class="max-h-72 overflow-y-auto divide-y divide-slate-100 text-xs">
+      <div class="p-4 text-center text-slate-400 font-medium">Tidak ada notifikasi baru.</div>
+    </div>
+  </div>
+</div>
 <!-- Navigasi Utama -->
 <nav class="space-y-2 flex-1 overflow-y-auto pr-1">
 <button id="tab-btn-presensi" onclick="switchTab(event, 'presensi')" class="tab-btn w-full px-3.5 py-3 rounded-2xl text-xs font-bold flex items-center justify-between bg-white text-indigo-900 shadow-md transition-all duration-300 transform scale-[1.02] cursor-pointer">
