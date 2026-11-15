@@ -29,7 +29,7 @@ function renderJurnalList() {
     // FILTER HAK AKSES: Guru hanya melihat jurnal buatannya sendiri, Kepsek/Admin melihat semuanya
     var filteredJournals = journals.filter(function(j) {
         if (!j) return false;
-        if (currentRole === 'admin' || currentRole === 'kepsek') return true;
+        if (currentRole === 'admin' || currentRole === 'kepsek' || currentRole === 'kepala sekolah') return true;
         var namaGuruJurnal = (j.guru || '').toLowerCase();
         return namaGuruJurnal.includes(currentNama) || currentNama.includes(namaGuruJurnal);
     });
@@ -53,12 +53,15 @@ function renderJurnalList() {
             if (p.length === 3) tglFormatted = p[2] + '/' + p[1] + '/' + p[0];
         }
 
-        var btnPdf = j.lampiranFile 
-            ? '<a href="' + j.lampiranFile + '" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg font-bold text-[10px] hover:bg-rose-100 transition" title="Buka PDF"><i class="fa-solid fa-file-pdf"></i> PDF</a>' 
+        // Pengecekan fleksibel untuk lampiran PDF & Video (Mendukung berbagai penamaan properti)
+        var pdfUrl = j.lampiranFile || j.filePdf || j.pdfUrl || j.lampiran;
+        var btnPdf = pdfUrl 
+            ? '<a href="' + pdfUrl + '" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg font-bold text-[10px] hover:bg-rose-100 transition" title="Buka PDF"><i class="fa-solid fa-file-pdf"></i> PDF</a>' 
             : '<span class="text-slate-300">-</span>';
 
-        var btnVideo = j.linkVideo 
-            ? '<a href="' + j.linkVideo + '" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-[10px] hover:bg-emerald-100 transition" title="Buka Video Drive"><i class="fa-brands fa-google-drive"></i> Video</a>' 
+        var videoUrl = j.linkVideo || j.videoUrl || j.urlVideo;
+        var btnVideo = videoUrl 
+            ? '<a href="' + videoUrl + '" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-[10px] hover:bg-emerald-100 transition" title="Buka Video Drive"><i class="fa-brands fa-google-drive"></i> Video</a>' 
             : '<span class="text-slate-300">-</span>';
 
         var statusSupervisi = j.supervisi 
@@ -66,7 +69,7 @@ function renderJurnalList() {
             : '<span class="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-semibold text-[10px]">Belum Disupervisi</span>';
 
         var actionButtons = '';
-        if (currentRole === 'kepsek' || currentRole === 'admin') {
+        if (currentRole === 'kepsek' || currentRole === 'admin' || currentRole === 'kepala sekolah') {
             actionButtons += '<button type="button" onclick="openModalSupervisi(' + realIndex + ')" class="text-indigo-600 hover:text-indigo-800 p-1.5 rounded-lg hover:bg-indigo-50 transition cursor-pointer" title="Beri Supervisi"><i class="fa-solid fa-clipboard-check"></i> Supervisi</button> ';
         }
 
@@ -186,7 +189,7 @@ function handleDeleteJurnal(index) {
     if (typeof showToast === 'function') showToast("Jurnal berhasil dihapus.");
 }
 
-// BUKA MODAL SUPERVISI KEPSEK (Diberikan fallback pencarian elemen ID)
+// BUKA MODAL SUPERVISI KEPSEK
 function openModalSupervisi(index) {
     if (!appState.journals || !appState.journals[index]) return;
     var j = appState.journals[index];
@@ -202,9 +205,7 @@ function openModalSupervisi(index) {
             '<div><strong>Materi:</strong> ' + (j.materi || '-') + '</div>';
     }
 
-    // Pencarian fleksibel untuk ID status/aspek
     var mediaEl = document.getElementById('supervisi-aspek-media') || document.getElementById('supervisi-status');
-    // Pencarian fleksibel untuk ID catatan
     var catatanEl = document.getElementById('supervisi-catatan-kepsek') || document.getElementById('supervisi-catatan');
 
     if (j.supervisi) {
