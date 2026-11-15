@@ -309,6 +309,53 @@ function renderEvaluasiSupervisiDashboard() {
     });
 }
 
+// TAMBAHAN: KIRIM NOTIFIKASI OTOMATIS SAAT KEPSEK MENYIMPAN SUPERVISI
+function handleSaveSupervisi(e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
+    var idField = document.getElementById('supervisi-jurnal-id');
+    if (!idField || idField.value === '') return;
+
+    var index = parseInt(idField.value);
+    if (isNaN(index) || !window.appState.journals || !window.appState.journals[index]) return;
+
+    var mediaEl = document.getElementById('supervisi-aspek-media') || document.getElementById('supervisi-status');
+    var catatanEl = document.getElementById('supervisi-catatan-kepsek') || document.getElementById('supervisi-catatan');
+
+    var penilaianMedia = mediaEl ? mediaEl.value : 'Disetujui';
+    var catatanKepsek = catatanEl ? catatanEl.value.trim() : '';
+
+    var currentEvaluator = "Maisyanti Disi Fatimah, S.Pd.I., M.Pd";
+    if (window.appState.currentUser && window.appState.currentUser.nama) {
+        currentEvaluator = window.appState.currentUser.nama;
+    }
+
+    window.appState.journals[index].supervisi = {
+        tanggalSupervisi: new Date().toISOString().split('T')[0],
+        evaluator: currentEvaluator,
+        penilaianMedia: penilaianMedia,
+        catatanKepsek: catatanKepsek
+    };
+
+    // KIRIM NOTIFIKASI KE GURU YANG BERSANGKUTAN
+    var targetGuru = window.appState.journals[index].guru;
+    if (typeof addSystemNotification === 'function') {
+        addSystemNotification(
+            targetGuru, 
+            'Supervisi Akademik Baru', 
+            'Kepala Sekolah telah memberikan catatan supervisi pada jurnal KBM Anda.'
+        );
+    }
+
+    if (typeof saveAppState === 'function') saveAppState();
+    if (typeof saveJournalsData === 'function') saveJournalsData();
+    closeModalSupervisi();
+    
+    renderEvaluasiSupervisiDashboard();
+    if (typeof renderJurnalList === 'function') renderJurnalList();
+    if (typeof showToast === 'function') showToast("Supervisi Kepala Sekolah berhasil disimpan!");
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     updateEvaluasiDashboard();
 });
