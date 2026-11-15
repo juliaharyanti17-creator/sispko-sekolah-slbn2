@@ -97,11 +97,9 @@ function renderRekapPresensiTable() {
         var totalMurid = classStudents.length;
         var studentIds = classStudents.map(function(s) { return s.id; });
 
-        // Ambil status snapshot terakhir / harian pada rentang tanggal tersebut
         var totalHadir = 0, totalSakit = 0, totalIzin = 0, totalAlpa = 0, hariEfektif = 0;
-
-        // Kita telusuri presensiRecords berdasarkan tanggal
         var datesChecked = [];
+
         Object.keys(presensiRecords).forEach(function(key) {
             var parts = key.split('_');
             if (parts.length >= 3) {
@@ -113,11 +111,9 @@ function renderRekapPresensiTable() {
                         datesChecked.push(tgl);
                         hariEfektif++;
 
-                        // Ambil rekam data terakhir hari itu (Utamakan HARIAN atau sesi mapel terakhir)
                         var harianKey = tgl + '_' + cMatch + '_HARIAN';
                         var recMap = presensiRecords[harianKey] || {};
                         
-                        // Jika tidak ada harian, ambil mapel apa saja di tanggal itu
                         if (Object.keys(recMap).length === 0) {
                             Object.keys(presensiRecords).forEach(function(subKey) {
                                 if (subKey.startsWith(tgl + '_' + cMatch)) {
@@ -127,7 +123,7 @@ function renderRekapPresensiTable() {
                         }
 
                         studentIds.forEach(function(sId) {
-                            var st = recMap[sId] || 'H'; // Default Hadir jika tidak diabsen
+                            var st = recMap[sId] || 'H';
                             if (st === 'H' || st === 'Hadir') totalHadir++;
                             else if (st === 'S' || st === 'Sakit') totalSakit++;
                             else if (st === 'I' || st === 'Izin') totalIzin++;
@@ -138,7 +134,6 @@ function renderRekapPresensiTable() {
             }
         });
 
-        // Rata-rata atau total bersih
         var avgHadir = hariEfektif > 0 ? Math.round(totalHadir / hariEfektif) : 0;
         var avgSakit = hariEfektif > 0 ? Math.round(totalSakit / hariEfektif) : 0;
         var avgIzin = hariEfektif > 0 ? Math.round(totalIzin / hariEfektif) : 0;
@@ -149,7 +144,7 @@ function renderRekapPresensiTable() {
         // Baris Utama Rekap Kelas
         var tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100 cursor-pointer";
-        tr.title = "Klik untuk melihat rincian presensi per mata pelajaran";
+        tr.title = "Klik untuk melihat rincian presensi dan nama siswa";
         tr.onclick = function() {
             toggleRekapDetailPerMapel(c.id, startDate, endDate, tr);
         };
@@ -165,14 +160,14 @@ function renderRekapPresensiTable() {
         `;
         tbody.appendChild(tr);
 
-        // Baris Kontainer Detail Per Mapel (Hidden secara default, muncul saat diklik)
+        // Baris Kontainer Detail Per Mapel & Nama Siswa
         var trDetail = document.createElement('tr');
         trDetail.id = 'rekap-detail-' + c.id;
         trDetail.className = "hidden bg-slate-50/80 border-b border-slate-200";
         trDetail.innerHTML = `
             <td colspan="8" class="p-4">
                 <div class="space-y-2">
-                    <p class="font-bold text-xs text-indigo-900"><i class="fa-solid fa-circle-info mr-1"></i> Rincian Perubahan / Sesi Mata Pelajaran untuk Kelas ${c.name || c.nama}:</p>
+                    <p class="font-bold text-xs text-indigo-900"><i class="fa-solid fa-circle-info mr-1"></i> Rincian Nama Siswa & Sesi Mata Pelajaran untuk Kelas ${c.name || c.nama}:</p>
                     <div id="rekap-detail-content-${c.id}" class="text-[11px] text-slate-600 space-y-1">
                         Memuat rincian sesi pelajaran...
                     </div>
@@ -183,7 +178,7 @@ function renderRekapPresensiTable() {
     });
 }
 
-// Fungsi Interaktif Klik untuk Membuka Rincian Per Sesi / Mata Pelajaran
+// Fungsi Interaktif Klik untuk Membuka Rincian Per Sesi Beserta Nama Murid & Status Presensi
 function toggleRekapDetailPerMapel(classId, startDate, endDate, rowElement) {
     var detailRow = document.getElementById('rekap-detail-' + classId);
     var contentDiv = document.getElementById('rekap-detail-content-' + classId);
@@ -194,11 +189,18 @@ function toggleRekapDetailPerMapel(classId, startDate, endDate, rowElement) {
         return;
     }
 
-    // Tampilkan detail row dan populate data sesi mapel
     detailRow.classList.remove('hidden');
-    contentDiv.innerHTML = '';
+    contentDiv.innerHTML = '<p class="text-slate-400 italic">Memuat rincian data siswa...</p>';
 
     var presensiRecords = window.appState.presensiRecords || {};
+    var students = window.appState.students || [];
+    
+    var classStudents = students.filter(function(s) {
+        var sClassId = String(s.classId || s.kelas || '').trim();
+        var sClassName = String(s.className || s.namaKelas || '').trim().toLowerCase();
+        return sClassId === classId || sClassName === classId.toLowerCase() || sClassName.includes(classId.toLowerCase());
+    });
+
     var sessionList = [];
 
     Object.keys(presensiRecords).forEach(function(key) {
@@ -219,9 +221,11 @@ function toggleRekapDetailPerMapel(classId, startDate, endDate, rowElement) {
         return;
     }
 
-    var html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">';
+    var html = '<div class="space-y-3 pt-1">';
+    
     sessionList.forEach(function(item) {
         var hCount = 0, sCount = 0, iCount = 0, aCount = 0;
+        
         Object.values(item.record).forEach(function(st) {
             if (st === 'H' || st === 'Hadir') hCount++;
             else if (st === 'S' || st === 'Sakit') sCount++;
@@ -230,20 +234,73 @@ function toggleRekapDetailPerMapel(classId, startDate, endDate, rowElement) {
         });
 
         html += `
-            <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
-                <div>
-                    <span class="font-bold text-slate-800">${item.tanggal}</span>
-                    <span class="ml-2 px-2 py-0.5 bg-purple-100 text-purple-800 rounded font-semibold text-[10px]">${item.sesi}</span>
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 space-y-2 text-xs shadow-xs">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-2 gap-1">
+                    <div>
+                        <span class="font-black text-slate-800"><i class="fa-regular fa-calendar text-indigo-600 mr-1"></i> ${item.tanggal}</span>
+                        <span class="ml-2 px-2.5 py-0.5 bg-indigo-50 text-indigo-800 rounded-lg font-bold text-[10px]">Sesi: ${item.sesi}</span>
+                    </div>
+                    <div class="space-x-2 text-[11px] font-semibold">
+                        <span class="text-emerald-700">Hadir: ${hCount}</span>
+                        <span class="text-blue-700">Izin: ${iCount}</span>
+                        <span class="text-amber-700">Sakit: ${sCount}</span>
+                        <span class="text-rose-700">Alpa: ${aCount}</span>
+                    </div>
                 </div>
-                <div class="space-x-2 text-[11px]">
-                    <span class="text-emerald-700 font-bold">H: ${hCount}</span>
-                    <span class="text-blue-700 font-bold">I: ${iCount}</span>
-                    <span class="text-amber-700 font-bold">S: ${sCount}</span>
-                    <span class="text-rose-700 font-bold">A: ${aCount}</span>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+                            <tr>
+                                <th class="p-2 w-10 text-center">No</th>
+                                <th class="p-2">Nama Siswa / Murid</th>
+                                <th class="p-2 w-24 text-center">Status Kehadiran</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+        `;
+
+        if (classStudents.length === 0) {
+            html += '<tr><td colspan="3" class="p-2 text-center text-slate-400 italic">Tidak ada data murid terdaftar di kelas ini.</td></tr>';
+        } else {
+            classStudents.forEach(function(s, sIdx) {
+                var sId = String(s.id || s.nisn);
+                var statusPresensi = item.record[sId] || 'H';
+                
+                var badgeClass = "bg-emerald-100 text-emerald-800";
+                var statusText = "Hadir (H)";
+                
+                if (statusPresensi === 'S' || statusPresensi === 'Sakit') {
+                    badgeClass = "bg-amber-100 text-amber-800";
+                    statusText = "Sakit (S)";
+                } else if (statusPresensi === 'I' || statusPresensi === 'Izin') {
+                    badgeClass = "bg-blue-100 text-blue-800";
+                    statusText = "Izin (I)";
+                } else if (statusPresensi === 'A' || statusPresensi === 'Alpa') {
+                    badgeClass = "bg-rose-100 text-rose-800";
+                    statusText = "Alpa (A)";
+                }
+
+                html += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-2 text-center text-slate-400">${sIdx + 1}</td>
+                        <td class="p-2 font-semibold text-slate-800">${s.name || s.nama || '-'}</td>
+                        <td class="p-2 text-center">
+                            <span class="px-2 py-0.5 rounded-md font-bold text-[10px] ${badgeClass}">${statusText}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        html += `
+                        </tbody>
+                    </table>
                 </div>
             </div>
         `;
     });
+
     html += '</div>';
     contentDiv.innerHTML = html;
 }
@@ -267,7 +324,6 @@ function renderRekapJurnalTable() {
     var currentUser = window.appState.currentUser || {};
     var role = (currentUser.role || '').toLowerCase();
 
-    // Saring berdasarkan role (Wali Kelas/Guru Mapel hanya lihat jurnal ampuannya sendiri)
     var filteredJournals = journals.filter(function(j) {
         if (j.tanggal < startDate || j.tanggal > endDate) return false;
 
@@ -277,7 +333,7 @@ function renderRekapJurnalTable() {
             var matchKelas = currentUser.kelasAmpuan && currentUser.kelasAmpuan.includes(j.classId);
             return matchGuru || matchKelas;
         }
-        return true; // Admin & Kepsek lihat semua
+        return true;
     });
 
     if (filteredJournals.length === 0) {
