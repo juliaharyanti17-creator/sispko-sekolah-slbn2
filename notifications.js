@@ -25,7 +25,6 @@ function addSystemNotification(targetRoleOrUser, title, message, referenceId) {
         localStorage.setItem('sispko_app_state', JSON.stringify(window.appState));
     }
     
-    // Refresh tampilan notifikasi seketika
     renderNotificationsUI();
 }
 
@@ -37,7 +36,7 @@ function renderNotificationsUI() {
     var currentNama = (currentUser.nama || currentUser.username || '').toLowerCase();
     var notifications = (window.appState && window.appState.notifications) ? window.appState.notifications : [];
 
-    // Filter notifikasi sesuai akun yang sedang aktif
+    // Filter notifikasi sesuai akun yang sedang aktif (Admin, Kepsek, atau Guru ybs)
     var myNotifs = notifications.filter(function(n) {
         if (!n) return false;
         var target = (n.target || '').toLowerCase();
@@ -47,7 +46,7 @@ function renderNotificationsUI() {
         return false;
     });
 
-    // Hitung pesan yang belum dibaca untuk badge merah
+    // Hitung jumlah yang belum dibaca (unread) untuk badge angka merah
     var unreadList = myNotifs.filter(function(n) { return !n.read; });
     var badge = document.getElementById('notif-badge');
     if (badge) {
@@ -63,6 +62,7 @@ function renderNotificationsUI() {
     if (!container) return;
     container.innerHTML = '';
 
+    // Ambil 10 notifikasi terbaru
     var recentNotifs = myNotifs.slice().reverse().slice(0, 10);
 
     if (recentNotifs.length === 0) {
@@ -120,6 +120,14 @@ function markAllNotificationsAsRead() {
     if (typeof saveAppState === 'function') saveAppState();
     renderNotificationsUI();
 }
+
+// Tutup dropdown jika klik di luar area
+document.addEventListener('click', function(e) {
+    var dropdown = document.getElementById('notif-dropdown');
+    if (dropdown && !dropdown.contains(e.target) && !e.target.closest('button[onclick*="toggleNotificationDropdown"]')) {
+        dropdown.classList.add('hidden');
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     renderNotificationsUI();
