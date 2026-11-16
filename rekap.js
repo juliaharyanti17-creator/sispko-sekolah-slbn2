@@ -1,6 +1,6 @@
 // ==========================================================================
 // MODUL REKAPITULASI LAPORAN PRESENSI & JURNAL KBM
-// SIMPATIK SLBN 2 PELAIHARI (DENGAN RANGKUMAN HARIAN, RINCIAN PER MAPEL, & TOTAL)
+// SIMPATIK SLBN 2 PELAIHARI (DENGAN FILTER STATUS & TOTAL KESELURUHAN)
 // ==========================================================================
 
 function renderRekapModule() {
@@ -17,7 +17,6 @@ function initRekapDefaultDates() {
     if (startInput && !startInput.value) startInput.value = todayStr;
     if (endInput && !endInput.value) endInput.value = todayStr;
 
-    // Populasikan dropdown filter kelas berdasarkan role user
     populateRekapKelasDropdown();
 }
 
@@ -32,7 +31,6 @@ function populateRekapKelasDropdown() {
     var currentUser = window.appState.currentUser || {};
     var role = (currentUser.role || '').toLowerCase();
 
-    // Jika wali kelas, batasi pilihan hanya kelas ampuannya
     classes.forEach(function(c) {
         var cId = c.id;
         var cName = c.name || c.nama;
@@ -45,7 +43,6 @@ function populateRekapKelasDropdown() {
                 selectKelas.appendChild(opt);
             }
         } else {
-            // Admin & Kepsek bisa lihat semua
             var opt = document.createElement('option');
             opt.value = cId;
             opt.textContent = cName;
@@ -56,7 +53,7 @@ function populateRekapKelasDropdown() {
     if (currentVal) selectKelas.value = currentVal;
 }
 
-// 1. RENDER TABEL REKAPITULASI PRESENSI HARIAN & BARIS TOTAL DI BAWAH
+// 1. RENDER TABEL REKAPITULASI PRESENSI HARIAN & FILTER STATUS KEHADIRAN
 function renderRekapPresensiTable() {
     var tbody = document.getElementById('rekap-table-presensi-body');
     var periodLabel = document.getElementById('rekap-presensi-period-label');
@@ -66,11 +63,13 @@ function renderRekapPresensiTable() {
     var startInput = document.getElementById('filter-rekap-start-date');
     var endInput = document.getElementById('filter-rekap-end-date');
     var filterKelas = document.getElementById('filter-rekap-kelas');
+    var filterStatus = document.getElementById('filter-rekap-status'); // Elemen filter status baru
 
     var todayStr = new Date().toISOString().split('T')[0];
     var startDate = (startInput && startInput.value) ? startInput.value : todayStr;
     var endDate = (endInput && endInput.value) ? endInput.value : startDate;
     var selectedKelasId = filterKelas ? filterKelas.value : 'ALL';
+    var selectedStatus = filterStatus ? filterStatus.value : 'ALL'; // ALL, H, S, I, A
 
     if (periodLabel) periodLabel.innerText = startDate === endDate ? startDate : (startDate + ' s.d. ' + endDate);
 
@@ -89,8 +88,6 @@ function renderRekapPresensiTable() {
     }
 
     var no = 1;
-    
-    // Variabel Akumulasi untuk Baris Total Keseluruhan
     var grandTotalMurid = 0;
     var grandTotalHadir = 0;
     var grandTotalIzin = 0;
@@ -148,7 +145,6 @@ function renderRekapPresensiTable() {
         
         var persentaseHadir = (totalMurid * hariEfektif) > 0 ? Math.round((totalHadir / (totalMurid * hariEfektif)) * 100) : 0;
 
-        // Akumulasikan ke Grand Total
         grandTotalMurid += totalMurid;
         grandTotalHadir += avgHadir;
         grandTotalIzin += avgIzin;
@@ -160,7 +156,7 @@ function renderRekapPresensiTable() {
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100 cursor-pointer";
         tr.title = "Klik untuk melihat rincian presensi dan nama siswa";
         tr.onclick = function() {
-            toggleRekapDetailPerMapel(c.id, startDate, endDate, tr);
+            toggleRekapDetailPerMapel(c.id, startDate, endDate, selectedStatus, tr);
         };
         tr.innerHTML = `
             <td class="p-3 text-center text-slate-500 font-bold">${no++}</td>
@@ -208,8 +204,8 @@ function renderRekapPresensiTable() {
     tbody.appendChild(trTotal);
 }
 
-// Fungsi Interaktif Klik untuk Membuka Rincian Per Sesi Beserta Nama Murid & Status Presensi
-function toggleRekapDetailPerMapel(classId, startDate, endDate, rowElement) {
+// Fungsi Interaktif Klik dengan Filter Status Kehadiran (H, S, I, A)
+function toggleRekapDetailPerMapel(classId, startDate, endDate, statusFilter, rowElement) {
     var detailRow = document.getElementById('rekap-detail-' + classId);
     var contentDiv = document.getElementById('rekap-detail-content-' + classId);
     if (!detailRow || !contentDiv) return;
@@ -247,7 +243,7 @@ function toggleRekapDetailPerMapel(classId, startDate, endDate, rowElement) {
     });
 
     if (sessionList.length === 0) {
-        contentDiv.innerHTML = '<p class="italic text-slate-400">Tidak ada rincian sesi mata pelajaran khusus pada rentang tanggal ini (menggunakan status harian umum).</p>';
+        contentDiv.innerHTML = '<p class="italic text-slate-400">Tidak ada rincian sesi mata pelajaran khusus pada rentang tanggal ini.</p>';
         return;
     }
 
@@ -261,6 +257,18 @@ function toggleRekapDetailPerMapel(classId, startDate, endDate, rowElement) {
             else if (st === 'S' || st === 'Sakit') sCount++;
             else if (st === 'I' || st === 'Izin') iCount++;
             else aCount++;
+        });
+
+        // Filter daftar siswa berdasarkan status pilihan dropdown (H, S, I, A, atau ALL)
+        var filteredStudents = classStudents.filter(function(s) {
+            var sId = String(s.id || s.nisn);
+            var st = item.record[sId] || 'H';
+            if (statusFilter === 'ALL') return true;
+            if (statusFilter === 'H' && (st === 'H' || st === 'Hadir')) return true;
+            if (statusFilter === 'S' && (st === 'S' || st === 'Sakit')) return true;
+            if (statusFilter === 'I' && (st === 'I' || st === 'Izin')) return true;
+            if (statusFilter === 'A' && (st === 'A' || st === 'Alpa')) return true;
+            return false;
         });
 
         html += `
@@ -290,10 +298,10 @@ function toggleRekapDetailPerMapel(classId, startDate, endDate, rowElement) {
                         <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
         `;
 
-        if (classStudents.length === 0) {
-            html += '<tr><td colspan="3" class="p-2 text-center text-slate-400 italic">Tidak ada data murid terdaftar di kelas ini.</td></tr>';
+        if (filteredStudents.length === 0) {
+            html += '<tr><td colspan="3" class="p-2 text-center text-slate-400 italic">Tidak ada siswa dengan status presensi tersebut pada sesi ini.</td></tr>';
         } else {
-            classStudents.forEach(function(s, sIdx) {
+            filteredStudents.forEach(function(s, sIdx) {
                 var sId = String(s.id || s.nisn);
                 var statusPresensi = item.record[sId] || 'H';
                 
