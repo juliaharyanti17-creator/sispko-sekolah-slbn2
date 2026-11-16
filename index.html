@@ -376,7 +376,8 @@ function togglePasswordVisibility(e) {
 </section>
 
 <!-- MODUL 3: REKAP -->
-<div class="flex flex-wrap items-center gap-3 mb-4">
+<section id="modul-rekap" class="hidden space-y-6">
+  <div class="flex flex-wrap items-center gap-3 mb-4">
     <div>
         <label class="block text-xs font-bold text-slate-600 mb-1">Filter Status Kehadiran</label>
         <select id="filter-rekap-status" onchange="renderRekapModule()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
@@ -388,7 +389,6 @@ function togglePasswordVisibility(e) {
         </select>
     </div>
 </div>
-<section id="modul-rekap" class="hidden space-y-6">
 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80">
 <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
 <i class="fa-solid fa-chart-line text-indigo-600"></i> Rekapitulasi Presensi & Aktivitas Jurnal
